@@ -3,6 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Helmet } from 'react-helmet-async';
+
+const APP_URL = import.meta.env.VITE_APP_URL ?? 'https://community.memobank.online';
 import { memoriesApi, type CommentWithAuthor } from '../lib/api';
 import { Layout } from '../components/Layout';
 import { useAuthStore } from '../store/auth';
@@ -82,8 +85,21 @@ export function MemoryPage() {
   const isOwner = user?.id === memory.userId;
   const isFork = !!memory.forkedFromId;
 
+  const ogDesc = memory.content.slice(0, 160).replace(/```[\s\S]*?```/g, '[code]').replace(/[#*`]/g, '');
+
   return (
     <Layout>
+      <Helmet>
+        <title>{memory.title} — ShipHub</title>
+        <meta name="description" content={ogDesc} />
+        <meta property="og:title" content={memory.title} />
+        <meta property="og:description" content={ogDesc} />
+        <meta property="og:url" content={`${APP_URL}/memory/${memory.id}`} />
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={memory.title} />
+        <meta name="twitter:description" content={ogDesc} />
+      </Helmet>
       <div className="max-w-2xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-6">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-xs mono text-slate-400 hover:text-white transition-colors">

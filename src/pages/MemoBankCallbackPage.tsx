@@ -5,6 +5,8 @@ import { useAuthStore } from '../store/auth';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 
+const isPopup = () => !!(window.opener && window.opener !== window);
+
 export function MemoBankCallbackPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -21,6 +23,7 @@ export function MemoBankCallbackPage() {
     const oauthError = searchParams.get('error');
 
     if (oauthError === 'access_denied') {
+      if (isPopup()) { window.close(); return; }
       navigate('/login');
       return;
     }
@@ -30,7 +33,6 @@ export function MemoBankCallbackPage() {
       return;
     }
 
-    // Optional: verify state matches what we stored
     const savedState = sessionStorage.getItem('mb_oauth_state');
     if (savedState && state && savedState !== state) {
       setError('OAuth state mismatch. Please try again.');
@@ -38,20 +40,33 @@ export function MemoBankCallbackPage() {
     }
     sessionStorage.removeItem('mb_oauth_state');
 
-    // Exchange code via ShipHub backend
     api.get(`/auth/memobank/callback?code=${code}`)
       .then(res => {
-        setAuth(res.data.user, res.data.token);
-        navigate(res.data.isNew ? '/onboarding' : '/', { replace: true });
+        const { token, user } = res.data;
+
+        if (isPopup()) {
+          // Running in OAuth popup — message the opener then close
+          window.opener.postMessage({ type: 'mb_oauth_success', token, user }, window.location.origin);
+          window.close();
+        } else {
+          // Full-page redirect flow (fallback when popup was blocked)
+          setAuth(user, token);
+          navigate(res.data.isNew ? '/onboarding' : '/', { replace: true });
+        }
       })
       .catch(err => {
-        setError(err.response?.data?.message ?? 'Authentication failed. Please try again.');
+        const msg = err.response?.data?.message ?? 'Authentication failed. Please try again.';
+        if (isPopup()) {
+          setError(msg); // Show error in popup so user can see it before closing
+        } else {
+          setError(msg);
+        }
       });
   }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-base)' }}>
-      <div className="text-center">
+      <div className="text-center px-6">
         {error ? (
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 rounded-full flex items-center justify-center bg-red-500/10 border border-red-500/20">
@@ -62,11 +77,11 @@ export function MemoBankCallbackPage() {
               <p className="text-xs text-slate-500 max-w-xs">{error}</p>
             </div>
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => isPopup() ? window.close() : navigate('/login')}
               className="px-5 py-2 rounded-lg text-xs mono font-semibold text-white transition-all hover:opacity-90"
               style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}
             >
-              BACK_TO_LOGIN
+              {isPopup() ? 'CLOSE' : 'BACK_TO_LOGIN'}
             </button>
           </div>
         ) : (

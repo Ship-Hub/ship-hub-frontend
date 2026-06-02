@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
+import { Helmet } from 'react-helmet-async';
 import { feedApi, type FeedItem } from '../lib/api';
 import { MemoryCard } from '../components/MemoryCard';
 import { PostCard } from '../components/PostCard';
@@ -45,6 +46,14 @@ export function FeedPage() {
 
   return (
     <Layout>
+      <Helmet>
+        <title>ShipHub — The community for AI builders</title>
+        <meta name="description" content="Share prompts, workflows, and code snippets with the vibe coding community." />
+        <meta property="og:title" content="ShipHub" />
+        <meta property="og:description" content="The community for AI builders. Share, fork, and discover AI workflows." />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary" />
+      </Helmet>
       <div className="max-w-2xl mx-auto px-6 py-8">
         {/* Compose */}
         <ComposeBox />

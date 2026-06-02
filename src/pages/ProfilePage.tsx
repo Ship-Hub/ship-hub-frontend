@@ -1,12 +1,16 @@
 import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+
+const APP_URL = import.meta.env.VITE_APP_URL ?? 'https://community.memobank.online';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useRef } from 'react';
 import { usersApi, memoriesApi, projectsApi, authApi, uploadApi, packsApi, type User } from '../lib/api';
+import { Link as RouterLink } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { MemoryCard } from '../components/MemoryCard';
 import { useAuthStore } from '../store/auth';
 import { timeAgo, STATUS_COLORS } from '../lib/utils';
-import { Loader2, Globe, GitBranch, Pencil, X, FolderKanban, Users, BookOpen, Camera, Package } from 'lucide-react';
+import { Loader2, Globe, GitBranch, Pencil, X, FolderKanban, Users, BookOpen, Camera, Package, MessageSquare, Pin, PinOff } from 'lucide-react';
 
 const STATUS_COLOR_MAP: Record<string, string> = {
   building: 'text-amber-400 bg-amber-400/10 border-amber-400/20',
@@ -142,6 +146,14 @@ export function ProfilePage() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['profile', username] }); qc.invalidateQueries({ queryKey: ['follow-status', username] }); },
   });
 
+  const pinMut = useMutation({
+    mutationFn: (memoryId: string) => usersApi.pin(memoryId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['profile', username] });
+      qc.invalidateQueries({ queryKey: ['user-memories', username] });
+    },
+  });
+
   if (profileQ.isLoading) return <Layout><div className="flex items-center justify-center h-64"><Loader2 size={20} className="animate-spin text-violet-400" /></div></Layout>;
 
   const profile = profileQ.data;
@@ -157,8 +169,20 @@ export function ProfilePage() {
     { key: 'following', label: `FOLLOWING (${profile.followingCount})` },
   ];
 
+  const ogTitle = `${profile.displayName ?? profile.username} (@${profile.username}) — ShipHub`;
+  const ogDesc = profile.bio ?? `${profile.memoryCount} memories · ${profile.followerCount} followers on ShipHub`;
+
   return (
     <Layout>
+      <Helmet>
+        <title>{ogTitle}</title>
+        <meta name="description" content={ogDesc} />
+        <meta property="og:title" content={ogTitle} />
+        <meta property="og:description" content={ogDesc} />
+        <meta property="og:url" content={`${APP_URL}/u/${profile.username}`} />
+        {profile.avatar && <meta property="og:image" content={profile.avatar} />}
+        <meta name="twitter:card" content="summary" />
+      </Helmet>
       {showEdit && <EditProfileModal profile={profile} onClose={() => setShowEdit(false)} />}
       <div className="max-w-2xl mx-auto px-6 py-8">
         {/* Header card */}
@@ -189,9 +213,14 @@ export function ProfilePage() {
                 <BookOpen size={12} /> SHOWCASE
               </Link>
               {!isOwn && user && (
-                <button onClick={() => followMut.mutate()} disabled={followMut.isPending} className="px-4 py-2 rounded-lg text-xs mono font-semibold transition-all" style={isFollowing ? { backgroundColor: 'var(--color-elevated)', color: '#94a3b8', border: '1px solid var(--color-border)' } : { background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)', color: 'white' }}>
-                  {followMut.isPending ? '...' : isFollowing ? 'FOLLOWING' : 'FOLLOW'}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => followMut.mutate()} disabled={followMut.isPending} className="px-4 py-2 rounded-lg text-xs mono font-semibold transition-all" style={isFollowing ? { backgroundColor: 'var(--color-elevated)', color: '#94a3b8', border: '1px solid var(--color-border)' } : { background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)', color: 'white' }}>
+                    {followMut.isPending ? '...' : isFollowing ? 'FOLLOWING' : 'FOLLOW'}
+                  </button>
+                  <RouterLink to={`/messages/${profile.username}`} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs mono text-slate-400 hover:text-white border transition-all" style={{ borderColor: 'var(--color-border)' }}>
+                    <MessageSquare size={12} /> DM
+                  </RouterLink>
+                </div>
               )}
             </div>
           </div>
@@ -212,6 +241,34 @@ export function ProfilePage() {
           </div>
         </div>
 
+        {/* Pinned memories */}
+        {(profile.pinnedMemoryIds?.length ?? 0) > 0 && (
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Pin size={12} className="text-violet-400" />
+              <span className="mono text-xs font-semibold text-slate-400">PINNED</span>
+            </div>
+            <div className="space-y-2">
+              {(memoriesQ.data ?? [])
+                .filter((m: any) => profile.pinnedMemoryIds?.includes(m.id))
+                .map((memory: any) => (
+                  <div key={memory.id} className="relative group/pin">
+                    <MemoryCard memory={memory} author={profile} />
+                    {isOwn && (
+                      <button
+                        onClick={() => pinMut.mutate(memory.id)}
+                        className="absolute top-3 right-3 opacity-0 group-hover/pin:opacity-100 flex items-center gap-1 text-xs mono text-slate-500 hover:text-red-400 transition-all px-2 py-1 rounded"
+                        style={{ backgroundColor: 'var(--color-elevated)' }}
+                      >
+                        <PinOff size={11} /> UNPIN
+                      </button>
+                    )}
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="flex gap-1 mb-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
           {tabs.map(t => (
@@ -225,9 +282,26 @@ export function ProfilePage() {
         {tab === 'memories' && (
           <div className="space-y-4">
             {memoriesQ.isLoading && <div className="flex justify-center py-10"><Loader2 size={16} className="animate-spin text-violet-400" /></div>}
-            {memoriesQ.data?.map((memory: any) => (
-              <MemoryCard key={memory.id} memory={memory} author={profile} />
-            ))}
+            {memoriesQ.data?.map((memory: any) => {
+              const isPinned = profile.pinnedMemoryIds?.includes(memory.id);
+              return (
+                <div key={memory.id} className="relative group/mem">
+                  <MemoryCard memory={memory} author={profile} />
+                  {isOwn && (
+                    <button
+                      onClick={() => pinMut.mutate(memory.id)}
+                      disabled={!isPinned && (profile.pinnedMemoryIds?.length ?? 0) >= 3}
+                      className={`absolute top-3 right-3 opacity-0 group-hover/mem:opacity-100 flex items-center gap-1 text-xs mono transition-all px-2 py-1 rounded disabled:opacity-30 ${isPinned ? 'text-violet-400 hover:text-red-400' : 'text-slate-500 hover:text-violet-400'}`}
+                      style={{ backgroundColor: 'var(--color-elevated)' }}
+                      title={isPinned ? 'Unpin' : (profile.pinnedMemoryIds?.length ?? 0) >= 3 ? 'Max 3 pinned' : 'Pin to profile'}
+                    >
+                      {isPinned ? <PinOff size={11} /> : <Pin size={11} />}
+                      {isPinned ? 'UNPIN' : 'PIN'}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
             {!memoriesQ.isLoading && memoriesQ.data?.length === 0 && <p className="text-center text-slate-500 mono text-xs py-8">NO_MEMORIES_YET</p>}
           </div>
         )}

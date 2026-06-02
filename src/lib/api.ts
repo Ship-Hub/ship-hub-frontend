@@ -32,7 +32,8 @@ export interface User {
   avatar: string | null; website: string | null; githubUsername: string | null;
   followerCount: number; followingCount: number; memoryCount: number;
   memoBankUserId: string | null; memoBankUsername: string | null;
-  emailVerified: number;
+  emailVerified: number; isAdmin: number; banned: number;
+  pinnedMemoryIds: string[] | null;
   createdAt: string;
 }
 
@@ -114,6 +115,7 @@ export const usersApi = {
     api.patch<{ user: User }>('/users/me', d),
   follow: (username: string) => api.post<{ following: boolean }>(`/users/${username}/follow`),
   followStatus: (username: string) => api.get<{ following: boolean }>(`/users/${username}/following-status`),
+  pin: (memoryId: string) => api.post<{ pinned: boolean; pinnedMemoryIds: string[] }>(`/users/me/pin/${memoryId}`),
 };
 
 // ── Projects ───────────────────────────────────────────────────────────────
@@ -228,7 +230,7 @@ export interface Post {
   mediaUrl: string | null; mediaType: 'image' | 'video' | null;
   likeCount: number; saveCount: number; commentCount: number;
   quotePostId: string | null; quoteMemoryId: string | null;
-  createdAt: string;
+  editedAt: string | null; createdAt: string;
 }
 export interface PostWithAuthor {
   post: Post; author: AuthorSnippet;
@@ -239,6 +241,7 @@ export type ReactionMap = Record<string, { count: number; reacted: boolean }>;
 
 export const postsApi = {
   list: (limit = 20, offset = 0) => api.get<{ posts: PostWithAuthor[] }>('/posts', { params: { limit, offset } }),
+  get: (id: string) => api.get<PostWithAuthor>(`/posts/${id}`),
   create: (data: { content: string; visibility?: 'public' | 'private'; mediaUrl?: string; mediaType?: 'image' | 'video'; quotePostId?: string; quoteMemoryId?: string }) =>
     api.post<PostWithAuthor>('/posts', data),
   delete: (id: string) => api.delete(`/posts/${id}`),
@@ -248,8 +251,38 @@ export const postsApi = {
   comment: (id: string, content: string) => api.post(`/posts/${id}/comments`, { content }),
   deleteComment: (id: string) => api.delete(`/posts/comments/${id}`),
   saved: () => api.get<{ posts: PostWithAuthor[] }>('/posts/saved/me'),
+  edit: (id: string, content: string) => api.patch<PostWithAuthor>(`/posts/${id}`, { content }),
   reactions: (id: string) => api.get<{ reactions: ReactionMap }>(`/posts/${id}/reactions`),
   react: (id: string, emoji: string) => api.post<{ reacted: boolean; emoji: string }>(`/posts/${id}/reactions`, { emoji }),
+};
+
+// ── Post editing ───────────────────────────────────────────────────────────
+// (postsApi.edit added inline below)
+
+// ── Direct messages ────────────────────────────────────────────────────────
+export interface DirectMessage {
+  id: string; senderId: string; receiverId: string;
+  content: string; read: number; createdAt: string;
+}
+export interface Conversation {
+  id: string; username: string; displayName: string | null; avatar: string | null;
+  lastMessage: string; lastMessageAt: string; lastSenderId: string; unread: number;
+}
+
+export const dmApi = {
+  conversations: () => api.get<{ conversations: Conversation[] }>('/dm'),
+  messages: (username: string) => api.get<{ partner: AuthorSnippet; messages: DirectMessage[] }>(`/dm/${username}`),
+  send: (username: string, content: string) => api.post<DirectMessage>(`/dm/${username}`, { content }),
+  unreadCount: () => api.get<{ count: number }>('/dm/unread-count'),
+};
+
+// ── Admin ───────────────────────────────────────────────────────────────────
+export const adminApi = {
+  stats: () => api.get<{ users: number; memories: number; posts: number; newUsersToday: number }>('/admin/stats'),
+  users: (q = '', limit = 30, offset = 0) => api.get('/admin/users', { params: { q, limit, offset } }),
+  ban: (id: string, banned: boolean) => api.patch(`/admin/users/${id}/ban`, { banned }),
+  deleteMemory: (id: string) => api.delete(`/admin/memories/${id}`),
+  deletePost: (id: string) => api.delete(`/admin/posts/${id}`),
 };
 
 // ── Trending tags ───────────────────────────────────────────────────────────

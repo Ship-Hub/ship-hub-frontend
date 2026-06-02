@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
-import { Home, BookMarked, Plus, LogOut, Zap, FolderKanban, CalendarDays, Network, Bell, Search, LayoutGrid, Trophy, Package, Menu, X, Mail } from 'lucide-react';
+import { Home, BookMarked, Plus, LogOut, Zap, FolderKanban, CalendarDays, Network, Bell, Search, LayoutGrid, Trophy, Package, Menu, X, Mail, MessageSquare } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '../lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
@@ -19,7 +19,8 @@ const navItems = [
   { to: '/events',      icon: CalendarDays, label: 'EVENTS' },
   { to: '/graph',       icon: Network,      label: 'KNOWLEDGE_GRAPH' },
   { to: '/saved',       icon: BookMarked,   label: 'SAVED' },
-];
+  { to: '/messages',   icon: MessageSquare, label: 'MESSAGES', authOnly: true },
+] as const;
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { user, clearAuth } = useAuthStore();
@@ -66,7 +67,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const NavLinks = ({ onClick }: { onClick?: () => void }) => (
     <>
-      {navItems.map(({ to, icon: Icon, label }) => (
+      {navItems.filter(item => !('authOnly' in item && item.authOnly) || user).map(({ to, icon: Icon, label }) => (
         <Link key={to} to={to} onClick={onClick}
           className={cn('flex items-center gap-3 px-3 py-2 rounded-lg text-xs mono font-medium transition-all',
             isActive(to) ? 'text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5')}

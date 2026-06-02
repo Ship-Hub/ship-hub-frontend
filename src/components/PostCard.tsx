@@ -6,7 +6,7 @@ import type { PostWithAuthor } from '../lib/api';
 import { useAuthStore } from '../store/auth';
 import { useComposeStore } from '../store/compose';
 import { timeAgo, processContent } from '../lib/utils';
-import { Heart, Bookmark, MessageSquare, Trash2, ChevronDown, ChevronUp, Code2, Quote } from 'lucide-react';
+import { Heart, Bookmark, MessageSquare, Trash2, ChevronDown, ChevronUp, Code2, Quote, Pencil, Check, X } from 'lucide-react';
 import { PostMarkdown } from './ComposeBox';
 import { CommentInput, CommentBody } from './CommentInput';
 import { EmbeddedQuote } from './QuoteModal';
@@ -35,6 +35,8 @@ export function PostCard({ post, author, quotedPost, quotedMemory }: PostCardPro
   const [commentsLoaded, setCommentsLoaded] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [showReactionPicker, setShowReactionPicker] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editContent, setEditContent] = useState('');
 
   const isCodePost = hasCode(post.content);
   const isLong = lineCount(post.content) > COLLAPSE_THRESHOLD || post.content.length > 800;
@@ -48,6 +50,13 @@ export function PostCard({ post, author, quotedPost, quotedMemory }: PostCardPro
   const likeMut = useMutation({ mutationFn: () => postsApi.like(post.id), onSuccess: invalidate });
   const saveMut = useMutation({ mutationFn: () => postsApi.save(post.id), onSuccess: invalidate });
   const deleteMut = useMutation({ mutationFn: () => postsApi.delete(post.id), onSuccess: invalidate });
+  const editMut = useMutation({
+    mutationFn: () => postsApi.edit(post.id, editContent),
+    onSuccess: () => { invalidate(); setEditing(false); },
+  });
+
+  const isOwner = user?.id === post.userId;
+  const canEdit = isOwner && (Date.now() - new Date(post.createdAt).getTime() < 15 * 60 * 1000);
   const reactMut = useMutation({
     mutationFn: (emoji: string) => postsApi.react(post.id, emoji),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['reactions', post.id] }); setShowReactionPicker(false); },
@@ -79,8 +88,6 @@ export function PostCard({ post, author, quotedPost, quotedMemory }: PostCardPro
     setShowComments(v => !v);
   };
 
-  const isOwner = user?.id === post.userId;
-
   return (
     <div className="rounded-xl border transition-all hover:border-violet-500/20" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
       <div className="p-4">
@@ -103,14 +110,37 @@ export function PostCard({ post, author, quotedPost, quotedMemory }: PostCardPro
             {isCodePost && <span className="flex items-center gap-1 text-xs mono px-2 py-0.5 rounded border text-cyan-400 border-cyan-400/20 bg-cyan-400/5"><Code2 size={10} /> CODE</span>}
             {(post.quotePostId || post.quoteMemoryId) && <span className="flex items-center gap-1 text-xs mono px-2 py-0.5 rounded border text-violet-400 border-violet-400/20 bg-violet-400/5"><Quote size={10} /> QUOTE</span>}
             <span className="text-xs mono px-2 py-0.5 rounded border text-slate-500 border-slate-700/50 bg-slate-800/30">POST</span>
-            {isOwner && <button onClick={() => act(() => deleteMut.mutate())} className="text-slate-600 hover:text-red-400 transition-colors ml-1"><Trash2 size={13} /></button>}
+            {canEdit && !editing && (
+              <button onClick={() => { setEditContent(post.content); setEditing(true); }} className="text-slate-600 hover:text-violet-400 transition-colors ml-1"><Pencil size={12} /></button>
+            )}
+            {editing && (
+              <>
+                <button onClick={() => editMut.mutate()} disabled={editMut.isPending} className="text-emerald-400 hover:text-emerald-300 transition-colors ml-1"><Check size={13} /></button>
+                <button onClick={() => setEditing(false)} className="text-slate-500 hover:text-white transition-colors ml-1"><X size={13} /></button>
+              </>
+            )}
+            {isOwner && !editing && <button onClick={() => act(() => deleteMut.mutate())} className="text-slate-600 hover:text-red-400 transition-colors ml-1"><Trash2 size={13} /></button>}
           </div>
         </div>
 
         {/* Content */}
         <div className="mb-1">
-          <PostMarkdown content={processContent(displayContent)} />
+          {editing ? (
+            <textarea
+              value={editContent}
+              onChange={e => setEditContent(e.target.value)}
+              rows={4}
+              className="w-full bg-transparent text-sm text-slate-300 outline-none resize-none leading-relaxed font-mono border rounded-lg p-3"
+              style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }}
+              autoFocus
+            />
+          ) : (
+            <PostMarkdown content={processContent(displayContent)} />
+          )}
         </div>
+        {post.editedAt && !editing && (
+          <span className="text-xs mono text-slate-600">· edited</span>
+        )}
         {isLong && (
           <button onClick={() => setExpanded(v => !v)} className="flex items-center gap-1 text-xs mono text-violet-400 hover:text-violet-300 transition-colors mt-1 mb-2">
             {expanded ? <><ChevronUp size={12} /> Show less</> : <><ChevronDown size={12} /> Show more</>}

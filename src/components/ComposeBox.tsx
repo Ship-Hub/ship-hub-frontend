@@ -57,8 +57,16 @@ export function ComposeBox() {
   const imageRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
 
-  const [content, setContent] = useState('');
+  const DRAFT_KEY = 'shiphub_compose_draft';
+  const [content, setContent] = useState(() => localStorage.getItem(DRAFT_KEY) ?? '');
   const [visibility, setVisibility] = useState<'public' | 'private'>('public');
+
+  // Persist draft on every keystroke
+  const handleContentChange = (val: string) => {
+    setContent(val);
+    if (val) localStorage.setItem(DRAFT_KEY, val);
+    else localStorage.removeItem(DRAFT_KEY);
+  };
   const [focused, setFocused] = useState(false);
   const [mode, setMode] = useState<'write' | 'preview'>('write');
   const [showLangPicker, setShowLangPicker] = useState(false);
@@ -80,6 +88,7 @@ export function ComposeBox() {
     },
     onSuccess: () => {
       setContent('');
+      localStorage.removeItem(DRAFT_KEY);
       setMediaFile(null);
       setMediaPreview(null);
       setMediaType(null);
@@ -116,7 +125,7 @@ export function ComposeBox() {
     const selected = content.slice(start, end);
     const snippet = `\`\`\`${lang}\n${selected || '// your code here'}\n\`\`\``;
     const next = content.slice(0, start) + snippet + content.slice(end);
-    setContent(next);
+    handleContentChange(next);
     setShowLangPicker(false);
     setFocused(true);
     setTimeout(() => {
@@ -127,13 +136,13 @@ export function ComposeBox() {
   };
 
   const insertBold = () =>
-    insertAtCursor(textareaRef, '**', '**', 'bold text', setContent, content);
+    insertAtCursor(textareaRef, '**', '**', 'bold text', handleContentChange, content);
 
   const insertItalic = () =>
-    insertAtCursor(textareaRef, '*', '*', 'italic text', setContent, content);
+    insertAtCursor(textareaRef, '*', '*', 'italic text', handleContentChange, content);
 
   const insertInlineCode = () =>
-    insertAtCursor(textareaRef, '`', '`', 'code', setContent, content);
+    insertAtCursor(textareaRef, '`', '`', 'code', handleContentChange, content);
 
   if (!user) {
     return (
@@ -189,7 +198,7 @@ export function ComposeBox() {
             <textarea
               ref={textareaRef}
               value={content}
-              onChange={e => setContent(e.target.value)}
+              onChange={e => handleContentChange(e.target.value)}
               onFocus={() => setFocused(true)}
               placeholder="Share a snippet, insight, or build update... (markdown supported)"
               rows={isActive ? 4 : 1}
