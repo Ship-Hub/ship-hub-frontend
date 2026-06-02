@@ -57,14 +57,16 @@ export function ImportModal({ onClose, embedded = false }: Props) {
 
   const connectAndProceed = async () => {
     if (!apiKey) return;
-    // Also connect the key to the account for future use
+    setKeyError('');
     try {
-      const res = await authApi.connectMemoBank(apiKey);
-      // refresh user in store
-      const meRes = await authApi.me();
-      setAuth(meRes.data.user, localStorage.getItem('shiphub_token')!);
-    } catch {}
-    fetchProjectsMut.mutate();
+      // Log in / register via Memo Bank API key — works without existing ShipHub session
+      const res = await authApi.memobank(apiKey);
+      localStorage.setItem('shiphub_token', res.data.token);
+      setAuth(res.data.user, res.data.token);
+      fetchProjectsMut.mutate();
+    } catch (err: any) {
+      setKeyError(err.response?.data?.message ?? 'Invalid Memo Bank API key');
+    }
   };
 
   const toggleAll = () => {
@@ -118,7 +120,7 @@ export function ImportModal({ onClose, embedded = false }: Props) {
             <div className="space-y-4">
               <p className="text-xs text-slate-400">
                 Enter your Memo Bank API key to browse and import your memories.
-                {' '}<a href="https://memobank.online/api-keys" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300">Find it here →</a>
+                {' '}<a href="https://memobank.online/app/api-keys" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300">Find it here →</a>
               </p>
 
               {keyError && (
