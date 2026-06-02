@@ -59,12 +59,12 @@ export function FeedPage() {
         <ComposeBox />
 
         {/* Tab switcher */}
-        <div className="flex gap-0.5 mb-5 border-b" style={{ borderColor: 'var(--color-border)' }}>
+        <div className="flex gap-0.5 mb-5 border-b overflow-x-auto scrollbar-none" style={{ borderColor: 'var(--color-border)' }}>
           {TABS.filter(t => !t.authRequired || user).map(({ key, label, icon: Icon }) => (
             <button
               key={key}
               onClick={() => handleTabChange(key)}
-              className={`flex items-center gap-1.5 px-3 py-2.5 text-xs mono font-medium transition-all border-b-2 -mb-px ${
+              className={`flex items-center gap-1.5 px-3 py-2.5 text-xs mono font-medium transition-all border-b-2 -mb-px whitespace-nowrap flex-shrink-0 ${
                 tab === key ? 'text-white border-violet-500' : 'text-slate-500 border-transparent hover:text-slate-300'
               }`}
             >
@@ -72,9 +72,6 @@ export function FeedPage() {
               {label}
             </button>
           ))}
-          <div className="ml-auto flex items-center pr-1">
-            <span className="text-xs mono text-slate-700">{items.length}</span>
-          </div>
         </div>
 
         {isLoading && (
@@ -84,19 +81,27 @@ export function FeedPage() {
         )}
 
         {!isLoading && items.length === 0 && (
-          <div className="text-center py-20">
-            <p className="mono text-slate-400 text-sm">
-              {tab === 'trending'  ? 'NO_TRENDING_YET'
-              : tab === 'posts'    ? 'NO_POSTS_YET'
-              : tab === 'following'? 'NOT_FOLLOWING_ANYONE_YET'
-              : 'NOTHING_HERE_YET'}
-            </p>
-            <p className="text-slate-600 text-xs mt-1">
+          <div className="text-center py-20 px-4">
+            <div className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center"
+              style={{ backgroundColor: 'var(--color-elevated)', border: '1px solid var(--color-border)' }}>
               {tab === 'following'
-                ? <span>Follow builders from the <Link to="/leaderboard" className="text-violet-400 hover:text-violet-300 transition-colors">leaderboard</Link> to see their content here</span>
+                ? <Users size={20} className="text-slate-500" />
                 : tab === 'trending'
-                ? 'Come back once builders start sharing'
-                : 'Be the first to post something'}
+                ? <Zap size={20} className="text-slate-500" />
+                : <LayoutList size={20} className="text-slate-500" />}
+            </div>
+            <p className="mono text-white text-sm font-semibold mb-1">
+              {tab === 'trending'   ? 'Nothing trending yet'
+              : tab === 'posts'     ? 'No posts yet'
+              : tab === 'following' ? 'Your feed is empty'
+              : 'Nothing here yet'}
+            </p>
+            <p className="text-slate-500 text-xs leading-relaxed max-w-xs mx-auto">
+              {tab === 'following'
+                ? <>Follow builders from the <Link to="/leaderboard" className="text-violet-400 hover:text-violet-300 transition-colors">leaderboard</Link> to see their content here.</>
+                : tab === 'trending'
+                ? 'Come back once builders start sharing their work.'
+                : 'Be the first to publish a memory or post something.'}
             </p>
           </div>
         )}

@@ -144,7 +144,7 @@ export function MemoryCard({ memory, author, originalAuthorUsername }: MemoryCar
       )}
 
       {/* Footer */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2">
           {author && (
             <Link to={`/u/${author.username}`} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">

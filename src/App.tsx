@@ -30,7 +30,6 @@ import { PostDetailPage } from './pages/PostDetailPage';
 import { MessagesPage } from './pages/MessagesPage';
 import { AdminPage } from './pages/AdminPage';
 import { useAuthStore } from './store/auth';
-import { Cursor } from './components/Cursor';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -54,7 +53,6 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <ErrorBoundary>
           <BrowserRouter>
-            <Cursor />
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />

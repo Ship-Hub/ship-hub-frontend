@@ -29,6 +29,15 @@ h1, h2, h3, h4, h5, h6 { font-family: 'JetBrains Mono', monospace; }
 
 #root { min-height: 100svh; }
 
+/* ── Scrollbars ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(139,92,246,0.45); }
+
 /* ── Keyframes ──────────────────────────────────────────────────────────────── */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(14px); }
@@ -41,15 +50,13 @@ h1, h2, h3, h4, h5, h6 { font-family: 'JetBrains Mono', monospace; }
 }
 
 @keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 12px rgba(139,92,246,0.45), 0 0 24px rgba(139,92,246,0.15); }
-  50%       { box-shadow: 0 0 20px rgba(139,92,246,0.7),  0 0 48px rgba(0,229,255,0.2); }
+  0%, 100% { box-shadow: 0 0 12px rgba(139,92,246,0.5), 0 0 28px rgba(139,92,246,0.18); }
+  50%       { box-shadow: 0 0 22px rgba(139,92,246,0.75), 0 0 52px rgba(0,229,255,0.22); }
 }
 
-@keyframes scanline {
-  0%   { transform: translateY(-100%); opacity: 0; }
-  10%  { opacity: 1; }
-  90%  { opacity: 1; }
-  100% { transform: translateY(100vh); opacity: 0; }
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes orbitA {
@@ -72,16 +79,6 @@ h1, h2, h3, h4, h5, h6 { font-family: 'JetBrains Mono', monospace; }
 @keyframes badgePulse {
   0%, 100% { transform: scale(1); }
   50%       { transform: scale(1.2); }
-}
-
-@keyframes cursorBlink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
-}
-
-@keyframes ringAppear {
-  from { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
-  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
 /* ── Ambient background orbs ────────────────────────────────────────────────── */
@@ -114,7 +111,6 @@ body::after {
   animation: orbitB 28s ease-in-out infinite;
 }
 
-/* Third orb via #root pseudo — low impact */
 #root::before {
   content: '';
   position: fixed;
@@ -134,11 +130,6 @@ body::after {
 /* Ensure content sits above orbs */
 #root > * { position: relative; z-index: 1; }
 
-/* ── Subtle scanline sweep ───────────────────────────────────────────────────── */
-body::before {
-  /* orb already defined; scanline is a separate element in Cursor.tsx */
-}
-
 /* ── Entrance animation ─────────────────────────────────────────────────────── */
 .animate-in {
   animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -148,16 +139,9 @@ body::before {
   animation: fadeInUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Stagger children */
-.stagger-children > *:nth-child(1)  { animation-delay: 0ms; }
-.stagger-children > *:nth-child(2)  { animation-delay: 40ms; }
-.stagger-children > *:nth-child(3)  { animation-delay: 80ms; }
-.stagger-children > *:nth-child(4)  { animation-delay: 120ms; }
-.stagger-children > *:nth-child(5)  { animation-delay: 160ms; }
-.stagger-children > *:nth-child(6)  { animation-delay: 200ms; }
-.stagger-children > *:nth-child(7)  { animation-delay: 240ms; }
-.stagger-children > *:nth-child(8)  { animation-delay: 280ms; }
-.stagger-children > *:nth-child(n+9){ animation-delay: 320ms; }
+.drawer-slide-down {
+  animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
 
 /* ── Global transitions ─────────────────────────────────────────────────────── */
 a, button, [role="button"] {
@@ -165,9 +149,8 @@ a, button, [role="button"] {
               border-color 0.15s ease, box-shadow 0.2s ease, transform 0.15s ease;
 }
 
-/* ── Button glow ────────────────────────────────────────────────────────────── */
-button[style*="linear-gradient(135deg, #7C3AED"]:hover,
-a[style*="linear-gradient(135deg, #7C3AED"]:hover {
+/* ── Primary button glow ────────────────────────────────────────────────────── */
+.btn-primary:hover {
   animation: glowPulse 1.8s ease-in-out infinite;
 }
 
@@ -198,105 +181,27 @@ a[style*="linear-gradient(135deg, #7C3AED"]:hover {
   box-shadow: 0 0 16px rgba(0,229,255,0.4), 0 0 32px rgba(0,229,255,0.15);
 }
 
-.border-glow-violet {
-  border-color: rgba(139,92,246,0.5) !important;
-  box-shadow: 0 0 12px rgba(139,92,246,0.2), inset 0 0 12px rgba(139,92,246,0.04);
-}
-
-/* ── Sidebar active nav item glow ───────────────────────────────────────────── */
-.nav-active-glow {
-  box-shadow: -2px 0 12px rgba(139,92,246,0.4);
-}
-
 /* ── Input focus glow ───────────────────────────────────────────────────────── */
 input:focus,
 textarea:focus {
-  box-shadow: 0 0 0 1px rgba(139,92,246,0.4), 0 0 16px rgba(139,92,246,0.1) !important;
+  box-shadow: 0 0 0 1px rgba(139,92,246,0.5), 0 0 18px rgba(139,92,246,0.12) !important;
+  outline: none !important;
 }
 
-/* ── Custom cursor ──────────────────────────────────────────────────────────── */
-@media (hover: hover) and (pointer: fine) {
-  *, *::before, *::after {
-    cursor: none !important;
+/* ── Code blocks horizontal scroll on mobile ────────────────────────────────── */
+pre {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* ── Mobile touch target minimums ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .post-actions button,
+  .post-actions a {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
   }
-}
-
-.cursor-dot {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 6px;
-  height: 6px;
-  border-radius: 1px;
-  pointer-events: none;
-  z-index: 99999;
-  transform: translate(-50%, -50%);
-  transition: width 0.15s ease, height 0.15s ease, border-radius 0.15s ease,
-              background 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
-  will-change: transform;
-}
-
-.cursor-dot-default {
-  background: var(--color-violet);
-  box-shadow: 0 0 8px rgba(139,92,246,0.9), 0 0 16px rgba(139,92,246,0.4);
-}
-
-.cursor-dot-pointer {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--color-cyan);
-  box-shadow: 0 0 10px rgba(0,229,255,1), 0 0 20px rgba(0,229,255,0.5);
-}
-
-.cursor-dot-text {
-  width: 2px;
-  height: 16px;
-  border-radius: 1px;
-  background: var(--color-cyan);
-  box-shadow: 0 0 8px rgba(0,229,255,0.9);
-  animation: cursorBlink 1s step-end infinite;
-}
-
-.cursor-ring {
-  position: fixed;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  z-index: 99998;
-  transform: translate(-50%, -50%);
-  animation: ringAppear 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
-  will-change: transform;
-  transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-              height 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.2s ease,
-              box-shadow 0.2s ease,
-              border-radius 0.2s ease,
-              rotate 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.cursor-ring-default {
-  width: 24px;
-  height: 24px;
-  border: 1px solid rgba(139,92,246,0.5);
-  border-radius: 2px;
-  box-shadow: 0 0 8px rgba(139,92,246,0.15);
-}
-
-.cursor-ring-pointer {
-  width: 32px;
-  height: 32px;
-  border: 1.5px solid rgba(0,229,255,0.7);
-  border-radius: 2px;
-  rotate: 45deg;
-  box-shadow: 0 0 12px rgba(0,229,255,0.3);
-}
-
-.cursor-ring-text {
-  width: 20px;
-  height: 20px;
-  border: 1px solid rgba(0,229,255,0.4);
-  border-radius: 2px;
 }
 
 /* ── Reduce motion ──────────────────────────────────────────────────────────── */

@@ -175,7 +175,7 @@ export function PostCard({ post, author, quotedPost, quotedMemory }: PostCardPro
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-1 px-4 py-2.5 border-t" style={{ borderColor: 'var(--color-border)' }}>
+      <div className="post-actions flex items-center gap-1 px-3 py-1 border-t" style={{ borderColor: 'var(--color-border)' }}>
         <button onClick={() => act(() => likeMut.mutate())} className="flex items-center gap-1.5 px-2 py-1.5 rounded text-xs mono text-slate-400 hover:text-pink-400 transition-colors">
           <Heart size={13} />{post.likeCount}
         </button>
