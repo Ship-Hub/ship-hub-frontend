@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { authApi, api } from '../lib/api';
 import { useAuthStore } from '../store/auth';
-import { Zap, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import logo from '../assets/logo.png';
 import { MemoBankButton, useMemoOAuth } from '../components/MemoBankOAuth';
 
 export function LoginPage() {
@@ -29,10 +30,7 @@ export function LoginPage() {
         {/* Logo + back to home */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex flex-col items-center gap-3 group">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:opacity-80 transition-opacity"
-              style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}>
-              <Zap size={22} className="text-white" />
-            </div>
+            <img src={logo} alt="ShipHub" className="w-12 h-12 object-contain group-hover:opacity-80 transition-opacity" />
             <h1 className="mono text-xl font-bold text-white">SHIP_HUB</h1>
           </Link>
           <p className="text-slate-400 text-xs mt-1">The network for AI builders</p>

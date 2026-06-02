@@ -1,6 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
-import { Home, BookMarked, Plus, LogOut, Zap, FolderKanban, CalendarDays, Network, Bell, Search, LayoutGrid, Trophy, Package, Menu, X, Mail, MessageSquare } from 'lucide-react';
+import { Home, BookMarked, Plus, LogOut, FolderKanban, CalendarDays, Network, Bell, Search, LayoutGrid, Trophy, Package, Menu, X, Mail, MessageSquare } from 'lucide-react';
+import logo from '../assets/logo.png';
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '../lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
@@ -102,9 +103,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* Logo */}
         <div className="p-5 border-b" style={{ borderColor: 'var(--color-border)' }}>
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}>
-              <Zap size={14} className="text-white" />
-            </div>
+            <img src={logo} alt="ShipHub" className="w-7 h-7 object-contain" />
             <span className="mono font-bold text-sm tracking-wider text-white">SHIP_HUB</span>
           </Link>
         </div>
@@ -168,9 +167,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 h-12 border-b"
         style={{ backgroundColor: 'var(--color-secondary)', borderColor: 'var(--color-border)' }}>
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #7C3AED, #22D3EE)' }}>
-            <Zap size={12} className="text-white" />
-          </div>
+          <img src={logo} alt="ShipHub" className="w-6 h-6 object-contain" />
           <span className="mono font-bold text-sm text-white">SHIP_HUB</span>
         </Link>
         <div className="flex items-center gap-3">
