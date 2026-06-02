@@ -89,7 +89,7 @@ export function PostCard({ post, author, quotedPost, quotedMemory }: PostCardPro
   };
 
   return (
-    <div className="rounded-xl border transition-all hover:border-violet-500/20" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+    <div className="rounded-xl border card-hover" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
       <div className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 mb-3">

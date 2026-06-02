@@ -82,7 +82,7 @@ export function MemoryCard({ memory, author, originalAuthorUsername }: MemoryCar
 
   return (
     <div
-      className="rounded-xl border p-5 hover:border-violet-500/30 transition-all group"
+      className="rounded-xl border p-5 card-hover group"
       style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}
     >
       {/* Fork attribution */}

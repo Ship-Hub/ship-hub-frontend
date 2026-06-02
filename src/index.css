@@ -1,21 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
+/* ── Design tokens ──────────────────────────────────────────────────────────── */
 :root {
-  --color-base: #04050A;
+  --color-base:      #04050A;
   --color-secondary: #070B14;
-  --color-panel: #0B1020;
-  --color-elevated: #10172A;
-  --color-border: #1E293B;
-  --color-violet: #8B5CF6;
-  --color-cyan: #00E5FF;
-  --color-green: #00FFA3;
+  --color-panel:     #0B1020;
+  --color-elevated:  #10172A;
+  --color-border:    #1E293B;
+  --color-violet:    #8B5CF6;
+  --color-cyan:      #00E5FF;
+  --color-green:     #00FFA3;
   color-scheme: dark;
 }
 
-* {
-  box-sizing: border-box;
-}
+/* ── Base ───────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -25,10 +25,287 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'JetBrains Mono', monospace;
+h1, h2, h3, h4, h5, h6 { font-family: 'JetBrains Mono', monospace; }
+
+#root { min-height: 100svh; }
+
+/* ── Keyframes ──────────────────────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-#root {
-  min-height: 100svh;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(139,92,246,0.45), 0 0 24px rgba(139,92,246,0.15); }
+  50%       { box-shadow: 0 0 20px rgba(139,92,246,0.7),  0 0 48px rgba(0,229,255,0.2); }
+}
+
+@keyframes scanline {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+@keyframes orbitA {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(60px, -40px) scale(1.08); }
+  66%       { transform: translate(-40px, 30px) scale(0.95); }
+}
+
+@keyframes orbitB {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(-50px, 60px) scale(1.05); }
+  66%       { transform: translate(70px, -20px) scale(0.92); }
+}
+
+@keyframes orbitC {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(30px, 50px) scale(1.1); }
+}
+
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.2); }
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+@keyframes ringAppear {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* ── Ambient background orbs ────────────────────────────────────────────────── */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(120px);
+  will-change: transform;
+}
+
+body::before {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 70%);
+  top: -100px;
+  left: -100px;
+  animation: orbitA 22s ease-in-out infinite;
+}
+
+body::after {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(0,229,255,0.05) 0%, transparent 70%);
+  bottom: -80px;
+  right: -80px;
+  animation: orbitB 28s ease-in-out infinite;
+}
+
+/* Third orb via #root pseudo — low impact */
+#root::before {
+  content: '';
+  position: fixed;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(0,255,163,0.03) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 50%;
+  animation: orbitC 35s ease-in-out infinite;
+}
+
+/* Ensure content sits above orbs */
+#root > * { position: relative; z-index: 1; }
+
+/* ── Subtle scanline sweep ───────────────────────────────────────────────────── */
+body::before {
+  /* orb already defined; scanline is a separate element in Cursor.tsx */
+}
+
+/* ── Entrance animation ─────────────────────────────────────────────────────── */
+.animate-in {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-in-fast {
+  animation: fadeInUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Stagger children */
+.stagger-children > *:nth-child(1)  { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2)  { animation-delay: 40ms; }
+.stagger-children > *:nth-child(3)  { animation-delay: 80ms; }
+.stagger-children > *:nth-child(4)  { animation-delay: 120ms; }
+.stagger-children > *:nth-child(5)  { animation-delay: 160ms; }
+.stagger-children > *:nth-child(6)  { animation-delay: 200ms; }
+.stagger-children > *:nth-child(7)  { animation-delay: 240ms; }
+.stagger-children > *:nth-child(8)  { animation-delay: 280ms; }
+.stagger-children > *:nth-child(n+9){ animation-delay: 320ms; }
+
+/* ── Global transitions ─────────────────────────────────────────────────────── */
+a, button, [role="button"] {
+  transition: color 0.15s ease, opacity 0.15s ease, background-color 0.15s ease,
+              border-color 0.15s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+/* ── Button glow ────────────────────────────────────────────────────────────── */
+button[style*="linear-gradient(135deg, #7C3AED"]:hover,
+a[style*="linear-gradient(135deg, #7C3AED"]:hover {
+  animation: glowPulse 1.8s ease-in-out infinite;
+}
+
+/* ── Card hover lift ────────────────────────────────────────────────────────── */
+.card-hover {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s ease,
+              border-color 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(139,92,246,0.12), 0 2px 8px rgba(0,0,0,0.4);
+  border-color: rgba(139,92,246,0.25) !important;
+}
+
+/* ── Notification badge pulse ───────────────────────────────────────────────── */
+.badge-pulse {
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+/* ── Glow utilities ─────────────────────────────────────────────────────────── */
+.glow-violet {
+  box-shadow: 0 0 16px rgba(139,92,246,0.4), 0 0 32px rgba(139,92,246,0.15);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 16px rgba(0,229,255,0.4), 0 0 32px rgba(0,229,255,0.15);
+}
+
+.border-glow-violet {
+  border-color: rgba(139,92,246,0.5) !important;
+  box-shadow: 0 0 12px rgba(139,92,246,0.2), inset 0 0 12px rgba(139,92,246,0.04);
+}
+
+/* ── Sidebar active nav item glow ───────────────────────────────────────────── */
+.nav-active-glow {
+  box-shadow: -2px 0 12px rgba(139,92,246,0.4);
+}
+
+/* ── Input focus glow ───────────────────────────────────────────────────────── */
+input:focus,
+textarea:focus {
+  box-shadow: 0 0 0 1px rgba(139,92,246,0.4), 0 0 16px rgba(139,92,246,0.1) !important;
+}
+
+/* ── Custom cursor ──────────────────────────────────────────────────────────── */
+@media (hover: hover) and (pointer: fine) {
+  *, *::before, *::after {
+    cursor: none !important;
+  }
+}
+
+.cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition: width 0.15s ease, height 0.15s ease, border-radius 0.15s ease,
+              background 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  will-change: transform;
+}
+
+.cursor-dot-default {
+  background: var(--color-violet);
+  box-shadow: 0 0 8px rgba(139,92,246,0.9), 0 0 16px rgba(139,92,246,0.4);
+}
+
+.cursor-dot-pointer {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-cyan);
+  box-shadow: 0 0 10px rgba(0,229,255,1), 0 0 20px rgba(0,229,255,0.5);
+}
+
+.cursor-dot-text {
+  width: 2px;
+  height: 16px;
+  border-radius: 1px;
+  background: var(--color-cyan);
+  box-shadow: 0 0 8px rgba(0,229,255,0.9);
+  animation: cursorBlink 1s step-end infinite;
+}
+
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 99998;
+  transform: translate(-50%, -50%);
+  animation: ringAppear 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform;
+  transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              height 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease,
+              box-shadow 0.2s ease,
+              border-radius 0.2s ease,
+              rotate 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cursor-ring-default {
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(139,92,246,0.5);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(139,92,246,0.15);
+}
+
+.cursor-ring-pointer {
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid rgba(0,229,255,0.7);
+  border-radius: 2px;
+  rotate: 45deg;
+  box-shadow: 0 0 12px rgba(0,229,255,0.3);
+}
+
+.cursor-ring-text {
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgba(0,229,255,0.4);
+  border-radius: 2px;
+}
+
+/* ── Reduce motion ──────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  body::before, body::after, #root::before {
+    animation: none !important;
+  }
 }
