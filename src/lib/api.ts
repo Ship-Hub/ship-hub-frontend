@@ -115,6 +115,8 @@ export const usersApi = {
     api.patch<{ user: User }>('/users/me', d),
   follow: (username: string) => api.post<{ following: boolean }>(`/users/${username}/follow`),
   followStatus: (username: string) => api.get<{ following: boolean }>(`/users/${username}/following-status`),
+  followers: (username: string) => api.get<{ users: User[] }>(`/users/${username}/followers`),
+  following: (username: string) => api.get<{ users: User[] }>(`/users/${username}/following`),
   pin: (memoryId: string) => api.post<{ pinned: boolean; pinnedMemoryIds: string[] }>(`/users/me/pin/${memoryId}`),
 };
 

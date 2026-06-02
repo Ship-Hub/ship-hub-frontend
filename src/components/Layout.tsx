@@ -4,9 +4,8 @@ import { Home, BookMarked, Plus, LogOut, FolderKanban, CalendarDays, Network, Be
 import logo from '../assets/logo.png';
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '../lib/utils';
-import { useQueryClient } from '@tanstack/react-query';
-import { useMutation } from '@tanstack/react-query';
-import { authApi } from '../lib/api';
+import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
+import { authApi, dmApi } from '../lib/api';
 import { QuoteModal } from './QuoteModal';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000/v1';
@@ -28,6 +27,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [searchVal, setSearchVal] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const dmUnreadQ = useQuery({
+    queryKey: ['dm-unread'],
+    queryFn: () => dmApi.unreadCount().then(r => r.data.count),
+    enabled: !!user,
+    refetchInterval: 10_000,
+    staleTime: 8_000,
+  });
+  const dmUnread = dmUnreadQ.data ?? 0;
   const esRef = useRef<EventSource | null>(null);
   const qc = useQueryClient();
   const navigate = useNavigate();
@@ -49,6 +57,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       } else if (data.type === 'notification') {
         setUnreadCount(c => c + 1);
         qc.invalidateQueries({ queryKey: ['notifications'] });
+        // A DM sends a notification — refresh the DM unread count too
+        qc.invalidateQueries({ queryKey: ['dm-unread'] });
       }
     };
     es.onerror = () => { es.close(); };
@@ -106,12 +116,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {socialItems.map(({ to, icon: Icon, label }) => (
               <Link key={to} to={to} onClick={onClick}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-lg text-xs mono font-medium transition-all',
+                  'flex items-center justify-between px-3 py-2 rounded-lg text-xs mono font-medium transition-all',
                   isActive(to) ? 'text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                 )}
                 style={isActive(to) ? { backgroundColor: 'var(--color-elevated)', color: 'var(--color-violet)' } : {}}
               >
-                <Icon size={15} />{label}
+                <div className="flex items-center gap-3"><Icon size={15} />{label}</div>
+                {to === '/messages' && dmUnread > 0 && (
+                  <span className="text-xs mono font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: 'var(--color-cyan)', color: '#04050A', fontSize: '10px' }}>
+                    {dmUnread > 99 ? '99+' : dmUnread}
+                  </span>
+                )}
               </Link>
             ))}
           </div>
