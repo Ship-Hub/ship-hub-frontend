@@ -57,10 +57,11 @@ export function LoginPage() {
 
           <form onSubmit={(e) => { e.preventDefault(); setError(''); loginMut.mutate(form); }} className="space-y-4">
             <div>
-              <label className="block text-xs mono text-slate-400 mb-1.5">EMAIL</label>
-              <input type="email" required value={form.email}
+              <label className="block text-xs mono text-slate-400 mb-1.5">EMAIL_OR_USERNAME</label>
+              <input type="text" required value={form.email}
                 onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                placeholder="you@example.com"
+                placeholder="you@example.com or @username"
+                autoComplete="username"
                 className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-violet-500 transition-colors"
                 style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }} />
             </div>
