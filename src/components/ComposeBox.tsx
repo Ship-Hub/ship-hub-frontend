@@ -77,6 +77,27 @@ export function ComposeBox() {
   const [uploadError, setUploadError] = useState('');
 
   useEffect(() => {
+    function receiveMemoBankDraft(event: MessageEvent) {
+      const allowedOrigins = new Set([
+        'https://memobank.online',
+        'https://www.memobank.online',
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+      ]);
+      if (!allowedOrigins.has(event.origin)) return;
+      if (event.data?.type !== 'MEMOBANK_COMPOSE_DRAFT' || typeof event.data.content !== 'string') return;
+
+      handleContentChange(event.data.content.slice(0, 5000));
+      setFocused(true);
+      setMode('write');
+      window.setTimeout(() => textareaRef.current?.focus(), 0);
+    }
+
+    window.addEventListener('message', receiveMemoBankDraft);
+    return () => window.removeEventListener('message', receiveMemoBankDraft);
+  }, []);
+
+  useEffect(() => {
     const incoming = searchParams.get('compose');
     if (!incoming) return;
 
