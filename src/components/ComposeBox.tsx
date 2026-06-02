@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState, useRef } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postsApi, uploadApi } from '../lib/api';
 import { useAuthStore } from '../store/auth';
@@ -53,6 +53,7 @@ function insertAtCursor(
 export function ComposeBox() {
   const { user } = useAuthStore();
   const qc = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const imageRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
@@ -74,6 +75,21 @@ export function ComposeBox() {
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null);
   const [uploadError, setUploadError] = useState('');
+
+  useEffect(() => {
+    const incoming = searchParams.get('compose');
+    if (!incoming) return;
+
+    handleContentChange(incoming.slice(0, 5000));
+    setFocused(true);
+    setMode('write');
+    window.setTimeout(() => textareaRef.current?.focus(), 0);
+
+    const next = new URLSearchParams(searchParams);
+    next.delete('compose');
+    next.delete('source');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const postMut = useMutation({
     mutationFn: async () => {
