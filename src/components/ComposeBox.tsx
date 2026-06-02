@@ -388,21 +388,23 @@ export function PostMarkdown({ content }: { content: string }) {
           const isBlock = !!match;
           if (isBlock) {
             return (
-              <div className="my-3 rounded-xl overflow-hidden border" style={{ borderColor: 'rgba(0,229,255,0.1)' }}>
+              <div className="my-3 rounded-xl border" style={{ borderColor: 'rgba(0,229,255,0.1)', overflow: 'hidden', maxWidth: '100%' }}>
                 {/* Language label */}
                 <div className="flex items-center justify-between px-3 py-1.5 border-b" style={{ backgroundColor: 'rgba(0,0,0,0.4)', borderColor: 'rgba(0,229,255,0.1)' }}>
                   <span className="text-xs mono text-cyan-500">{match[1]}</span>
                   <Code2 size={11} className="text-slate-600" />
                 </div>
-                <SyntaxHighlighter
-                  style={oneDark}
-                  language={match[1]}
-                  PreTag="div"
-                  customStyle={{ margin: 0, borderRadius: 0, fontSize: '0.75rem', backgroundColor: '#0d1117', padding: '12px 16px' }}
-                  codeTagProps={{ style: { fontSize: '0.75rem', fontFamily: 'JetBrains Mono, monospace' } }}
-                >
-                  {String(children).replace(/\n$/, '')}
-                </SyntaxHighlighter>
+                <div style={{ overflowX: 'auto', maxWidth: '100%' }}>
+                  <SyntaxHighlighter
+                    style={oneDark}
+                    language={match[1]}
+                    PreTag="div"
+                    customStyle={{ margin: 0, borderRadius: 0, fontSize: '0.75rem', backgroundColor: '#0d1117', padding: '12px 16px', minWidth: 'max-content' }}
+                    codeTagProps={{ style: { fontSize: '0.75rem', fontFamily: 'JetBrains Mono, monospace' } }}
+                  >
+                    {String(children).replace(/\n$/, '')}
+                  </SyntaxHighlighter>
+                </div>
               </div>
             );
           }
@@ -420,7 +422,7 @@ export function PostMarkdown({ content }: { content: string }) {
         ul({ children }) { return <ul className="list-disc list-inside text-slate-300 text-sm space-y-0.5 mb-2 pl-1">{children}</ul>; },
         ol({ children }) { return <ol className="list-decimal list-inside text-slate-300 text-sm space-y-0.5 mb-2 pl-1">{children}</ol>; },
         li({ children }) { return <li className="text-slate-300 text-sm">{children}</li>; },
-        blockquote({ children }) { return <blockquote className="border-l-2 border-violet-500/50 pl-3 italic text-slate-400 text-sm my-2">{children}</blockquote>; },
+        blockquote({ children }) { return <blockquote className="rounded-lg px-3 py-2 italic text-slate-400 text-sm my-2" style={{ backgroundColor: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.15)' }}>{children}</blockquote>; },
         a({ href, children }) { return <a href={href} target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-violet-300 underline underline-offset-2 transition-colors">{children}</a>; },
         strong({ children }) { return <strong className="text-white font-semibold">{children}</strong>; },
         em({ children }) { return <em className="text-slate-300 italic">{children}</em>; },

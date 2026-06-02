@@ -17,12 +17,19 @@
 /* ── Base ───────────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   background: var(--color-base);
   color: #e2e8f0;
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 h1, h2, h3, h4, h5, h6 { font-family: 'JetBrains Mono', monospace; }
@@ -90,7 +97,8 @@ body::after {
   pointer-events: none;
   z-index: 0;
   filter: blur(120px);
-  will-change: transform;
+  /* No will-change: transform here — it creates a new containing block
+     that breaks position:fixed on child elements in some browsers */
 }
 
 body::before {

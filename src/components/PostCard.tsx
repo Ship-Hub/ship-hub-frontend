@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { postsApi, type Post, type AuthorSnippet, type ReactionMap } from '../lib/api';
+import { postsApi, memoriesApi, type Post, type AuthorSnippet, type ReactionMap } from '../lib/api';
 import type { PostWithAuthor } from '../lib/api';
 import { useAuthStore } from '../store/auth';
 import { useComposeStore } from '../store/compose';
@@ -79,6 +79,22 @@ export function PostCard({ post, author, quotedPost, quotedMemory }: PostCardPro
 
   const act = (fn: () => void) => { if (!user) { navigate('/login'); return; } fn(); };
 
+  // Fetch quoted content lazily if not provided by parent
+  const quotedPostQ = useQuery({
+    queryKey: ['post', post.quotePostId],
+    queryFn: () => postsApi.get(post.quotePostId!).then(r => r.data),
+    enabled: !!post.quotePostId && !quotedPost,
+    staleTime: 120_000,
+  });
+  const quotedMemoryQ = useQuery({
+    queryKey: ['memory', post.quoteMemoryId],
+    queryFn: () => memoriesApi.get(post.quoteMemoryId!).then(r => r.data),
+    enabled: !!post.quoteMemoryId && !quotedMemory,
+    staleTime: 120_000,
+  });
+  const resolvedQuotedPost = quotedPost ?? quotedPostQ.data ?? null;
+  const resolvedQuotedMemory = quotedMemory ?? quotedMemoryQ.data ?? null;
+
   const toggleComments = async () => {
     if (!showComments && !commentsLoaded) {
       const res = await postsApi.comments(post.id);
@@ -148,7 +164,7 @@ export function PostCard({ post, author, quotedPost, quotedMemory }: PostCardPro
         )}
 
         {/* Embedded quote */}
-        <EmbeddedQuote quotedPost={quotedPost} quotedMemory={quotedMemory} />
+        <EmbeddedQuote quotedPost={resolvedQuotedPost} quotedMemory={resolvedQuotedMemory} />
 
         {/* Media */}
         {post.mediaUrl && (
