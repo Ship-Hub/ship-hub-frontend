@@ -388,18 +388,19 @@ export function PostMarkdown({ content }: { content: string }) {
           const isBlock = !!match;
           if (isBlock) {
             return (
-              <div className="my-3 rounded-xl border" style={{ borderColor: 'rgba(0,229,255,0.1)', overflow: 'hidden', maxWidth: '100%' }}>
+              <div className="my-3 rounded-xl border" style={{ borderColor: 'rgba(0,229,255,0.1)', maxWidth: '100%' }}>
                 {/* Language label */}
-                <div className="flex items-center justify-between px-3 py-1.5 border-b" style={{ backgroundColor: 'rgba(0,0,0,0.4)', borderColor: 'rgba(0,229,255,0.1)' }}>
+                <div className="flex items-center justify-between px-3 py-1.5 rounded-t-xl border-b" style={{ backgroundColor: 'rgba(0,0,0,0.4)', borderColor: 'rgba(0,229,255,0.1)' }}>
                   <span className="text-xs mono text-cyan-500">{match[1]}</span>
                   <Code2 size={11} className="text-slate-600" />
                 </div>
-                <div style={{ overflowX: 'auto', maxWidth: '100%' }}>
+                {/* overflow-x: auto here so code scrolls, not the page */}
+                <div style={{ overflowX: 'auto', borderRadius: '0 0 0.75rem 0.75rem' }}>
                   <SyntaxHighlighter
                     style={oneDark}
                     language={match[1]}
                     PreTag="div"
-                    customStyle={{ margin: 0, borderRadius: 0, fontSize: '0.75rem', backgroundColor: '#0d1117', padding: '12px 16px', minWidth: 'max-content' }}
+                    customStyle={{ margin: 0, borderRadius: 0, fontSize: '0.75rem', backgroundColor: '#0d1117', padding: '12px 16px' }}
                     codeTagProps={{ style: { fontSize: '0.75rem', fontFamily: 'JetBrains Mono, monospace' } }}
                   >
                     {String(children).replace(/\n$/, '')}

@@ -212,6 +212,27 @@ pre {
   }
 }
 
+/* ── Custom cursor — CSS only, no JS, no scroll interference ────────────────── */
+/* Default: violet terminal crosshair */
+* {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><line x1='2' y1='2' x2='6' y2='2' stroke='%238B5CF6' stroke-width='1.5' stroke-linecap='round'/><line x1='2' y1='2' x2='2' y2='6' stroke='%238B5CF6' stroke-width='1.5' stroke-linecap='round'/><line x1='18' y1='2' x2='22' y2='2' stroke='%238B5CF6' stroke-width='1.5' stroke-linecap='round'/><line x1='22' y1='2' x2='22' y2='6' stroke='%238B5CF6' stroke-width='1.5' stroke-linecap='round'/><line x1='2' y1='18' x2='2' y2='22' stroke='%238B5CF6' stroke-width='1.5' stroke-linecap='round'/><line x1='2' y1='22' x2='6' y2='22' stroke='%238B5CF6' stroke-width='1.5' stroke-linecap='round'/><line x1='18' y1='22' x2='22' y2='22' stroke='%238B5CF6' stroke-width='1.5' stroke-linecap='round'/><line x1='22' y1='18' x2='22' y2='22' stroke='%238B5CF6' stroke-width='1.5' stroke-linecap='round'/><rect x='9' y='9' width='6' height='6' rx='1' fill='%238B5CF6'/></svg>") 12 12, crosshair;
+}
+
+/* Pointer: cyan diamond for links/buttons */
+a, button, [role="button"], select, label, summary, [tabindex]:not([tabindex="-1"]) {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><polygon points='12,2 22,12 12,22 2,12' fill='none' stroke='%2300E5FF' stroke-width='1.5' stroke-linejoin='round'/><rect x='9' y='9' width='6' height='6' rx='1' fill='%2300E5FF'/></svg>") 12 12, pointer;
+}
+
+/* Text: violet I-beam for inputs */
+input, textarea, [contenteditable="true"] {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='22' viewBox='0 0 14 22'><line x1='2' y1='2' x2='12' y2='2' stroke='%238B5CF6' stroke-width='1.5' stroke-linecap='round'/><line x1='7' y1='2' x2='7' y2='20' stroke='%238B5CF6' stroke-width='1.5' stroke-linecap='round'/><line x1='2' y1='20' x2='12' y2='20' stroke='%238B5CF6' stroke-width='1.5' stroke-linecap='round'/></svg>") 7 11, text;
+}
+
+/* Disabled elements use default not-allowed */
+button:disabled, input:disabled, [aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 /* ── Reduce motion ──────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

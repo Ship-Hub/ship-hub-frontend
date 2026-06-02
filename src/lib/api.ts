@@ -295,9 +295,9 @@ export const uploadApi = {
   upload: (file: File) => {
     const form = new FormData();
     form.append('file', file);
+    // POST /v1/upload — uses the same baseURL as all other api calls
     return api.post<{ url: string; mediaType: 'image' | 'video'; filename: string }>('/upload', form, {
       headers: { 'Content-Type': 'multipart/form-data' },
-      baseURL: (import.meta.env.VITE_API_BASE_URL ?? '/v1').replace('/v1', ''),
     });
   },
 };

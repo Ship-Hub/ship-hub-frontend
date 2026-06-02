@@ -108,34 +108,35 @@ export function PostCard({ post, author, quotedPost, quotedMemory }: PostCardPro
     <div className="rounded-xl border card-hover" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
       <div className="p-4">
         {/* Header */}
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex items-center gap-2.5">
+        <div className="flex items-start gap-2 mb-3">
+          {/* Author info — shrinks first */}
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             {author && (
-              <Link to={`/u/${author.username}`}>
-                <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center mono font-bold text-sm overflow-hidden" style={{ background: 'linear-gradient(135deg,#7C3AED,#00E5FF)', color: 'white' }}>
+              <Link to={`/u/${author.username}`} className="flex-shrink-0">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center mono font-bold text-sm overflow-hidden" style={{ background: 'linear-gradient(135deg,#7C3AED,#00E5FF)', color: 'white' }}>
                   {author.avatar ? <img src={author.avatar} alt={author.username} className="w-full h-full object-cover" /> : author.username[0].toUpperCase()}
                 </div>
               </Link>
             )}
-            <div>
-              {author && <Link to={`/u/${author.username}`} className="text-xs mono font-semibold text-white hover:text-violet-300 transition-colors">{author.displayName ?? author.username}</Link>}
+            <div className="min-w-0">
+              {author && <Link to={`/u/${author.username}`} className="block truncate text-xs mono font-semibold text-white hover:text-violet-300 transition-colors">{author.displayName ?? author.username}</Link>}
               <div className="text-xs mono text-slate-600">{timeAgo(post.createdAt)}</div>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            {isCodePost && <span className="flex items-center gap-1 text-xs mono px-2 py-0.5 rounded border text-cyan-400 border-cyan-400/20 bg-cyan-400/5"><Code2 size={10} /> CODE</span>}
-            {(post.quotePostId || post.quoteMemoryId) && <span className="flex items-center gap-1 text-xs mono px-2 py-0.5 rounded border text-violet-400 border-violet-400/20 bg-violet-400/5"><Quote size={10} /> QUOTE</span>}
-            <span className="text-xs mono px-2 py-0.5 rounded border text-slate-500 border-slate-700/50 bg-slate-800/30">POST</span>
+          {/* Badges + controls — shrink-0, wrap on very narrow */}
+          <div className="flex items-center gap-1 flex-shrink-0 flex-wrap justify-end">
+            {isCodePost && <span className="hidden sm:flex items-center gap-1 text-xs mono px-1.5 py-0.5 rounded border text-cyan-400 border-cyan-400/20 bg-cyan-400/5"><Code2 size={9} /></span>}
+            {(post.quotePostId || post.quoteMemoryId) && <span className="hidden sm:flex items-center gap-1 text-xs mono px-1.5 py-0.5 rounded border text-violet-400 border-violet-400/20 bg-violet-400/5"><Quote size={9} /></span>}
             {canEdit && !editing && (
-              <button onClick={() => { setEditContent(post.content); setEditing(true); }} className="text-slate-600 hover:text-violet-400 transition-colors ml-1"><Pencil size={12} /></button>
+              <button onClick={() => { setEditContent(post.content); setEditing(true); }} className="text-slate-600 hover:text-violet-400 transition-colors p-0.5"><Pencil size={12} /></button>
             )}
             {editing && (
               <>
-                <button onClick={() => editMut.mutate()} disabled={editMut.isPending} className="text-emerald-400 hover:text-emerald-300 transition-colors ml-1"><Check size={13} /></button>
-                <button onClick={() => setEditing(false)} className="text-slate-500 hover:text-white transition-colors ml-1"><X size={13} /></button>
+                <button onClick={() => editMut.mutate()} disabled={editMut.isPending} className="text-emerald-400 hover:text-emerald-300 transition-colors p-0.5"><Check size={13} /></button>
+                <button onClick={() => setEditing(false)} className="text-slate-500 hover:text-white transition-colors p-0.5"><X size={13} /></button>
               </>
             )}
-            {isOwner && !editing && <button onClick={() => act(() => deleteMut.mutate())} className="text-slate-600 hover:text-red-400 transition-colors ml-1"><Trash2 size={13} /></button>}
+            {isOwner && !editing && <button onClick={() => act(() => deleteMut.mutate())} className="text-slate-600 hover:text-red-400 transition-colors p-0.5"><Trash2 size={13} /></button>}
           </div>
         </div>
 
