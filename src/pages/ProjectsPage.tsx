@@ -1,0 +1,142 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { projectsApi, type ProjectWithOwner, type ProjectStatus } from '../lib/api';
+import { Layout } from '../components/Layout';
+import { useAuthStore } from '../store/auth';
+import { timeAgo } from '../lib/utils';
+import { FolderKanban, Globe, GitBranch, Users, BookOpen, Plus, X, Loader2 } from 'lucide-react';
+
+const STATUS_COLORS: Record<ProjectStatus, string> = {
+  building: 'text-amber-400 bg-amber-400/10 border-amber-400/20',
+  launched: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20',
+  archived: 'text-slate-400 bg-slate-400/10 border-slate-400/20',
+};
+
+function CreateProjectModal({ onClose }: { onClose: () => void }) {
+  const qc = useQueryClient();
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ name: '', description: '', status: 'building' as ProjectStatus, websiteUrl: '', githubUrl: '' });
+
+  const createMut = useMutation({
+    mutationFn: () => projectsApi.create(form),
+    onSuccess: (res) => { qc.invalidateQueries({ queryKey: ['projects'] }); navigate(`/projects/${res.data.id}`); onClose(); },
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
+      <div className="w-full max-w-md rounded-2xl border p-6" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="mono font-semibold text-white text-sm">NEW_PROJECT</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors"><X size={16} /></button>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs mono text-slate-400 mb-1.5">NAME</label>
+            <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-violet-500 transition-colors" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }} placeholder="My AI Project" />
+          </div>
+          <div>
+            <label className="block text-xs mono text-slate-400 mb-1.5">DESCRIPTION</label>
+            <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-violet-500 transition-colors resize-none" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }} placeholder="What are you building?" />
+          </div>
+          <div>
+            <label className="block text-xs mono text-slate-400 mb-1.5">STATUS</label>
+            <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as ProjectStatus }))} className="w-full px-3 py-2.5 rounded-lg border text-sm text-white outline-none" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }}>
+              <option value="building">Building</option>
+              <option value="launched">Launched</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs mono text-slate-400 mb-1.5">WEBSITE (optional)</label>
+            <input value={form.websiteUrl} onChange={e => setForm(f => ({ ...f, websiteUrl: e.target.value }))} className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-violet-500 transition-colors" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }} placeholder="https://..." />
+          </div>
+          <div>
+            <label className="block text-xs mono text-slate-400 mb-1.5">GITHUB (optional)</label>
+            <input value={form.githubUrl} onChange={e => setForm(f => ({ ...f, githubUrl: e.target.value }))} className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-violet-500 transition-colors" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }} placeholder="https://github.com/..." />
+          </div>
+          <button onClick={() => createMut.mutate()} disabled={!form.name || createMut.isPending} className="w-full py-2.5 rounded-lg text-xs mono font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50" style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}>
+            {createMut.isPending ? 'CREATING...' : 'CREATE_PROJECT'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ProjectsPage() {
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
+  const [showCreate, setShowCreate] = useState(false);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['projects'],
+    queryFn: () => projectsApi.list().then(r => r.data),
+  });
+
+  return (
+    <Layout>
+      {showCreate && <CreateProjectModal onClose={() => setShowCreate(false)} />}
+      <div className="max-w-3xl mx-auto px-6 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="mono text-lg font-bold text-white">PROJECTS</h1>
+            <p className="text-xs text-slate-500 mt-0.5">What builders are shipping</p>
+          </div>
+          {user && (
+            <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs mono font-semibold text-white transition-all hover:opacity-90" style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}>
+              <Plus size={13} /> NEW_PROJECT
+            </button>
+          )}
+        </div>
+
+        {isLoading && <div className="flex justify-center py-20"><Loader2 size={20} className="animate-spin text-violet-400" /></div>}
+
+        <div className="grid gap-4">
+          {data?.projects?.map(({ project, owner }: ProjectWithOwner) => (
+            <Link key={project.id} to={`/projects/${project.id}`}>
+              <div className="rounded-xl border p-5 hover:border-violet-500/30 transition-all group" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--color-elevated)' }}>
+                      <FolderKanban size={18} className="text-violet-400" />
+                    </div>
+                    <div>
+                      <h3 className="mono font-semibold text-white text-sm group-hover:text-violet-300 transition-colors">{project.name}</h3>
+                      <Link to={`/u/${owner?.username}`} className="text-xs mono text-slate-500 hover:text-slate-300 transition-colors" onClick={e => e.stopPropagation()}>
+                        @{owner?.username}
+                      </Link>
+                    </div>
+                  </div>
+                  <span className={`text-xs mono px-2 py-0.5 rounded border flex-shrink-0 ${STATUS_COLORS[project.status]}`}>
+                    {project.status.toUpperCase()}
+                  </span>
+                </div>
+
+                {project.description && (
+                  <p className="text-slate-400 text-xs leading-relaxed mb-3 line-clamp-2">{project.description}</p>
+                )}
+
+                <div className="flex items-center gap-4">
+                  <span className="flex items-center gap-1 text-xs mono text-slate-500"><BookOpen size={11} />{project.memoryCount} memories</span>
+                  <span className="flex items-center gap-1 text-xs mono text-slate-500"><Users size={11} />{project.followerCount} followers</span>
+                  {project.websiteUrl && <a href={project.websiteUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="flex items-center gap-1 text-xs mono text-cyan-500 hover:text-cyan-400 transition-colors"><Globe size={11} />website</a>}
+                  {project.githubUrl && <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="flex items-center gap-1 text-xs mono text-slate-400 hover:text-white transition-colors"><GitBranch size={11} />github</a>}
+                  <span className="ml-auto text-xs mono text-slate-600">{timeAgo(project.createdAt)}</span>
+                </div>
+              </div>
+            </Link>
+          ))}
+
+          {!isLoading && data?.projects?.length === 0 && (
+            <div className="text-center py-20">
+              <FolderKanban size={32} className="text-slate-700 mx-auto mb-3" />
+              <p className="mono text-slate-400 text-sm">NO_PROJECTS_YET</p>
+              {user && <button onClick={() => setShowCreate(true)} className="mt-3 text-xs mono text-violet-400 hover:text-violet-300 transition-colors">Create the first one →</button>}
+            </div>
+          )}
+        </div>
+      </div>
+    </Layout>
+  );
+}
