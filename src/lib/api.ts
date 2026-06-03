@@ -118,6 +118,7 @@ export const usersApi = {
   followers: (username: string) => api.get<{ users: User[] }>(`/users/${username}/followers`),
   following: (username: string) => api.get<{ users: User[] }>(`/users/${username}/following`),
   pin: (memoryId: string) => api.post<{ pinned: boolean; pinnedMemoryIds: string[] }>(`/users/me/pin/${memoryId}`),
+  trending: () => api.get<{ builders: TrendingBuilder[] }>('/users/trending'),
 };
 
 // ── Projects ───────────────────────────────────────────────────────────────
@@ -226,26 +227,62 @@ export const browseApi = {
 };
 
 // ── Posts ──────────────────────────────────────────────────────────────────
+export type PostType = 'general' | 'build_update' | 'code_snippet' | 'collab_request' | 'poll' | 'question';
+
 export interface Post {
-  id: string; userId: string; content: string;
+  id: string; userId: string;
+  type: PostType;
+  content: string;
   visibility: 'public' | 'private';
   mediaUrl: string | null; mediaType: 'image' | 'video' | null;
-  likeCount: number; saveCount: number; commentCount: number;
   quotePostId: string | null; quoteMemoryId: string | null;
+  // code snippet
+  language: string | null;
+  // build update
+  projectId: string | null; milestone: string | null;
+  // collab request
+  roleNeeded: string | null;
+  skills: string[] | null;
+  compensation: 'paid' | 'equity' | 'volunteer' | 'revenue_share' | null;
+  applyUrl: string | null;
+  // question
+  acceptedAnswerId: string | null;
+  // poll
+  pollIsAnonymous: number; pollAllowMultiple: number;
+  // stats
+  likeCount: number; saveCount: number; commentCount: number;
   editedAt: string | null; createdAt: string;
 }
+
 export interface PostWithAuthor {
   post: Post; author: AuthorSnippet;
   quotedPost?: PostWithAuthor | null;
   quotedMemory?: MemoryWithAuthor | null;
+  poll?: { options: PollOption[] } | null;
 }
+
+export interface PollOption {
+  id: string; postId: string; text: string; position: number; voteCount: number;
+}
+export interface PollResults {
+  postId: string; isAnonymous: boolean; allowMultiple: boolean; totalVotes: number;
+  options: Array<PollOption & { myVote: boolean; voters?: AuthorSnippet[] }>;
+}
+
 export type ReactionMap = Record<string, { count: number; reacted: boolean }>;
 
 export const postsApi = {
-  list: (limit = 20, offset = 0) => api.get<{ posts: PostWithAuthor[] }>('/posts', { params: { limit, offset } }),
+  list: (limit = 20, offset = 0, type?: string) =>
+    api.get<{ posts: PostWithAuthor[] }>('/posts', { params: { limit, offset, type } }),
   get: (id: string) => api.get<PostWithAuthor>(`/posts/${id}`),
-  create: (data: { content: string; visibility?: 'public' | 'private'; mediaUrl?: string; mediaType?: 'image' | 'video'; quotePostId?: string; quoteMemoryId?: string }) =>
-    api.post<PostWithAuthor>('/posts', data),
+  create: (data: {
+    type?: PostType; content: string; visibility?: 'public' | 'private';
+    mediaUrl?: string; mediaType?: 'image' | 'video';
+    quotePostId?: string; quoteMemoryId?: string;
+    language?: string; projectId?: string; milestone?: string;
+    roleNeeded?: string; skills?: string[]; compensation?: string; applyUrl?: string;
+    pollOptions?: string[]; pollIsAnonymous?: boolean; pollAllowMultiple?: boolean;
+  }) => api.post<PostWithAuthor>('/posts', data),
   delete: (id: string) => api.delete(`/posts/${id}`),
   like: (id: string) => api.post<{ liked: boolean }>(`/posts/${id}/like`),
   save: (id: string) => api.post<{ saved: boolean }>(`/posts/${id}/save`),
@@ -256,6 +293,14 @@ export const postsApi = {
   edit: (id: string, content: string) => api.patch<PostWithAuthor>(`/posts/${id}`, { content }),
   reactions: (id: string) => api.get<{ reactions: ReactionMap }>(`/posts/${id}/reactions`),
   react: (id: string, emoji: string) => api.post<{ reacted: boolean; emoji: string }>(`/posts/${id}/reactions`, { emoji }),
+  pollResults: (id: string) => api.get<PollResults>(`/posts/${id}/poll`),
+  vote: (id: string, optionId: string) => api.post<{ ok: boolean; optionId: string }>(`/posts/${id}/vote`, { optionId }),
+  apply: (id: string, message: string) => api.post(`/posts/${id}/apply`, { message }),
+  applications: (id: string) => api.get(`/posts/${id}/applications`),
+  updateApplication: (postId: string, appId: string, status: 'accepted' | 'rejected') =>
+    api.patch(`/posts/${postId}/applications/${appId}`, { status }),
+  acceptAnswer: (postId: string, commentId: string) =>
+    api.post(`/posts/${postId}/comments/${commentId}/accept`),
 };
 
 // ── Post editing ───────────────────────────────────────────────────────────
@@ -305,13 +350,45 @@ export const uploadApi = {
 };
 
 // ── Unified feed ───────────────────────────────────────────────────────────
-export type FeedItemType = 'memory' | 'post';
-export type FeedItem = ({ type: 'memory' } & MemoryWithAuthor) | ({ type: 'post' } & PostWithAuthor);
+export type FeedTabType =
+  | 'all' | 'memories' | 'posts' | 'trending' | 'following'
+  | 'build_updates' | 'code' | 'collaborations' | 'polls' | 'questions' | 'projects';
+
+export type FeedItemType = 'memory' | 'post' | 'project';
+export type FeedItem =
+  | ({ type: 'memory' } & MemoryWithAuthor & { createdAt: string })
+  | ({ type: 'post' } & PostWithAuthor & { createdAt: string })
+  | { type: 'project'; project: Project; author: AuthorSnippet; createdAt: string };
 
 export const feedApi = {
-  get: (type: 'all' | 'memories' | 'posts' | 'trending' | 'following' = 'all', limit = 30, offset = 0) =>
+  get: (type: FeedTabType = 'all', limit = 30, offset = 0) =>
     api.get<{ items: FeedItem[] }>('/feed', { params: { type, limit, offset } }),
 };
+
+// ── Presence ───────────────────────────────────────────────────────────────
+export interface OnlineUser { id: string; username: string; displayName: string | null; avatar: string | null; lastSeen: string; }
+export const presenceApi = {
+  heartbeat: () => api.post<{ ok: boolean }>('/presence/heartbeat'),
+  online: () => api.get<{ online: OnlineUser[]; count: number }>('/presence/online'),
+};
+
+// ── Chat ───────────────────────────────────────────────────────────────────
+export interface ChatChannel { id: string; name: string; slug: string; description: string | null; isDefault: number; messageCount: number; createdAt: string; }
+export interface ChatMessage { id: string; channelId: string; userId: string; content: string; createdAt: string; }
+export interface ChatMessageWithAuthor { message: ChatMessage; author: AuthorSnippet; }
+export const chatApi = {
+  channels: () => api.get<{ channels: ChatChannel[] }>('/chat/channels'),
+  messages: (slug: string, before?: string) =>
+    api.get<{ messages: ChatMessageWithAuthor[]; channelId: string }>(`/chat/channels/${slug}/messages`, { params: before ? { before } : {} }),
+  send: (slug: string, content: string) =>
+    api.post<ChatMessageWithAuthor>(`/chat/channels/${slug}/messages`, { content }),
+};
+
+// ── Trending builders ───────────────────────────────────────────────────────
+export interface TrendingBuilder {
+  id: string; username: string; displayName: string | null; avatar: string | null;
+  bio: string | null; followerCount: number; memoryCount: number; weeklyScore: number;
+}
 
 // ── Import / Export ────────────────────────────────────────────────────────
 export const importExportApi = {

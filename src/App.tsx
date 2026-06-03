@@ -29,6 +29,13 @@ import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { PostDetailPage } from './pages/PostDetailPage';
 import { MessagesPage } from './pages/MessagesPage';
 import { AdminPage } from './pages/AdminPage';
+import { ExplorePage } from './pages/ExplorePage';
+import { CodeSnippetsPage } from './pages/CodeSnippetsPage';
+import { CollaborationsPage } from './pages/CollaborationsPage';
+import { BuildersPage } from './pages/BuildersPage';
+import { MarketplacePage } from './pages/MarketplacePage';
+import { CommunityChatPage } from './pages/CommunityChatPage';
+import { PostsPage } from './pages/PostsPage';
 import { useAuthStore } from './store/auth';
 
 const queryClient = new QueryClient({
@@ -83,6 +90,14 @@ export default function App() {
               <Route path="/publish" element={<ProtectedRoute><PublishPage /></ProtectedRoute>} />
               <Route path="/saved" element={<ProtectedRoute><SavedPage /></ProtectedRoute>} />
               <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
+              <Route path="/explore" element={<ExplorePage />} />
+              <Route path="/code-snippets" element={<CodeSnippetsPage />} />
+              <Route path="/collaborations" element={<CollaborationsPage />} />
+              <Route path="/builders" element={<BuildersPage />} />
+              <Route path="/marketplace" element={<MarketplacePage />} />
+              <Route path="/chat" element={<CommunityChatPage />} />
+              <Route path="/memories" element={<Navigate to="/browse" replace />} />
+              <Route path="/posts" element={<PostsPage />} />
             </Routes>
           </BrowserRouter>
         </ErrorBoundary>

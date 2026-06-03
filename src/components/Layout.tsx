@@ -1,256 +1,269 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
-import { Home, BookMarked, Plus, LogOut, FolderKanban, CalendarDays, Network, Bell, Search, LayoutGrid, Trophy, Package, Menu, X, Mail, MessageSquare } from 'lucide-react';
-import logo from '../assets/logo.png';
+import {
+  Home, Compass, FolderKanban, Brain, Code2, Users, Trophy, CalendarDays,
+  ShoppingBag, MessageSquare, Mail, Bookmark, Network, Bell, Search,
+  Settings, LogOut, Plus, X, Menu, TrendingUp, MessageCircle, FileText,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '../lib/utils';
 import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
-import { authApi, dmApi } from '../lib/api';
+import { authApi, dmApi, usersApi, eventsApi, feedApi, presenceApi, type TrendingBuilder, type OnlineUser } from '../lib/api';
 import { QuoteModal } from './QuoteModal';
+import { timeAgo } from '../lib/utils';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000/v1';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/v1';
 
-const navItems = [
-  { to: '/',            icon: Home,         label: 'FEED',           group: 'main' },
-  { to: '/browse',      icon: LayoutGrid,   label: 'BROWSE',         group: 'main' },
-  { to: '/leaderboard', icon: Trophy,        label: 'LEADERBOARD',    group: 'main' },
-  { to: '/packs',       icon: Package,      label: 'PACKS',          group: 'main' },
-  { to: '/projects',    icon: FolderKanban, label: 'PROJECTS',       group: 'main' },
-  { to: '/events',      icon: CalendarDays, label: 'EVENTS',         group: 'main' },
-  { to: '/graph',       icon: Network,      label: 'KNOWLEDGE_GRAPH', group: 'main' },
-  { to: '/saved',       icon: BookMarked,   label: 'SAVED',          group: 'main' },
-  { to: '/messages',    icon: MessageSquare, label: 'MESSAGES',       group: 'social', authOnly: true },
-] as const;
+type NavItem = { to: string; icon: React.ElementType; label: string; authOnly?: boolean; badge?: string | number };
+type NavGroup = { label?: string; items: NavItem[] };
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    items: [
+      { to: '/',        icon: Home,    label: 'Feed' },
+      { to: '/explore', icon: Compass, label: 'Explore' },
+      { to: '/builders', icon: Trophy,  label: 'Builders' },
+    ],
+  },
+  {
+    label: 'Content',
+    items: [
+      { to: '/projects',       icon: FolderKanban, label: 'Projects' },
+      { to: '/memories',       icon: Brain,        label: 'Memories' },
+      { to: '/code-snippets',  icon: Code2,        label: 'Code Snippets' },
+      { to: '/collaborations', icon: Users,        label: 'Collaborations' },
+      { to: '/posts',          icon: FileText,     label: 'Posts' },
+    ],
+  },
+  {
+    label: 'Community',
+    items: [
+      { to: '/events',   icon: CalendarDays,  label: 'Events' },
+      { to: '/chat',     icon: MessageSquare, label: 'Community Chat', badge: 'Live' },
+      { to: '/messages', icon: Mail,          label: 'Messages', authOnly: true },
+    ],
+  },
+  {
+    label: 'You',
+    items: [
+      { to: '/saved',       icon: Bookmark,   label: 'Saved', authOnly: true },
+      { to: '/marketplace', icon: ShoppingBag, label: 'Marketplace' },
+      { to: '/graph',       icon: Network,    label: 'Knowledge Graph' },
+    ],
+  },
+];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { user, clearAuth } = useAuthStore();
   const [searchVal, setSearchVal] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const dmUnreadQ = useQuery({
-    queryKey: ['dm-unread'],
-    queryFn: () => dmApi.unreadCount().then(r => r.data.count),
-    enabled: !!user,
-    refetchInterval: 10_000,
-    staleTime: 8_000,
-  });
-  const dmUnread = dmUnreadQ.data ?? 0;
   const esRef = useRef<EventSource | null>(null);
   const qc = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
 
+  const dmUnreadQ = useQuery({
+    queryKey: ['dm-unread'],
+    queryFn: () => dmApi.unreadCount().then(r => r.data.count),
+    enabled: !!user,
+    refetchInterval: 15_000,
+    staleTime: 10_000,
+  });
+  const dmUnread = dmUnreadQ.data ?? 0;
+
+  // SSE for notifications
   useEffect(() => {
     if (!user) return;
     const token = localStorage.getItem('shiphub_token');
     if (!token) return;
-
-    const url = `${BASE_URL}/notifications/stream`;
-    const es = new EventSource(`${url}?token=${token}`);
+    const es = new EventSource(`${BASE_URL}/notifications/stream?token=${token}`);
     esRef.current = es;
-
     es.onmessage = (e) => {
       const data = JSON.parse(e.data);
-      if (data.type === 'count') {
-        setUnreadCount(data.count);
-      } else if (data.type === 'notification') {
+      if (data.type === 'count') setUnreadCount(data.count);
+      else if (data.type === 'notification') {
         setUnreadCount(c => c + 1);
         qc.invalidateQueries({ queryKey: ['notifications'] });
-        // A DM sends a notification — refresh the DM unread count too
         qc.invalidateQueries({ queryKey: ['dm-unread'] });
       }
     };
-    es.onerror = () => { es.close(); };
-
+    es.onerror = () => es.close();
     return () => { es.close(); esRef.current = null; };
+  }, [user?.id]);
+
+  // Heartbeat for presence
+  const heartbeatMut = useMutation({ mutationFn: () => presenceApi.heartbeat() });
+  useEffect(() => {
+    if (!user) return;
+    heartbeatMut.mutate();
+    const interval = setInterval(() => heartbeatMut.mutate(), 60_000);
+    return () => clearInterval(interval);
   }, [user?.id]);
 
   const handleLogout = () => { clearAuth(); navigate('/login'); };
 
   const isActive = (to: string) =>
-    to === '/' ? location.pathname === '/' : location.pathname === to || location.pathname.startsWith(to + '/');
+    to === '/' ? location.pathname === '/' : location.pathname.startsWith(to);
 
-  const NavLinks = ({ onClick }: { onClick?: () => void }) => {
-    const mainItems = navItems.filter(i => i.group === 'main' && (!('authOnly' in i && i.authOnly) || user));
-    const socialItems = navItems.filter(i => i.group === 'social' && (!('authOnly' in i && i.authOnly) || user));
+  const navGroups = NAV_GROUPS.map(group => ({
+    ...group,
+    items: group.items
+      .filter(i => !i.authOnly || user)
+      .map(item => ({
+        ...item,
+        badge: item.to === '/messages' ? (dmUnread > 0 ? dmUnread : undefined) : item.badge,
+      })),
+  })).filter(g => g.items.length > 0);
 
-    return (
-      <>
-        {/* Main nav group */}
-        <div className="space-y-0.5">
-          {mainItems.map(({ to, icon: Icon, label }) => (
-            <Link key={to} to={to} onClick={onClick}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-lg text-xs mono font-medium transition-all',
-                isActive(to) ? 'text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
-              )}
-              style={isActive(to) ? { backgroundColor: 'var(--color-elevated)', color: 'var(--color-violet)' } : {}}
-            >
-              <Icon size={15} />{label}
-            </Link>
-          ))}
-        </div>
-
-        {/* Social group — notifications + messages */}
-        {user && (
-          <div className="mt-3 pt-3 border-t space-y-0.5" style={{ borderColor: 'var(--color-border)' }}>
-            <p className="px-3 pb-1 text-[10px] mono text-slate-600 tracking-wider">SOCIAL</p>
-
-            <Link to="/notifications" onClick={onClick}
-              className={cn(
-                'flex items-center justify-between px-3 py-2 rounded-lg text-xs mono font-medium transition-all',
-                isActive('/notifications') ? 'text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
-              )}
-              style={isActive('/notifications') ? { backgroundColor: 'var(--color-elevated)', color: 'var(--color-violet)' } : {}}
-            >
-              <div className="flex items-center gap-3"><Bell size={15} />NOTIFICATIONS</div>
-              {unreadCount > 0 && (
-                <span className="badge-pulse text-xs mono font-bold px-1.5 py-0.5 rounded-full"
-                  style={{ backgroundColor: 'var(--color-violet)', color: 'white', fontSize: '10px' }}>
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </span>
-              )}
-            </Link>
-
-            {socialItems.map(({ to, icon: Icon, label }) => (
-              <Link key={to} to={to} onClick={onClick}
-                className={cn(
-                  'flex items-center justify-between px-3 py-2 rounded-lg text-xs mono font-medium transition-all',
-                  isActive(to) ? 'text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
-                )}
-                style={isActive(to) ? { backgroundColor: 'var(--color-elevated)', color: 'var(--color-violet)' } : {}}
-              >
-                <div className="flex items-center gap-3"><Icon size={15} />{label}</div>
-                {to === '/messages' && dmUnread > 0 && (
-                  <span className="text-xs mono font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: 'var(--color-cyan)', color: '#04050A', fontSize: '10px' }}>
-                    {dmUnread > 99 ? '99+' : dmUnread}
-                  </span>
-                )}
-              </Link>
-            ))}
-          </div>
-        )}
-      </>
-    );
-  };
+  // Flat list for mobile drawer
+  const navItemsFlat = navGroups.flatMap(g => g.items);
 
   return (
     <div className="flex min-h-screen" style={{ backgroundColor: 'var(--color-base)' }}>
-      {/* ── Desktop sidebar ─────────────────────────────────────── */}
-      <aside className="w-56 flex-shrink-0 flex-col border-r fixed h-full hidden md:flex"
-        style={{ backgroundColor: 'var(--color-secondary)', borderColor: 'var(--color-border)' }}>
 
+      {/* ── Left Sidebar (fixed 280px) ──────────────────────────── */}
+      <aside
+        className="fixed left-0 top-0 h-full w-[280px] border-r hidden md:flex flex-col z-40 overflow-y-auto"
+        style={{ backgroundColor: 'var(--color-secondary)', borderColor: 'var(--color-border)' }}
+      >
         {/* Logo */}
-        <div className="px-5 py-4 border-b" style={{ borderColor: 'var(--color-border)' }}>
-          <Link to="/" className="flex items-center gap-3">
-            <img src={logo} alt="ShipHub" className="w-10 h-10 object-contain flex-shrink-0" />
-            <span className="mono font-bold text-sm tracking-wider text-white">SHIP_HUB</span>
-          </Link>
-        </div>
-
-        {/* Search */}
-        <div className="px-3 pt-3 pb-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
-          <form onSubmit={e => { e.preventDefault(); if (searchVal.trim()) navigate(`/search?q=${encodeURIComponent(searchVal.trim())}`); }}>
-            <div className="relative">
-              <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-600" />
-              <input
-                value={searchVal}
-                onChange={e => setSearchVal(e.target.value)}
-                placeholder="Search..."
-                className="w-full pl-7 pr-3 py-2 rounded-lg text-xs text-slate-300 bg-transparent border outline-none transition-colors"
-                style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }}
-              />
+        <div className="px-5 py-4 flex-shrink-0">
+          <Link to="/" className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white text-sm flex-shrink-0"
+              style={{ background: 'var(--color-accent)', boxShadow: '0 0 14px rgba(255,77,77,0.5), 0 0 28px rgba(255,77,77,0.2)' }}>
+              S
             </div>
-          </form>
+            <span className="font-bold text-white text-lg tracking-tight">ShipHub</span>
+          </Link>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 p-3 overflow-y-auto">
-          <NavLinks />
+        <nav className="flex-1 px-3 pb-2 space-y-1">
+          {navGroups.map((group, gi) => (
+            <div key={gi}>
+              {group.label && (
+                <p className="px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest"
+                  style={{ color: 'var(--color-muted)', opacity: 0.5 }}>
+                  {group.label}
+                </p>
+              )}
+              {group.items.map(({ to, icon: Icon, label, badge }) => {
+                const active = isActive(to);
+                return (
+                  <Link key={to} to={to}
+                    className={cn(
+                      'flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all group',
+                      active ? 'nav-active' : 'text-slate-400 hover:text-slate-100 hover:bg-white/5'
+                    )}>
+                    <div className="flex items-center gap-3">
+                      <Icon size={17} className={active ? '' : 'group-hover:scale-105 transition-transform'} />
+                      <span>{label}</span>
+                    </div>
+                    {badge !== undefined && badge !== '' && (
+                      <span className={cn('text-xs font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0',
+                        badge === 'Live' ? 'text-emerald-300' : 'text-white'
+                      )}
+                        style={badge === 'Live'
+                          ? { backgroundColor: 'rgba(52,211,153,0.15)', animation: 'liveGlow 1.8s ease-in-out infinite' }
+                          : { backgroundColor: 'rgba(255,77,77,0.85)' }}>
+                        {badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
-        {/* Publish / New Project */}
-        <div className="p-3 border-t space-y-1.5" style={{ borderColor: 'var(--color-border)' }}>
-          <Link
-            to="/publish"
-            className="btn-primary flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs mono font-semibold text-white"
-            style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}
-          >
-            <Plus size={14} />PUBLISH_MEMORY
-          </Link>
-          {user && (
-            <Link
-              to="/projects/new"
-              className="flex items-center justify-center gap-2 w-full py-2 rounded-xl text-xs mono font-medium transition-all hover:bg-white/5"
-              style={{ color: 'var(--color-cyan)', border: '1px solid rgba(0,229,255,0.2)' }}
-            >
-              <FolderKanban size={14} />NEW_PROJECT
-            </Link>
-          )}
-        </div>
-
-        {/* User */}
-        <div className="p-3 border-t" style={{ borderColor: 'var(--color-border)' }}>
-          {user ? (
-            <>
-              <Link to={`/u/${user.username}`} className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-white/5 transition-all">
-                <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-xs mono font-bold flex-shrink-0"
-                  style={{ backgroundColor: 'var(--color-violet)', color: 'white' }}>
+        {/* Profile card */}
+        {user ? (
+          <div className="px-3 pb-3 flex-shrink-0 mt-auto">
+            <div className="rounded-xl p-3 border" style={{ backgroundColor: 'var(--color-card)', borderColor: 'rgba(255,77,77,0.2)', boxShadow: '0 0 20px rgba(255,77,77,0.06)' }}>
+              <Link to={`/u/${user.username}`} className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-sm font-bold flex-shrink-0"
+                  style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}>
                   {user.avatar
                     ? <img src={user.avatar} alt={user.username} className="w-full h-full object-cover" />
                     : user.username[0].toUpperCase()}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs mono text-white truncate">@{user.username}</div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-semibold text-white truncate">{user.displayName || user.username}</span>
+                  </div>
+                  <span className="text-xs text-slate-500">@{user.username}</span>
                 </div>
               </Link>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-3 py-1.5 w-full rounded text-xs mono text-slate-500 hover:text-red-400 transition-all mt-1"
-              >
-                <LogOut size={12} />LOGOUT
-              </button>
-            </>
-          ) : (
+
+              <div className="flex items-center justify-between text-xs text-slate-500 mb-3">
+                <div className="text-center">
+                  <div className="font-semibold text-white text-sm">{user.memoryCount}</div>
+                  <div>Memories</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-semibold text-white text-sm">{user.followerCount}</div>
+                  <div>Followers</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-semibold text-white text-sm">{user.followingCount}</div>
+                  <div>Following</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Link to="/notifications" className="relative flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all">
+                  <Bell size={14} />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-2 w-4 h-4 rounded-full flex items-center justify-center text-white font-bold badge-pulse"
+                      style={{ backgroundColor: 'var(--color-accent)', fontSize: '9px' }}>
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
+                <Link to="/profile" className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all">
+                  <Settings size={14} />
+                </Link>
+                <button onClick={handleLogout} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-red-400 hover:bg-red-400/5 transition-all">
+                  <LogOut size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="px-3 pb-4 flex-shrink-0">
             <Link
               to="/login"
-              className="btn-primary flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs mono font-semibold text-white"
-              style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}
+              className="btn-primary flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold text-white"
+              style={{ backgroundColor: 'var(--color-accent)' }}
             >
-              SIGN_IN
+              Sign in
             </Link>
-          )}
-        </div>
+          </div>
+        )}
       </aside>
 
-      {/* ── Mobile top bar ──────────────────────────────────────── */}
-      <div
-        className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 h-14 border-b"
-        style={{ backgroundColor: 'var(--color-secondary)', borderColor: 'var(--color-border)' }}
-      >
-        <Link to="/" className="flex items-center gap-2.5">
-          <img src={logo} alt="ShipHub" className="w-9 h-9 object-contain" />
-          <span className="mono font-bold text-sm text-white">SHIP_HUB</span>
+      {/* ── Mobile top bar ─────────────────────────────────────── */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 h-14 border-b"
+        style={{ backgroundColor: 'var(--color-secondary)', borderColor: 'var(--color-border)' }}>
+        <Link to="/" className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-md flex items-center justify-center font-bold text-white text-xs"
+            style={{ background: 'var(--color-accent)' }}>S</div>
+          <span className="font-bold text-white text-base">ShipHub</span>
         </Link>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {user && (
             <Link to="/notifications" className="relative p-1">
               <Bell size={20} className="text-slate-400" />
               {unreadCount > 0 && (
-                <span
-                  className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center mono font-bold text-white"
-                  style={{ backgroundColor: 'var(--color-violet)', fontSize: '9px' }}
-                >
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-white badge-pulse"
+                  style={{ backgroundColor: 'var(--color-accent)', fontSize: '9px' }}>
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
             </Link>
           )}
-          <button
-            onClick={() => setMobileMenuOpen(p => !p)}
-            className="p-1 text-slate-400 hover:text-white transition-colors"
-          >
+          <button onClick={() => setMobileMenuOpen(p => !p)} className="p-1 text-slate-400 hover:text-white transition-colors">
             {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
@@ -258,126 +271,319 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile drawer */}
       {mobileMenuOpen && (
-        <div
-          className="md:hidden fixed inset-0 z-30 pt-14"
-          style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
-          onClick={() => setMobileMenuOpen(false)}
-        >
-          <div
-            className="drawer-slide-down absolute top-14 left-0 right-0 border-b shadow-2xl p-4"
+        <div className="md:hidden fixed inset-0 z-30 pt-14" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+          onClick={() => setMobileMenuOpen(false)}>
+          <div className="drawer-slide-down absolute top-14 left-0 right-0 border-b shadow-2xl p-4 max-h-[80vh] overflow-y-auto"
             style={{ backgroundColor: 'var(--color-secondary)', borderColor: 'var(--color-border)' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <NavLinks onClick={() => setMobileMenuOpen(false)} />
-            <div className="pt-3 mt-2 border-t space-y-2" style={{ borderColor: 'var(--color-border)' }}>
-              <Link
-                to="/publish"
-                onClick={() => setMobileMenuOpen(false)}
-                className="btn-primary flex items-center justify-center gap-2 w-full py-3 rounded-xl text-xs mono font-semibold text-white"
-                style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}
-              >
-                <Plus size={14} />PUBLISH_MEMORY
+            onClick={e => e.stopPropagation()}>
+            {navItemsFlat.map(({ to, icon: Icon, label, badge }) => (
+              <Link key={to} to={to} onClick={() => setMobileMenuOpen(false)}
+                className={cn(
+                  'flex items-center justify-between px-3 py-3 rounded-lg mb-0.5 text-sm font-medium transition-all',
+                  isActive(to) ? 'nav-active' : 'text-slate-400 hover:text-white hover:bg-white/5'
+                )}>
+                <div className="flex items-center gap-3"><Icon size={18} />{label}</div>
+                {badge !== undefined && badge !== '' && (
+                  <span className={cn('text-xs font-semibold px-1.5 py-0.5 rounded-full',
+                    badge === 'Live' ? 'text-emerald-300' : 'text-white'
+                  )} style={badge === 'Live'
+                    ? { backgroundColor: 'rgba(52,211,153,0.15)' }
+                    : { backgroundColor: 'rgba(255,77,77,0.85)' }}>
+                    {badge}
+                  </span>
+                )}
               </Link>
-              {user ? (
-                <button
-                  onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
-                  className="flex items-center justify-center gap-2 w-full py-2 text-xs mono text-slate-500 hover:text-red-400 transition-all"
-                >
-                  <LogOut size={12} />LOGOUT
-                </button>
-              ) : (
-                <Link
-                  to="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="btn-primary flex items-center justify-center gap-2 w-full py-3 rounded-xl text-xs mono font-semibold text-white"
-                  style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}
-                >
-                  SIGN_IN
-                </Link>
-              )}
-            </div>
+            ))}
+            {!user && (
+              <div className="pt-3 mt-2 border-t" style={{ borderColor: 'var(--color-border)' }}>
+                <Link to="/login" onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-center w-full py-3 rounded-xl text-sm font-semibold text-white"
+                  style={{ backgroundColor: 'var(--color-accent)' }}>Sign in</Link>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* ── Mobile bottom nav ────────────────────────────────────── */}
-      <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t"
-        style={{ backgroundColor: 'var(--color-secondary)', borderColor: 'var(--color-border)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+      {/* ── Main content area ───────────────────────────────────── */}
+      <div className="flex flex-1 md:ml-[280px] xl:mr-[340px]">
+        <main className="flex-1 min-w-0 pt-14 md:pt-0 pb-20 md:pb-0 animate-in">
+          {children}
+        </main>
+      </div>
+
+      {/* ── Right Sidebar (fixed 340px, xl+) ──────────────────── */}
+      <aside
+        className="fixed right-0 top-0 h-full w-[340px] border-l hidden xl:flex flex-col overflow-y-auto z-30"
+        style={{ backgroundColor: 'var(--color-secondary)', borderColor: 'var(--color-border)' }}
       >
+        {/* Search bar at top */}
+        <div className="px-4 py-3 border-b flex-shrink-0" style={{ borderColor: 'var(--color-border)' }}>
+          <form onSubmit={e => { e.preventDefault(); if (searchVal.trim()) navigate(`/search?q=${encodeURIComponent(searchVal.trim())}`); }}>
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <input
+                value={searchVal}
+                onChange={e => setSearchVal(e.target.value)}
+                placeholder="Search builders, projects..."
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl text-sm text-slate-300 border outline-none transition-colors"
+                style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}
+              />
+            </div>
+          </form>
+        </div>
+
+        <RightSidebar />
+      </aside>
+
+      {/* ── Mobile bottom nav ────────────────────────────────────── */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t"
+        style={{ backgroundColor: 'var(--color-secondary)', borderColor: 'var(--color-border)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {[
           { to: '/', icon: Home },
-          { to: '/browse', icon: LayoutGrid },
-          { to: '/leaderboard', icon: Trophy },
-          { to: '/saved', icon: BookMarked },
-          ...(user ? [{ to: `/u/${user.username}`, icon: null as any }] : [{ to: '/login', icon: null as any }]),
+          { to: '/explore', icon: Compass },
+          { to: '/chat', icon: MessageSquare },
+          { to: '/messages', icon: Mail },
+          { to: user ? `/u/${user.username}` : '/login', icon: null as any },
         ].map(({ to, icon: Icon }) => (
-          <Link
-            key={to}
-            to={to}
-            className={cn(
-              'flex flex-col items-center justify-center w-14 h-14 rounded-lg transition-all',
-              isActive(to) ? 'text-violet-400' : 'text-slate-500 hover:text-slate-300'
+          <Link key={to} to={to}
+            className={cn('flex items-center justify-center w-14 h-14 transition-all',
+              isActive(to) ? '' : 'text-slate-500 hover:text-slate-300'
             )}
-          >
-            {Icon ? (
-              <Icon size={22} />
-            ) : (
-              <div
-                className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center text-xs mono font-bold"
-                style={{ background: 'linear-gradient(135deg,#7C3AED,#00E5FF)', color: 'white' }}
-              >
-                {user
-                  ? (user.avatar ? <img src={user.avatar} alt="" className="w-full h-full object-cover" /> : user.username[0].toUpperCase())
-                  : '?'}
+            style={isActive(to) ? { color: 'var(--color-accent)' } : {}}>
+            {Icon ? <Icon size={22} /> : (
+              <div className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold"
+                style={{ background: 'var(--color-accent)', color: 'white' }}>
+                {user ? (user.avatar ? <img src={user.avatar} alt="" className="w-full h-full object-cover" /> : user.username[0].toUpperCase()) : '?'}
               </div>
             )}
           </Link>
         ))}
       </nav>
 
-      {/* ── Main content ─────────────────────────────────────────── */}
-      <main className="flex-1 md:ml-56 pt-14 md:pt-0 pb-14 md:pb-0 animate-in">
-        {children}
-      </main>
+      {/* ── Mobile create button ─────────────────────────────────── */}
+      <Link to="/publish" className="md:hidden fixed bottom-20 right-4 z-50 w-12 h-12 rounded-full flex items-center justify-center shadow-lg btn-primary"
+        style={{ backgroundColor: 'var(--color-accent)' }}>
+        <Plus size={22} className="text-white" />
+      </Link>
 
       <QuoteModal />
-
       {user && !user.emailVerified && <VerifyBanner />}
     </div>
+  );
+}
+
+// ── Right Sidebar ─────────────────────────────────────────────────────────
+
+function RightSidebar() {
+  const trendingQ = useQuery({
+    queryKey: ['trending-builders'],
+    queryFn: () => usersApi.trending().then(r => r.data.builders),
+    staleTime: 60_000,
+  });
+
+  const discussionsQ = useQuery({
+    queryKey: ['active-discussions'],
+    queryFn: () => feedApi.get('questions', 8, 0).then(r => r.data.items),
+    staleTime: 30_000,
+  });
+
+  const eventsQ = useQuery({
+    queryKey: ['upcoming-events-sidebar'],
+    queryFn: () => eventsApi.list(4).then(r => r.data.events),
+    staleTime: 60_000,
+  });
+
+  const onlineQ = useQuery({
+    queryKey: ['online-now'],
+    queryFn: () => presenceApi.online().then(r => r.data),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+
+  const navigate = useNavigate();
+
+  return (
+    <div className="flex-1 p-4 space-y-5">
+
+      {/* Trending Builders */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-white text-sm">Trending Builders</h3>
+          <Link to="/builders" className="text-xs font-medium transition-colors hover:opacity-80" style={{ color: 'var(--color-accent)' }}>
+            View all
+          </Link>
+        </div>
+        <div className="space-y-2">
+          {(trendingQ.data ?? []).slice(0, 5).map((builder, i) => (
+            <TrendingBuilderRow key={builder.id} builder={builder} rank={i + 1} />
+          ))}
+          {!trendingQ.data && (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-10 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--color-card)' }} />
+            ))
+          )}
+        </div>
+      </section>
+
+      {/* Active Discussions */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-white text-sm">Active Discussions</h3>
+          <Link to="/?tab=questions" className="text-xs font-medium transition-colors hover:opacity-80" style={{ color: 'var(--color-accent)' }}>
+            View all
+          </Link>
+        </div>
+        <div className="space-y-1">
+          {(discussionsQ.data ?? []).slice(0, 5).map((item: any) => {
+            const post = item.post;
+            if (!post) return null;
+            return (
+              <Link key={post.id} to={`/posts/${post.id}`}
+                className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all group">
+                <div className="flex items-center gap-2 min-w-0">
+                  <MessageCircle size={13} className="text-slate-500 flex-shrink-0" />
+                  <span className="text-sm text-slate-300 group-hover:text-white transition-colors truncate">{post.content?.slice(0, 50)}</span>
+                </div>
+                <span className="text-xs font-semibold px-1.5 py-0.5 rounded-md ml-2 flex-shrink-0"
+                  style={{ backgroundColor: 'rgba(255,77,77,0.12)', color: 'var(--color-accent)' }}>
+                  {post.commentCount}
+                </span>
+              </Link>
+            );
+          })}
+          {!discussionsQ.data && (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-9 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--color-card)' }} />
+            ))
+          )}
+        </div>
+      </section>
+
+      {/* Upcoming Events */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-white text-sm">Upcoming Events</h3>
+          <Link to="/events" className="text-xs font-medium transition-colors hover:opacity-80" style={{ color: 'var(--color-accent)' }}>
+            View all
+          </Link>
+        </div>
+        <div className="space-y-2">
+          {(eventsQ.data ?? []).slice(0, 3).map(({ event }) => (
+            <Link key={event.id} to={`/events/${event.id}`}
+              className="flex items-start gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all group">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: 'rgba(0,229,255,0.1)', color: 'var(--color-cyan)' }}>
+                <CalendarDays size={14} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium text-slate-200 group-hover:text-white transition-colors truncate">{event.title}</div>
+                <div className="text-xs text-slate-500 mt-0.5">
+                  {new Date(event.startsAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  {' · '}
+                  <span className="text-slate-400">+{event.rsvpCount}</span>
+                </div>
+              </div>
+            </Link>
+          ))}
+          {!eventsQ.data && (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-12 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--color-card)' }} />
+            ))
+          )}
+        </div>
+      </section>
+
+      {/* Who's Online */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-white text-sm">Online Now</h3>
+            <span className="flex items-center gap-1 text-xs text-emerald-300">
+              <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: '#34D399', boxShadow: '0 0 6px rgba(52,211,153,0.8), 0 0 14px rgba(52,211,153,0.4)', animation: 'liveGlow 1.8s ease-in-out infinite' }} />
+              {onlineQ.data?.count ?? 0} online
+            </span>
+          </div>
+        </div>
+        {onlineQ.data && onlineQ.data.online.length > 0 && (
+          <>
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {onlineQ.data.online.slice(0, 8).map(u => (
+                <Link key={u.id} to={`/u/${u.username}`} title={u.username}>
+                  <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold"
+                    style={{ background: 'var(--color-accent)', color: 'white' }}>
+                    {u.avatar
+                      ? <img src={u.avatar} alt={u.username} className="w-full h-full object-cover" />
+                      : u.username[0].toUpperCase()}
+                  </div>
+                </Link>
+              ))}
+              {onlineQ.data.online.length > 8 && (
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
+                  style={{ backgroundColor: 'var(--color-card)', color: 'var(--color-muted)' }}>
+                  +{onlineQ.data.online.length - 8}
+                </div>
+              )}
+            </div>
+            <Link to="/chat"
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium border transition-all hover:bg-white/5"
+              style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}>
+              <MessageSquare size={15} />
+              Open Community Chat
+            </Link>
+          </>
+        )}
+        {!onlineQ.data && (
+          <div className="h-20 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--color-card)' }} />
+        )}
+      </section>
+
+    </div>
+  );
+}
+
+function TrendingBuilderRow({ builder, rank }: { builder: TrendingBuilder; rank: number }) {
+  return (
+    <Link to={`/u/${builder.username}`}
+      className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5 transition-all group">
+      <span className="text-xs font-bold w-4 text-center flex-shrink-0" style={{ color: 'var(--color-muted)' }}>
+        {rank}
+      </span>
+      <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold flex-shrink-0"
+        style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}>
+        {builder.avatar
+          ? <img src={builder.avatar} alt={builder.username} className="w-full h-full object-cover" />
+          : builder.username[0].toUpperCase()}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium text-slate-200 group-hover:text-white transition-colors truncate">
+          {builder.displayName || builder.username}
+        </div>
+        <div className="text-xs text-slate-500">{builder.followerCount.toLocaleString()} followers</div>
+      </div>
+      <TrendingUp size={14} style={{ color: 'var(--color-accent)' }} className="flex-shrink-0" />
+    </Link>
   );
 }
 
 function VerifyBanner() {
   const { user } = useAuthStore();
   const [dismissed, setDismissed] = useState(false);
-
-  const resendMut = useMutation({
-    mutationFn: () => authApi.resendVerification(),
-  });
-
+  const resendMut = useMutation({ mutationFn: () => authApi.resendVerification() });
   if (dismissed || !user) return null;
-
   return (
-    <div className="fixed bottom-16 md:bottom-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-4 md:px-0">
-      <div
-        className="flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl"
-        style={{ backgroundColor: 'var(--color-panel)', borderColor: 'rgba(139,92,246,0.3)', boxShadow: '0 0 20px rgba(139,92,246,0.15)' }}
-      >
-        <Mail size={15} className="text-violet-400 flex-shrink-0" />
-        <p className="text-xs mono text-slate-300 flex-1">
+    <div className="fixed bottom-20 md:bottom-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4 md:px-0">
+      <div className="flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl"
+        style={{ backgroundColor: 'var(--color-card)', borderColor: 'rgba(255,77,77,0.3)' }}>
+        <Mail size={15} style={{ color: 'var(--color-accent)' }} className="flex-shrink-0" />
+        <p className="text-sm text-slate-300 flex-1">
           Verify your email to unlock full access.{' '}
           {resendMut.isSuccess
-            ? <span className="text-emerald-400">Email sent!</span>
-            : (
-              <button
-                onClick={() => resendMut.mutate()}
-                disabled={resendMut.isPending}
-                className="text-violet-400 hover:text-violet-300 transition-colors underline underline-offset-2"
-              >
+            ? <span style={{ color: 'var(--color-success)' }}>Email sent!</span>
+            : <button onClick={() => resendMut.mutate()} disabled={resendMut.isPending}
+                className="underline underline-offset-2 transition-colors" style={{ color: 'var(--color-accent)' }}>
                 {resendMut.isPending ? 'Sending...' : 'Resend email'}
               </button>
-            )
           }
         </p>
         <button onClick={() => setDismissed(true)} className="text-slate-600 hover:text-white transition-colors flex-shrink-0">
