@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from 'react-router-dom';
+﻿import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -77,7 +77,7 @@ export function MemoryPage() {
     }
   };
 
-  if (isLoading) return <Layout><div className="flex items-center justify-center h-64"><Loader2 size={20} className="animate-spin text-violet-400" /></div></Layout>;
+  if (isLoading) return <Layout><div className="flex items-center justify-center h-64"><Loader2 size={20} className="animate-spin text-slate-400" /></div></Layout>;
   if (!data) return null;
 
   const { memory, author } = data;
@@ -90,7 +90,7 @@ export function MemoryPage() {
   return (
     <Layout>
       <Helmet>
-        <title>{memory.title} — ShipHub</title>
+        <title>{memory.title} â€” ShipHub</title>
         <meta name="description" content={ogDesc} />
         <meta property="og:title" content={memory.title} />
         <meta property="og:description" content={ogDesc} />
@@ -100,7 +100,7 @@ export function MemoryPage() {
         <meta name="twitter:title" content={memory.title} />
         <meta name="twitter:description" content={ogDesc} />
       </Helmet>
-      <div className="max-w-2xl mx-auto px-6 py-8">
+      <div className="max-w-[680px] mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-xs mono text-slate-400 hover:text-white transition-colors">
             <ArrowLeft size={14} /> BACK
@@ -115,7 +115,7 @@ export function MemoryPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border p-6 mb-4" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+        <div className="rounded-2xl border p-6 mb-4" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
           {/* Fork attribution chain */}
           {isFork && (
             <div className="flex flex-col gap-1 mb-4 p-3 rounded-lg border" style={{ backgroundColor: 'var(--color-elevated)', borderColor: 'rgba(0,229,255,0.1)' }}>
@@ -127,9 +127,9 @@ export function MemoryPage() {
                 </Link>
               </div>
               {memory.originalMemoryId && memory.originalMemoryId !== memory.forkedFromId && (
-                <div className="flex items-center gap-1.5 text-xs mono text-violet-400 pl-4">
-                  <span className="text-slate-600">↑</span> Originally by{' '}
-                  <Link to={`/memory/${memory.originalMemoryId}`} className="hover:text-violet-300 underline underline-offset-2 transition-colors">
+                <div className="flex items-center gap-1.5 text-xs mono text-slate-400 pl-4">
+                  <span className="text-slate-600">â†‘</span> Originally by{' '}
+                  <Link to={`/memory/${memory.originalMemoryId}`} className="hover:opacity-80 underline underline-offset-2 transition-colors">
                     root memory
                   </Link>
                 </div>
@@ -143,7 +143,7 @@ export function MemoryPage() {
               <input
                 value={editTitle}
                 onChange={e => setEditTitle(e.target.value)}
-                className="flex-1 mono text-xl font-bold text-white bg-transparent border-b border-violet-500 outline-none pb-1"
+                className="flex-1 mono text-xl font-bold text-white bg-transparent border-b border-slate-500 outline-none pb-1"
                 autoFocus
               />
             ) : (
@@ -213,8 +213,8 @@ export function MemoryPage() {
                   ul: ({ children }) => <ul className="list-disc list-inside text-slate-300 text-sm space-y-1 mb-3 pl-1">{children}</ul>,
                   ol: ({ children }) => <ol className="list-decimal list-inside text-slate-300 text-sm space-y-1 mb-3 pl-1">{children}</ol>,
                   li: ({ children }) => <li className="text-slate-300 text-sm">{children}</li>,
-                  blockquote: ({ children }) => <blockquote className="border-l-2 border-violet-500 pl-4 italic text-slate-400 text-sm mb-3">{children}</blockquote>,
-                  a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-violet-300 underline underline-offset-2 transition-colors">{children}</a>,
+                  blockquote: ({ children }) => <blockquote className="border-l-2 border-slate-500 pl-4 italic text-slate-400 text-sm mb-3">{children}</blockquote>,
+                  a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:opacity-80 underline underline-offset-2 transition-colors">{children}</a>,
                   strong: ({ children }) => <strong className="text-white font-semibold">{children}</strong>,
                   em: ({ children }) => <em className="text-slate-300 italic">{children}</em>,
                   hr: () => <hr className="border-slate-700 my-4" />,
@@ -238,7 +238,7 @@ export function MemoryPage() {
                   onChange={e => setEditTagInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addEditTag(); } }}
                   placeholder="add-tag"
-                  className="flex-1 px-3 py-1.5 rounded-lg border text-xs text-white bg-transparent outline-none focus:border-violet-500 transition-colors"
+                  className="flex-1 px-3 py-1.5 rounded-lg border text-xs text-white bg-transparent outline-none focus:border-slate-500 transition-colors"
                   style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }}
                 />
                 <button
@@ -273,7 +273,7 @@ export function MemoryPage() {
                 <Link
                   key={tag}
                   to={`/browse?tag=${encodeURIComponent(tag)}`}
-                  className="text-xs mono px-2 py-0.5 rounded transition-colors hover:text-violet-400"
+                  className="text-xs mono px-2 py-0.5 rounded transition-colors hover:text-slate-400"
                   style={{ backgroundColor: 'var(--color-elevated)', color: '#64748B' }}
                 >
                   #{tag}
@@ -309,7 +309,7 @@ export function MemoryPage() {
 
             {isOwner && !editing && (
               <div className="flex items-center gap-3">
-                <button onClick={startEdit} className="flex items-center gap-1.5 text-xs mono text-slate-400 hover:text-violet-400 transition-colors">
+                <button onClick={startEdit} className="flex items-center gap-1.5 text-xs mono text-slate-400 hover:text-slate-400 transition-colors">
                   <Pencil size={13} /> EDIT
                 </button>
                 <button
@@ -324,9 +324,9 @@ export function MemoryPage() {
         </div>
 
         {/* Comments */}
-        <div className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+        <div className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
           <h2 className="mono text-sm font-semibold text-white mb-4 flex items-center gap-2">
-            <MessageSquare size={14} className="text-violet-400" />
+            <MessageSquare size={14} className="text-slate-400" />
             COMMENTS <span className="text-slate-500 font-normal">({commentsData?.comments?.length ?? 0})</span>
           </h2>
 
@@ -342,7 +342,7 @@ export function MemoryPage() {
             </div>
           ) : (
             <p className="text-xs mono text-slate-500 mb-4">
-              <Link to="/login" className="text-violet-400 hover:text-violet-300">Sign in</Link> to comment
+              <Link to="/login" className="text-slate-400 hover:opacity-80">Sign in</Link> to comment
             </p>
           )}
 

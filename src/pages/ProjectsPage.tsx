@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { projectsApi, type ProjectWithOwner, type ProjectStatus } from '../lib/api';
@@ -25,7 +25,7 @@ function CreateProjectModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
-      <div className="w-full max-w-md rounded-2xl border p-6" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+      <div className="w-full max-w-md rounded-2xl border p-6" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
         <div className="flex items-center justify-between mb-5">
           <h2 className="mono font-semibold text-white text-sm">NEW_PROJECT</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors"><X size={16} /></button>
@@ -33,11 +33,11 @@ function CreateProjectModal({ onClose }: { onClose: () => void }) {
         <div className="space-y-4">
           <div>
             <label className="block text-xs mono text-slate-400 mb-1.5">NAME</label>
-            <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-violet-500 transition-colors" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }} placeholder="My AI Project" />
+            <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-slate-500 transition-colors" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }} placeholder="My AI Project" />
           </div>
           <div>
             <label className="block text-xs mono text-slate-400 mb-1.5">DESCRIPTION</label>
-            <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-violet-500 transition-colors resize-none" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }} placeholder="What are you building?" />
+            <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-slate-500 transition-colors resize-none" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }} placeholder="What are you building?" />
           </div>
           <div>
             <label className="block text-xs mono text-slate-400 mb-1.5">STATUS</label>
@@ -49,13 +49,13 @@ function CreateProjectModal({ onClose }: { onClose: () => void }) {
           </div>
           <div>
             <label className="block text-xs mono text-slate-400 mb-1.5">WEBSITE (optional)</label>
-            <input value={form.websiteUrl} onChange={e => setForm(f => ({ ...f, websiteUrl: e.target.value }))} className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-violet-500 transition-colors" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }} placeholder="https://..." />
+            <input value={form.websiteUrl} onChange={e => setForm(f => ({ ...f, websiteUrl: e.target.value }))} className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-slate-500 transition-colors" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }} placeholder="https://..." />
           </div>
           <div>
             <label className="block text-xs mono text-slate-400 mb-1.5">GITHUB (optional)</label>
-            <input value={form.githubUrl} onChange={e => setForm(f => ({ ...f, githubUrl: e.target.value }))} className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-violet-500 transition-colors" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }} placeholder="https://github.com/..." />
+            <input value={form.githubUrl} onChange={e => setForm(f => ({ ...f, githubUrl: e.target.value }))} className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-slate-500 transition-colors" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }} placeholder="https://github.com/..." />
           </div>
-          <button onClick={() => createMut.mutate()} disabled={!form.name || createMut.isPending} className="w-full py-2.5 rounded-lg text-xs mono font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50" style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}>
+          <button onClick={() => createMut.mutate()} disabled={!form.name || createMut.isPending} className="w-full py-2.5 rounded-lg text-xs mono font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50" style={{ backgroundColor: 'var(--color-accent)' }}>
             {createMut.isPending ? 'CREATING...' : 'CREATE_PROJECT'}
           </button>
         </div>
@@ -77,32 +77,32 @@ export function ProjectsPage() {
   return (
     <Layout>
       {showCreate && <CreateProjectModal onClose={() => setShowCreate(false)} />}
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="max-w-[680px] mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="mono text-lg font-bold text-white">PROJECTS</h1>
+            <h1 className="text-xl font-bold text-white">Projects</h1>
             <p className="text-xs text-slate-500 mt-0.5">What builders are shipping</p>
           </div>
           {user && (
-            <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs mono font-semibold text-white transition-all hover:opacity-90" style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}>
-              <Plus size={13} /> NEW_PROJECT
+            <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs mono font-semibold text-white transition-all hover:opacity-90" style={{ backgroundColor: 'var(--color-accent)' }}>
+              <Plus size={14} /> New project
             </button>
           )}
         </div>
 
-        {isLoading && <div className="flex justify-center py-20"><Loader2 size={20} className="animate-spin text-violet-400" /></div>}
+        {isLoading && <div className="flex justify-center py-20"><Loader2 size={20} className="animate-spin text-slate-400" /></div>}
 
         <div className="grid gap-4">
           {data?.projects?.map(({ project, owner }: ProjectWithOwner) => (
             <Link key={project.id} to={`/projects/${project.id}`}>
-              <div className="rounded-xl border p-5 hover:border-violet-500/30 transition-all group" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+              <div className="rounded-xl border p-5 hover:border-slate-600 transition-all group" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--color-elevated)' }}>
-                      <FolderKanban size={18} className="text-violet-400" />
+                      <FolderKanban size={18} className="text-slate-400" />
                     </div>
                     <div>
-                      <h3 className="mono font-semibold text-white text-sm group-hover:text-violet-300 transition-colors">{project.name}</h3>
+                      <h3 className="mono font-semibold text-white text-sm group-hover:opacity-80 transition-colors">{project.name}</h3>
                       <Link to={`/u/${owner?.username}`} className="text-xs mono text-slate-500 hover:text-slate-300 transition-colors" onClick={e => e.stopPropagation()}>
                         @{owner?.username}
                       </Link>
@@ -132,7 +132,7 @@ export function ProjectsPage() {
             <div className="text-center py-20">
               <FolderKanban size={32} className="text-slate-700 mx-auto mb-3" />
               <p className="mono text-slate-400 text-sm">NO_PROJECTS_YET</p>
-              {user && <button onClick={() => setShowCreate(true)} className="mt-3 text-xs mono text-violet-400 hover:text-violet-300 transition-colors">Create the first one →</button>}
+              {user && <button onClick={() => setShowCreate(true)} className="mt-3 text-xs mono text-slate-400 hover:opacity-80 transition-colors">Create the first one â†’</button>}
             </div>
           )}
         </div>

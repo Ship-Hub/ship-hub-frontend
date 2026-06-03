@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { authApi } from '../lib/api';
 import { useAuthStore } from '../store/auth';
-import { Zap, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 
 export function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
@@ -15,10 +15,8 @@ export function VerifyEmailPage() {
   useEffect(() => {
     if (ran.current || !token) { if (!token) setStatus('error'); return; }
     ran.current = true;
-
     authApi.verifyEmail(token)
       .then(async () => {
-        // Refresh user in store so the banner disappears
         if (user) {
           const meRes = await authApi.me();
           setAuth(meRes.data.user, localStorage.getItem('shiphub_token')!);
@@ -32,48 +30,56 @@ export function VerifyEmailPage() {
   }, [token]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: 'var(--color-base)' }}>
-      <div className="w-full max-w-sm text-center">
-        <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-6"
-          style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}>
-          <Zap size={22} className="text-white" />
+    <div className="min-h-screen flex items-center justify-center px-4 py-10" style={{ backgroundColor: 'var(--color-base)' }}>
+      <div className="w-full max-w-[360px]">
+
+        <div className="flex justify-center mb-8">
+          <Link to="/" className="inline-flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white text-base"
+              style={{ background: 'var(--color-accent)', boxShadow: '0 0 16px rgba(255,77,77,0.5)' }}>S</div>
+            <span className="text-xl font-bold text-white tracking-tight">ShipHub</span>
+          </Link>
         </div>
 
-        {status === 'loading' && (
-          <>
-            <Loader2 size={28} className="animate-spin text-violet-400 mx-auto mb-4" />
-            <p className="mono text-sm font-semibold text-white">VERIFYING_EMAIL</p>
-            <p className="text-xs text-slate-500 mt-1">Just a moment...</p>
-          </>
-        )}
+        <div className="rounded-2xl p-px"
+          style={{ background: 'linear-gradient(135deg, rgba(255,77,77,0.5) 0%, rgba(255,77,77,0.1) 40%, rgba(0,229,255,0.1) 70%, rgba(0,229,255,0.4) 100%)' }}>
+          <div className="rounded-2xl p-8 text-center" style={{ backgroundColor: 'var(--color-card)' }}>
 
-        {status === 'success' && (
-          <>
-            <CheckCircle2 size={40} className="text-emerald-400 mx-auto mb-4" />
-            <h1 className="mono text-lg font-bold text-white mb-2">EMAIL_VERIFIED</h1>
-            <p className="text-sm text-slate-400 mb-6">Your email is confirmed. You're all set!</p>
-            <Link to="/" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-xs mono font-semibold text-white hover:opacity-90 transition-all"
-              style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}>
-              GO_TO_FEED →
-            </Link>
-          </>
-        )}
+            {status === 'loading' && (
+              <>
+                <Loader2 size={32} className="animate-spin mx-auto mb-4" style={{ color: 'var(--color-accent)' }} />
+                <p className="font-semibold text-white text-base">Verifying your email</p>
+                <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>Just a moment...</p>
+              </>
+            )}
 
-        {status === 'error' && (
-          <>
-            <XCircle size={40} className="text-red-400 mx-auto mb-4" />
-            <h1 className="mono text-lg font-bold text-white mb-2">VERIFICATION_FAILED</h1>
-            <p className="text-sm text-slate-400 mb-6">{errorMsg || 'No token provided.'}</p>
-            <div className="space-y-2">
-              {user && (
-                <ResendButton />
-              )}
-              <Link to="/" className="block text-xs mono text-slate-500 hover:text-white transition-colors">
-                Back to feed
-              </Link>
-            </div>
-          </>
-        )}
+            {status === 'success' && (
+              <>
+                <CheckCircle2 size={44} className="mx-auto mb-4" style={{ color: 'var(--color-success)' }} />
+                <h1 className="text-xl font-bold text-white mb-2">Email verified!</h1>
+                <p className="text-sm mb-6" style={{ color: 'var(--color-muted)' }}>Your account is confirmed. Start building.</p>
+                <Link to="/" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-white btn-primary w-full"
+                  style={{ backgroundColor: 'var(--color-accent)' }}>
+                  Go to feed →
+                </Link>
+              </>
+            )}
+
+            {status === 'error' && (
+              <>
+                <XCircle size={44} className="mx-auto mb-4" style={{ color: 'var(--color-accent)' }} />
+                <h1 className="text-xl font-bold text-white mb-2">Verification failed</h1>
+                <p className="text-sm mb-6" style={{ color: 'var(--color-muted)' }}>{errorMsg || 'No token provided.'}</p>
+                <div className="space-y-3">
+                  {user && <ResendButton />}
+                  <Link to="/" className="block text-sm transition-colors hover:text-slate-300" style={{ color: 'var(--color-muted)' }}>
+                    Back to feed
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -82,21 +88,17 @@ export function VerifyEmailPage() {
 function ResendButton() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const resend = async () => {
     setLoading(true);
     await authApi.resendVerification().catch(() => {});
-    setSent(true);
-    setLoading(false);
+    setSent(true); setLoading(false);
   };
-
-  return sent ? (
-    <p className="text-xs mono text-emerald-400">New verification email sent!</p>
-  ) : (
+  if (sent) return <p className="text-sm" style={{ color: 'var(--color-success)' }}>New verification email sent!</p>;
+  return (
     <button onClick={resend} disabled={loading}
-      className="w-full py-2.5 rounded-lg text-xs mono font-semibold text-white hover:opacity-90 disabled:opacity-50 transition-all"
-      style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}>
-      {loading ? 'SENDING...' : 'RESEND_VERIFICATION_EMAIL'}
+      className="btn-primary w-full py-3 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-all"
+      style={{ backgroundColor: 'var(--color-accent)' }}>
+      {loading ? <span className="flex items-center justify-center gap-2"><Loader2 size={14} className="animate-spin" />Sending...</span> : 'Resend verification email'}
     </button>
   );
 }

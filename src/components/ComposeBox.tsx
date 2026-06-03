@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+﻿import { useEffect, useState, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postsApi, uploadApi } from '../lib/api';
@@ -183,9 +183,9 @@ export function ComposeBox() {
 
   if (!user) {
     return (
-      <div className="rounded-xl border p-4 mb-5 text-center" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+      <div className="rounded-xl border p-4 mb-5 text-center" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
         <p className="text-xs mono text-slate-500">
-          <Link to="/login" className="text-violet-400 hover:text-violet-300 transition-colors">Sign in</Link>
+          <Link to="/login" className="text-slate-400 hover:text-violet-300 transition-colors">Sign in</Link>
           {' '}to post and share with the community
         </p>
       </div>
@@ -198,12 +198,12 @@ export function ComposeBox() {
   return (
     <div
       className="rounded-xl border mb-5 overflow-hidden transition-all"
-      style={{ backgroundColor: 'var(--color-panel)', borderColor: isActive ? 'rgba(139,92,246,0.4)' : 'var(--color-border)' }}
+      style={{ backgroundColor: 'var(--color-card)', borderColor: isActive ? 'rgba(139,92,246,0.4)' : 'var(--color-border)' }}
     >
       <input ref={imageRef} type="file" accept="image/*" className="hidden" onChange={e => e.target.files?.[0] && handleFile(e.target.files[0], 'image')} />
       <input ref={videoRef} type="file" accept="video/*" className="hidden" onChange={e => e.target.files?.[0] && handleFile(e.target.files[0], 'video')} />
 
-      {/* Write / Preview toggle — only shown when active */}
+      {/* Write / Preview toggle â€” only shown when active */}
       {isActive && (
         <div className="flex items-center gap-0.5 px-4 pt-3">
           {(['write', 'preview'] as const).map(m => (
@@ -225,7 +225,7 @@ export function ComposeBox() {
       <div className="flex gap-3 p-4 pt-3">
         {/* Avatar */}
         <Link to={`/u/${user.username}`} className="flex-shrink-0 mt-0.5">
-          <div className="w-9 h-9 rounded-full flex items-center justify-center mono font-bold text-sm" style={{ background: 'linear-gradient(135deg, #7C3AED, #00E5FF)', color: 'white' }}>
+          <div className="w-9 h-9 rounded-full flex items-center justify-center mono font-bold text-sm" style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}>
             {user.username[0].toUpperCase()}
           </div>
         </Link>
@@ -291,7 +291,7 @@ export function ComposeBox() {
                   <div className="fixed inset-0 z-10" onClick={() => setShowLangPicker(false)} />
                   <div
                     className="absolute bottom-9 left-0 z-20 w-44 rounded-xl border shadow-xl py-1"
-                    style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}
+                    style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
                   >
                     <p className="text-xs mono text-slate-600 px-3 py-1.5">SELECT_LANGUAGE</p>
                     {LANGUAGES.map(l => (
@@ -310,18 +310,18 @@ export function ComposeBox() {
             </div>
 
             {/* Bold */}
-            <button onClick={insertBold} className="px-2 py-1.5 rounded text-xs text-slate-400 hover:text-violet-400 hover:bg-violet-400/5 transition-all font-bold" title="Bold (**text**)">
+            <button onClick={insertBold} className="px-2 py-1.5 rounded text-xs text-slate-400 hover:text-slate-400 hover:bg-violet-400/5 transition-all font-bold" title="Bold (**text**)">
               B
             </button>
 
             {/* Italic */}
-            <button onClick={insertItalic} className="px-2 py-1.5 rounded text-xs text-slate-400 hover:text-violet-400 hover:bg-violet-400/5 transition-all italic font-semibold" title="Italic (*text*)">
+            <button onClick={insertItalic} className="px-2 py-1.5 rounded text-xs text-slate-400 hover:text-slate-400 hover:bg-violet-400/5 transition-all italic font-semibold" title="Italic (*text*)">
               I
             </button>
 
             {/* Inline code */}
-            <button onClick={insertInlineCode} className="flex items-center px-2 py-1.5 rounded text-xs mono text-slate-400 hover:text-violet-400 hover:bg-violet-400/5 transition-all" title="Inline code (`code`)">
-              <span className="font-mono text-xs px-1 py-0.5 rounded" style={{ backgroundColor: 'var(--color-elevated)' }}>`·`</span>
+            <button onClick={insertInlineCode} className="flex items-center px-2 py-1.5 rounded text-xs mono text-slate-400 hover:text-slate-400 hover:bg-violet-400/5 transition-all" title="Inline code (`code`)">
+              <span className="font-mono text-xs px-1 py-0.5 rounded" style={{ backgroundColor: 'var(--color-elevated)' }}>`Â·`</span>
             </button>
 
             <div className="w-px h-4 mx-1" style={{ backgroundColor: 'var(--color-border)' }} />
@@ -347,7 +347,7 @@ export function ComposeBox() {
             <div className="w-px h-4 mx-1" style={{ backgroundColor: 'var(--color-border)' }} />
 
             {/* Publish memory shortcut */}
-            <Link to="/publish" className="flex items-center gap-1 px-2 py-1.5 rounded text-xs mono text-slate-500 hover:text-violet-400 transition-all" title="Publish a structured memory">
+            <Link to="/publish" className="flex items-center gap-1 px-2 py-1.5 rounded text-xs mono text-slate-500 hover:text-slate-400 transition-all" title="Publish a structured memory">
               <BookMarked size={12} />
               <span className="hidden sm:inline">MEMORY</span>
             </Link>
@@ -361,7 +361,7 @@ export function ComposeBox() {
               onClick={() => postMut.mutate()}
               disabled={!canPost}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs mono font-semibold text-white transition-all hover:opacity-90 disabled:opacity-40"
-              style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}
+              style={{ background: 'var(--color-accent)' }}
             >
               {postMut.isPending
                 ? <><Loader2 size={11} className="animate-spin" />POSTING...</>
@@ -382,7 +382,7 @@ export function PostMarkdown({ content }: { content: string }) {
       remarkPlugins={[remarkGfm]}
       urlTransform={(url) => url}
       components={{
-        // Code blocks — syntax highlighted
+        // Code blocks â€” syntax highlighted
         code({ className, children, ...props }) {
           const match = /language-(\w+)/.exec(className || '');
           const isBlock = !!match;
@@ -424,7 +424,7 @@ export function PostMarkdown({ content }: { content: string }) {
         ol({ children }) { return <ol className="list-decimal list-inside text-slate-300 text-sm space-y-0.5 mb-2 pl-1">{children}</ol>; },
         li({ children }) { return <li className="text-slate-300 text-sm">{children}</li>; },
         blockquote({ children }) { return <blockquote className="rounded-lg px-3 py-2 italic text-slate-400 text-sm my-2" style={{ backgroundColor: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.15)' }}>{children}</blockquote>; },
-        a({ href, children }) { return <a href={href} target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-violet-300 underline underline-offset-2 transition-colors">{children}</a>; },
+        a({ href, children }) { return <a href={href} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-violet-300 underline underline-offset-2 transition-colors">{children}</a>; },
         strong({ children }) { return <strong className="text-white font-semibold">{children}</strong>; },
         em({ children }) { return <em className="text-slate-300 italic">{children}</em>; },
         hr() { return <hr className="border-slate-700/50 my-3" />; },

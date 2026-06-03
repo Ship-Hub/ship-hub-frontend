@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+﻿import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useRef } from 'react';
@@ -64,8 +64,8 @@ function EditProfileModal({ profile, onClose }: { profile: User; onClose: () => 
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.75)' }}>
-      <div className="w-full max-w-md rounded-xl border overflow-y-auto" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)', maxHeight: '90vh' }}>
-        <div className="flex items-center justify-between px-5 py-4 border-b sticky top-0" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+      <div className="w-full max-w-md rounded-xl border overflow-y-auto" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)', maxHeight: '90vh' }}>
+        <div className="flex items-center justify-between px-5 py-4 border-b sticky top-0" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
           <h2 className="mono font-semibold text-white text-sm">EDIT_PROFILE</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors"><X size={16} /></button>
         </div>
@@ -75,7 +75,7 @@ function EditProfileModal({ profile, onClose }: { profile: User; onClose: () => 
           <div className="flex items-center gap-4">
             <div className="relative flex-shrink-0">
               <div className="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center mono font-bold text-2xl"
-                style={{ background: 'linear-gradient(135deg, #7C3AED, #00E5FF)', color: 'white' }}>
+                style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}>
                 {avatarPreview
                   ? <img src={avatarPreview} alt="avatar" className="w-full h-full object-cover" />
                   : profile.username[0].toUpperCase()}
@@ -84,7 +84,7 @@ function EditProfileModal({ profile, onClose }: { profile: User; onClose: () => 
                 onClick={() => fileRef.current?.click()}
                 disabled={uploadingAvatar}
                 className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-white transition-all hover:opacity-90 disabled:opacity-50"
-                style={{ background: 'linear-gradient(135deg, #7C3AED, #00E5FF)' }}
+                style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))' }}
               >
                 {uploadingAvatar ? <Loader2 size={12} className="animate-spin" /> : <Camera size={12} />}
               </button>
@@ -135,7 +135,7 @@ function EditProfileModal({ profile, onClose }: { profile: User; onClose: () => 
             onClick={() => saveMut.mutate()}
             disabled={saveMut.isPending || uploadingAvatar}
             className="btn-primary w-full py-3 rounded-xl text-xs mono font-semibold text-white transition-all disabled:opacity-50"
-            style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}
+            style={{ background: 'var(--color-accent)' }}
           >
             {saveMut.isPending ? 'SAVING...' : 'SAVE_PROFILE'}
           </button>
@@ -209,7 +209,7 @@ export function ProfilePage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <Loader2 size={20} className="animate-spin text-violet-400" />
+          <Loader2 size={20} className="animate-spin text-slate-400" />
         </div>
       </Layout>
     );
@@ -228,8 +228,8 @@ export function ProfilePage() {
     { key: 'following', label: 'FOLLOWING', count: profile.followingCount },
   ];
 
-  const ogTitle = `${profile.displayName ?? profile.username} (@${profile.username}) — ShipHub`;
-  const ogDesc = profile.bio ?? `${profile.memoryCount} memories · ${profile.followerCount} followers on ShipHub`;
+  const ogTitle = `${profile.displayName ?? profile.username} (@${profile.username}) â€” ShipHub`;
+  const ogDesc = profile.bio ?? `${profile.memoryCount} memories Â· ${profile.followerCount} followers on ShipHub`;
 
   return (
     <Layout>
@@ -245,7 +245,7 @@ export function ProfilePage() {
 
       {showEdit && <EditProfileModal profile={profile} onClose={() => setShowEdit(false)} />}
 
-      {/* ── Profile header ──────────────────────────────────────── */}
+      {/* â”€â”€ Profile header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="border-b" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-secondary)' }}>
         <div className="max-w-2xl mx-auto px-5 py-8">
           {/* Avatar + actions row */}
@@ -255,7 +255,7 @@ export function ProfilePage() {
               <div
                 className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center mono font-bold text-3xl"
                 style={{
-                  background: 'linear-gradient(135deg, #7C3AED, #00E5FF)',
+                  background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))',
                   color: 'white',
                   boxShadow: '0 0 0 3px var(--color-secondary), 0 0 0 5px rgba(139,92,246,0.4)',
                 }}
@@ -279,7 +279,7 @@ export function ProfilePage() {
               )}
               <Link
                 to={`/u/${username}/showcase`}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs mono text-slate-400 border transition-all hover:text-violet-400 hover:border-violet-500/40"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs mono text-slate-400 border transition-all hover:text-slate-400 hover:border-slate-500/40"
                 style={{ borderColor: 'var(--color-border)' }}
               >
                 <BookOpen size={12} /> SHOWCASE
@@ -292,7 +292,7 @@ export function ProfilePage() {
                     className="btn-primary px-4 py-2 rounded-lg text-xs mono font-semibold transition-all"
                     style={isFollowing
                       ? { backgroundColor: 'var(--color-elevated)', color: '#94a3b8', border: '1px solid var(--color-border)' }
-                      : { background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)', color: 'white' }
+                      : { background: 'var(--color-accent)', color: 'white' }
                     }
                   >
                     {followMut.isPending ? '...' : isFollowing ? 'FOLLOWING' : 'FOLLOW'}
@@ -329,16 +329,16 @@ export function ProfilePage() {
 
           {/* Stats row */}
           <div className="flex items-center gap-5 mb-3">
-            <button onClick={() => setTab('memories')} className="text-left transition-colors hover:text-violet-300 group">
-              <span className="mono text-sm font-bold text-white group-hover:text-violet-300">{profile.memoryCount}</span>
+            <button onClick={() => setTab('memories')} className="text-left transition-colors hover:opacity-80 group">
+              <span className="mono text-sm font-bold text-white group-hover:opacity-80">{profile.memoryCount}</span>
               <span className="mono text-xs text-slate-500 ml-1.5">memories</span>
             </button>
-            <button onClick={() => setTab('followers')} className="text-left transition-colors hover:text-violet-300 group">
-              <span className="mono text-sm font-bold text-white group-hover:text-violet-300">{profile.followerCount}</span>
+            <button onClick={() => setTab('followers')} className="text-left transition-colors hover:opacity-80 group">
+              <span className="mono text-sm font-bold text-white group-hover:opacity-80">{profile.followerCount}</span>
               <span className="mono text-xs text-slate-500 ml-1.5">followers</span>
             </button>
-            <button onClick={() => setTab('following')} className="text-left transition-colors hover:text-violet-300 group">
-              <span className="mono text-sm font-bold text-white group-hover:text-violet-300">{profile.followingCount}</span>
+            <button onClick={() => setTab('following')} className="text-left transition-colors hover:opacity-80 group">
+              <span className="mono text-sm font-bold text-white group-hover:opacity-80">{profile.followingCount}</span>
               <span className="mono text-xs text-slate-500 ml-1.5">following</span>
             </button>
           </div>
@@ -348,7 +348,7 @@ export function ProfilePage() {
             <div className="flex flex-wrap gap-4">
               {profile.website && (
                 <a href={profile.website} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-xs mono text-violet-400 hover:text-violet-300 transition-colors">
+                  className="flex items-center gap-1.5 text-xs mono text-slate-400 hover:opacity-80 transition-colors">
                   <Globe size={12} />{profile.website.replace(/^https?:\/\//, '')}
                 </a>
               )}
@@ -363,13 +363,13 @@ export function ProfilePage() {
         </div>
       </div>
 
-      {/* ── Tabs + content ──────────────────────────────────────── */}
+      {/* â”€â”€ Tabs + content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="max-w-2xl mx-auto px-5">
         {/* Pinned memories */}
         {(profile.pinnedMemoryIds?.length ?? 0) > 0 && (
           <div className="pt-6 pb-2">
             <div className="flex items-center gap-2 mb-3">
-              <Pin size={12} className="text-violet-400" />
+              <Pin size={12} className="text-slate-400" />
               <span className="mono text-xs font-semibold text-slate-400 tracking-wider">PINNED</span>
             </div>
             <div className="space-y-3">
@@ -400,12 +400,12 @@ export function ProfilePage() {
               key={t.key}
               onClick={() => setTab(t.key)}
               className={`flex items-center gap-1.5 px-4 py-2.5 text-xs mono font-medium transition-all border-b-2 -mb-px whitespace-nowrap flex-shrink-0 ${
-                tab === t.key ? 'text-white border-violet-500' : 'text-slate-500 border-transparent hover:text-slate-300'
+                tab === t.key ? 'text-white border-slate-500' : 'text-slate-500 border-transparent hover:text-slate-300'
               }`}
             >
               {t.label}
               {t.count !== undefined && (
-                <span className={`text-xs mono px-1 rounded ${tab === t.key ? 'text-violet-400' : 'text-slate-600'}`}>
+                <span className={`text-xs mono px-1 rounded ${tab === t.key ? 'text-slate-400' : 'text-slate-600'}`}>
                   {t.count}
                 </span>
               )}
@@ -417,7 +417,7 @@ export function ProfilePage() {
         <div className="py-5">
           {tab === 'memories' && (
             <div className="space-y-4">
-              {memoriesQ.isLoading && <div className="flex justify-center py-10"><Loader2 size={16} className="animate-spin text-violet-400" /></div>}
+              {memoriesQ.isLoading && <div className="flex justify-center py-10"><Loader2 size={16} className="animate-spin text-slate-400" /></div>}
               {memoriesQ.data?.map((memory: any) => {
                 const isPinned = profile.pinnedMemoryIds?.includes(memory.id);
                 return (
@@ -428,7 +428,7 @@ export function ProfilePage() {
                         onClick={() => pinMut.mutate(memory.id)}
                         disabled={!isPinned && (profile.pinnedMemoryIds?.length ?? 0) >= 3}
                         className={`absolute top-3 right-3 opacity-0 group-hover/mem:opacity-100 flex items-center gap-1 text-xs mono transition-all px-2 py-1 rounded disabled:opacity-30 ${
-                          isPinned ? 'text-violet-400 hover:text-red-400' : 'text-slate-500 hover:text-violet-400'
+                          isPinned ? 'text-slate-400 hover:text-red-400' : 'text-slate-500 hover:text-slate-400'
                         }`}
                         style={{ backgroundColor: 'var(--color-elevated)' }}
                         title={isPinned ? 'Unpin' : (profile.pinnedMemoryIds?.length ?? 0) >= 3 ? 'Max 3 pinned' : 'Pin to profile'}
@@ -451,10 +451,10 @@ export function ProfilePage() {
 
           {tab === 'packs' && (
             <div className="space-y-3">
-              {packsQ.isLoading && <div className="flex justify-center py-10"><Loader2 size={16} className="animate-spin text-violet-400" /></div>}
+              {packsQ.isLoading && <div className="flex justify-center py-10"><Loader2 size={16} className="animate-spin text-slate-400" /></div>}
               {packsQ.data?.map((pack: any) => (
-                <Link key={pack.id} to={`/packs/${pack.id}`} className="flex items-center gap-3 p-4 rounded-xl border card-hover block" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
-                  <Package size={16} className="text-violet-400 flex-shrink-0" />
+                <Link key={pack.id} to={`/packs/${pack.id}`} className="flex items-center gap-3 p-4 rounded-xl border card-hover block" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+                  <Package size={16} className="text-slate-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="mono text-sm font-semibold text-white">{pack.title}</div>
                     {pack.description && <div className="text-xs text-slate-500 line-clamp-1 mt-0.5">{pack.description}</div>}
@@ -472,10 +472,10 @@ export function ProfilePage() {
 
           {tab === 'projects' && (
             <div className="space-y-3">
-              {projectsQ.isLoading && <div className="flex justify-center py-10"><Loader2 size={16} className="animate-spin text-violet-400" /></div>}
+              {projectsQ.isLoading && <div className="flex justify-center py-10"><Loader2 size={16} className="animate-spin text-slate-400" /></div>}
               {projectsQ.data?.map((project: any) => (
-                <Link key={project.id} to={`/projects/${project.id}`} className="flex items-center gap-3 p-4 rounded-xl border card-hover block" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
-                  <FolderKanban size={16} className="text-violet-400 flex-shrink-0" />
+                <Link key={project.id} to={`/projects/${project.id}`} className="flex items-center gap-3 p-4 rounded-xl border card-hover block" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+                  <FolderKanban size={16} className="text-slate-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="mono text-sm font-semibold text-white">{project.name}</div>
                     {project.description && <div className="text-xs text-slate-500 line-clamp-1 mt-0.5">{project.description}</div>}
@@ -496,12 +496,12 @@ export function ProfilePage() {
           {(tab === 'followers' || tab === 'following') && (
             <div className="space-y-2">
               {(tab === 'followers' ? followersQ : followingQ).isLoading && (
-                <div className="flex justify-center py-10"><Loader2 size={16} className="animate-spin text-violet-400" /></div>
+                <div className="flex justify-center py-10"><Loader2 size={16} className="animate-spin text-slate-400" /></div>
               )}
               {((tab === 'followers' ? followersQ.data?.users : followingQ.data?.users) ?? []).map((u: any) => (
-                <Link key={u.id} to={`/u/${u.username}`} className="flex items-center gap-3 p-3 rounded-xl border card-hover block" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+                <Link key={u.id} to={`/u/${u.username}`} className="flex items-center gap-3 p-3 rounded-xl border card-hover block" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
                   <div className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center mono font-bold text-sm overflow-hidden"
-                    style={{ background: 'linear-gradient(135deg, #7C3AED, #00E5FF)', color: 'white' }}>
+                    style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}>
                     {u.avatar ? <img src={u.avatar} alt={u.username} className="w-full h-full object-cover" /> : u.username[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">

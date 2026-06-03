@@ -1,10 +1,10 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { leaderboardApi, type LeaderboardEntry } from '../lib/api';
 import { Layout } from '../components/Layout';
 import { Trophy, GitFork, Users, BookOpen, Heart, Loader2, Zap } from 'lucide-react';
 
-const MEDAL = ['🥇', '🥈', '🥉'];
+const MEDAL = ['ðŸ¥‡', 'ðŸ¥ˆ', 'ðŸ¥‰'];
 
 function RepBar({ value, max }: { value: number; max: number }) {
   const pct = max > 0 ? Math.max(4, Math.round((value / max) * 100)) : 4;
@@ -32,7 +32,7 @@ export function LeaderboardPage() {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto px-6 py-8">
+      <div className="max-w-[680px] mx-auto px-4 py-6">
 
         {/* Header */}
         <div className="mb-8">
@@ -41,13 +41,13 @@ export function LeaderboardPage() {
             <h1 className="mono text-lg font-bold text-white">LEADERBOARD</h1>
           </div>
           <p className="text-xs text-slate-500">
-            Ranked by rep score: forks×3 + followers×2 + memories + likes
+            Ranked by rep score: forksÃ—3 + followersÃ—2 + memories + likes
           </p>
         </div>
 
         {isLoading && (
           <div className="flex justify-center py-20">
-            <Loader2 size={20} className="animate-spin text-violet-400" />
+            <Loader2 size={20} className="animate-spin text-slate-400" />
           </div>
         )}
 
@@ -62,13 +62,13 @@ export function LeaderboardPage() {
                 <Link
                   key={b.id}
                   to={`/u/${b.username}`}
-                  className={`flex flex-col items-center text-center p-4 rounded-xl border transition-all hover:border-violet-500/30 ${isFirst ? 'relative -mt-3' : ''}`}
-                  style={{ backgroundColor: 'var(--color-panel)', borderColor: isFirst ? 'rgba(139,92,246,0.3)' : 'var(--color-border)' }}
+                  className={`flex flex-col items-center text-center p-4 rounded-xl border transition-all hover:border-slate-600 ${isFirst ? 'relative -mt-3' : ''}`}
+                  style={{ backgroundColor: 'var(--color-card)', borderColor: isFirst ? 'rgba(139,92,246,0.3)' : 'var(--color-border)' }}
                 >
                   <span className="text-2xl mb-2">{MEDAL[rank]}</span>
                   <div
                     className="w-12 h-12 rounded-full flex items-center justify-center mono font-bold text-lg mb-2 flex-shrink-0"
-                    style={{ background: 'linear-gradient(135deg, #7C3AED, #00E5FF)', color: 'white' }}
+                    style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}
                   >
                     {b.username[0].toUpperCase()}
                   </div>
@@ -90,8 +90,8 @@ export function LeaderboardPage() {
               <Link
                 key={b.id}
                 to={`/u/${b.username}`}
-                className="flex items-center gap-4 p-4 rounded-xl border transition-all hover:border-violet-500/30 group"
-                style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}
+                className="flex items-center gap-4 p-4 rounded-xl border transition-all hover:border-slate-600 group"
+                style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
               >
                 {/* Rank */}
                 <div className="w-8 flex-shrink-0 text-center">
@@ -104,7 +104,7 @@ export function LeaderboardPage() {
                 {/* Avatar */}
                 <div
                   className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center mono font-bold"
-                  style={{ background: 'linear-gradient(135deg, #7C3AED, #00E5FF)', color: 'white' }}
+                  style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}
                 >
                   {b.username[0].toUpperCase()}
                 </div>
@@ -112,7 +112,7 @@ export function LeaderboardPage() {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="mono text-sm font-semibold text-white group-hover:text-violet-300 transition-colors truncate">
+                    <span className="mono text-sm font-semibold text-white group-hover:opacity-80 transition-colors truncate">
                       {b.displayName ?? b.username}
                     </span>
                     <span className="mono text-xs text-slate-500 flex-shrink-0">@{b.username}</span>
@@ -123,7 +123,7 @@ export function LeaderboardPage() {
                       <GitFork size={10} className="text-cyan-500" />{b.totalForks}
                     </span>
                     <span className="flex items-center gap-1 text-xs mono text-slate-500">
-                      <Users size={10} className="text-violet-400" />{b.followerCount}
+                      <Users size={10} className="text-slate-400" />{b.followerCount}
                     </span>
                     <span className="flex items-center gap-1 text-xs mono text-slate-500">
                       <BookOpen size={10} className="text-emerald-400" />{b.memoryCount}

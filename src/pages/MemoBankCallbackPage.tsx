@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+﻿import { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuthStore } from '../store/auth';
@@ -45,7 +45,7 @@ export function MemoBankCallbackPage() {
         const { token, user } = res.data;
 
         if (isPopup()) {
-          // Running in OAuth popup — message the opener then close
+          // Running in OAuth popup â€” message the opener then close
           window.opener.postMessage({ type: 'mb_oauth_success', token, user }, window.location.origin);
           window.close();
         } else {
@@ -79,7 +79,7 @@ export function MemoBankCallbackPage() {
             <button
               onClick={() => isPopup() ? window.close() : navigate('/login')}
               className="px-5 py-2 rounded-lg text-xs mono font-semibold text-white transition-all hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}
+              style={{ background: 'var(--color-accent)' }}
             >
               {isPopup() ? 'CLOSE' : 'BACK_TO_LOGIN'}
             </button>

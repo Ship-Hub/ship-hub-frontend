@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+﻿import { useState, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { postsApi } from '../lib/api';
 import { useComposeStore } from '../store/compose';
@@ -36,7 +36,7 @@ function QuotedPostPreview({ quotePost, quoteMemory }: { quotePost?: any; quoteM
           <span className={cn('text-xs mono px-1.5 py-0.5 rounded border', cc)}>{memory.category.toUpperCase()}</span>
           <span className="text-xs mono text-white font-semibold truncate">{memory.title}</span>
         </div>
-        <div className="text-xs text-slate-400 line-clamp-2">{memory.content.slice(0, 120)}{memory.content.length > 120 ? '…' : ''}</div>
+        <div className="text-xs text-slate-400 line-clamp-2">{memory.content.slice(0, 120)}{memory.content.length > 120 ? 'â€¦' : ''}</div>
         <div className="text-xs mono text-slate-600 mt-1">by @{author?.username}</div>
       </div>
     );
@@ -81,11 +81,11 @@ export function QuoteModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.75)' }}>
-      <div className="w-full max-w-lg rounded-2xl border overflow-hidden" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+      <div className="w-full max-w-lg rounded-2xl border overflow-hidden" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
           <div className="flex items-center gap-2">
-            <Quote size={14} className="text-violet-400" />
+            <Quote size={14} className="text-slate-400" />
             <span className="text-xs mono text-slate-300 truncate">{label}</span>
           </div>
           <button onClick={clear} className="text-slate-400 hover:text-white transition-colors"><X size={16} /></button>
@@ -110,9 +110,9 @@ export function QuoteModal() {
         {/* Toolbar */}
         <div className="flex items-center justify-between px-4 pb-4 pt-2 border-t" style={{ borderColor: 'var(--color-border)' }}>
           <div className="flex items-center gap-1">
-            <button onClick={() => insert('**', '**', 'bold')} className="px-2 py-1 rounded text-xs font-bold text-slate-500 hover:text-violet-400 hover:bg-violet-400/5 transition-all">B</button>
-            <button onClick={() => insert('*', '*', 'italic')} className="px-2 py-1 rounded text-xs italic font-semibold text-slate-500 hover:text-violet-400 hover:bg-violet-400/5 transition-all">I</button>
-            <button onClick={() => insert('`', '`', 'code')} className="px-1.5 py-1 rounded text-xs mono text-slate-500 hover:text-cyan-400 transition-all">`·`</button>
+            <button onClick={() => insert('**', '**', 'bold')} className="px-2 py-1 rounded text-xs font-bold text-slate-500 hover:text-slate-400 hover:bg-violet-400/5 transition-all">B</button>
+            <button onClick={() => insert('*', '*', 'italic')} className="px-2 py-1 rounded text-xs italic font-semibold text-slate-500 hover:text-slate-400 hover:bg-violet-400/5 transition-all">I</button>
+            <button onClick={() => insert('`', '`', 'code')} className="px-1.5 py-1 rounded text-xs mono text-slate-500 hover:text-cyan-400 transition-all">`Â·`</button>
             <button onClick={() => insert('```typescript\n', '\n```', '// code')} className="flex items-center gap-1 px-2 py-1 rounded text-xs mono text-slate-500 hover:text-cyan-400 transition-all"><Code2 size={11} /></button>
           </div>
           <div className="flex items-center gap-3">
@@ -121,7 +121,7 @@ export function QuoteModal() {
               onClick={() => postMut.mutate()}
               disabled={!content.trim() || postMut.isPending}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs mono font-semibold text-white transition-all hover:opacity-90 disabled:opacity-40"
-              style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}
+              style={{ background: 'var(--color-accent)' }}
             >
               {postMut.isPending ? <><Loader2 size={11} className="animate-spin" />POSTING...</> : <><Send size={12} />QUOTE</>}
             </button>

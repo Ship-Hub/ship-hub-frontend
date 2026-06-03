@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { postsApi, type Post, type AuthorSnippet, type ReactionMap } from '../lib/api';
@@ -24,7 +24,7 @@ interface PostCardProps {
   quotedMemory?: any | null;
 }
 
-// ── Type badge ────────────────────────────────────────────────────────────
+// â”€â”€ Type badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const TYPE_META: Record<string, { label: string; className: string; icon: React.ElementType }> = {
   build_update:   { label: 'BUILD UPDATE',    className: 'badge-build',    icon: Zap },
@@ -46,7 +46,7 @@ function TypeBadge({ type }: { type: string }) {
   );
 }
 
-// ── Shared card shell ─────────────────────────────────────────────────────
+// â”€â”€ Shared card shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const CARD_HOVER_CLASS: Record<string, string> = {
   build_update:   'card-hover-build',
@@ -83,7 +83,7 @@ function CardShell({ children, post }: { children: React.ReactNode; post: Post }
   );
 }
 
-// ── Post author header ─────────────────────────────────────────────────────
+// â”€â”€ Post author header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function PostHeader({ post, author, onDelete, canDelete, canEdit, onStartEdit }: {
   post: Post; author: AuthorSnippet | null;
@@ -107,7 +107,7 @@ function PostHeader({ post, author, onDelete, canDelete, canEdit, onStartEdit }:
               {author?.displayName || author?.username}
             </Link>
             <span className="text-xs text-slate-600">@{author?.username}</span>
-            <span className="text-xs text-slate-600">·</span>
+            <span className="text-xs text-slate-600">Â·</span>
             <span className="text-xs text-slate-600">{timeAgo(post.createdAt)}</span>
           </div>
         </div>
@@ -118,7 +118,7 @@ function PostHeader({ post, author, onDelete, canDelete, canEdit, onStartEdit }:
         </button>
         {menuOpen && (
           <div className="absolute right-0 top-8 z-20 w-40 rounded-xl border shadow-xl py-1"
-            style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+            style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
             {canEdit && (
               <button onClick={() => { onStartEdit(); setMenuOpen(false); }}
                 className="flex items-center gap-2 w-full px-3 py-2 text-xs text-slate-300 hover:text-white hover:bg-white/5 transition-all">
@@ -141,7 +141,7 @@ function PostHeader({ post, author, onDelete, canDelete, canEdit, onStartEdit }:
   );
 }
 
-// ── Post actions bar ──────────────────────────────────────────────────────
+// â”€â”€ Post actions bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function PostActions({ post, user, onLike, onSave, onComment, onQuote, liked, saved, likeCount, saveCount, commentCount }: {
   post: Post; user: any;
@@ -179,7 +179,7 @@ function PostActions({ post, user, onLike, onSave, onComment, onQuote, liked, sa
   );
 }
 
-// ── Type-specific content sections ────────────────────────────────────────
+// â”€â”€ Type-specific content sections â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function BuildUpdateContent({ post }: { post: Post }) {
   return (
@@ -380,7 +380,7 @@ function PollContent({ post }: { post: Post }) {
                 </button>
               );
             })}
-            <p className="text-xs text-slate-600 mt-1">{data.totalVotes} votes{data.isAnonymous ? ' · Anonymous' : ''}{data.allowMultiple ? ' · Multiple choice' : ''}</p>
+            <p className="text-xs text-slate-600 mt-1">{data.totalVotes} votes{data.isAnonymous ? ' Â· Anonymous' : ''}{data.allowMultiple ? ' Â· Multiple choice' : ''}</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -412,7 +412,7 @@ function QuestionContent({ post }: { post: Post }) {
 function GeneralContent({ post }: { post: Post }) {
   const [expanded, setExpanded] = useState(false);
   const isLong = post.content.length > 600 || post.content.split('\n').length > 15;
-  const display = isLong && !expanded ? post.content.slice(0, 500) + '…' : post.content;
+  const display = isLong && !expanded ? post.content.slice(0, 500) + 'â€¦' : post.content;
 
   return (
     <div className="px-4 pb-4">
@@ -437,7 +437,7 @@ function GeneralContent({ post }: { post: Post }) {
   );
 }
 
-// ── Main PostCard ─────────────────────────────────────────────────────────
+// â”€â”€ Main PostCard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function PostCard({ post, author, quotedPost, quotedMemory }: PostCardProps) {
   const { user } = useAuthStore();
@@ -518,7 +518,7 @@ export function PostCard({ post, author, quotedPost, quotedMemory }: PostCardPro
             <button onClick={() => editMut.mutate()} disabled={editMut.isPending}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white disabled:opacity-50"
               style={{ backgroundColor: 'var(--color-accent)' }}>
-              <Check size={12} />{editMut.isPending ? 'Saving…' : 'Save'}
+              <Check size={12} />{editMut.isPending ? 'Savingâ€¦' : 'Save'}
             </button>
             <button onClick={() => setEditing(false)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-slate-500 hover:text-white transition-colors">
               <X size={12} />Cancel
@@ -573,7 +573,7 @@ export function PostCard({ post, author, quotedPost, quotedMemory }: PostCardPro
               <div className="flex-1 min-w-0">
                 <div className="text-xs text-slate-500 mb-0.5">
                   <span className="font-semibold text-slate-300">{c.author?.displayName || c.author?.username}</span>
-                  {' · '}{timeAgo(c.comment.createdAt)}
+                  {' Â· '}{timeAgo(c.comment.createdAt)}
                 </div>
                 <CommentBody content={c.comment.content} />
                 {user?.id === c.comment.userId && (

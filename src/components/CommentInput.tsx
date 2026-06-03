@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+﻿import { useState, useRef } from 'react';
 import { Code2, Bold, ChevronDown } from 'lucide-react';
 import { PostMarkdown } from './ComposeBox';
 import { processContent } from '../lib/utils';
@@ -59,11 +59,11 @@ export function CommentInput({ value, onChange, onSubmit, isPending, placeholder
       {active && (
         <div className="flex items-center gap-0.5 px-2 pb-2 pt-0.5 border-t" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
           {/* Bold */}
-          <button onClick={() => insert('**', '**', 'bold')} className="px-2 py-1 rounded text-xs font-bold text-slate-500 hover:text-violet-400 hover:bg-violet-400/5 transition-all">B</button>
+          <button onClick={() => insert('**', '**', 'bold')} className="px-2 py-1 rounded text-xs font-bold text-slate-500 hover:text-slate-400 hover:bg-violet-400/5 transition-all">B</button>
           {/* Italic */}
-          <button onClick={() => insert('*', '*', 'italic')} className="px-2 py-1 rounded text-xs italic font-semibold text-slate-500 hover:text-violet-400 hover:bg-violet-400/5 transition-all">I</button>
+          <button onClick={() => insert('*', '*', 'italic')} className="px-2 py-1 rounded text-xs italic font-semibold text-slate-500 hover:text-slate-400 hover:bg-violet-400/5 transition-all">I</button>
           {/* Inline code */}
-          <button onClick={() => insert('`', '`', 'code')} className="px-1.5 py-1 rounded text-xs mono text-slate-500 hover:text-cyan-400 hover:bg-cyan-400/5 transition-all">`·`</button>
+          <button onClick={() => insert('`', '`', 'code')} className="px-1.5 py-1 rounded text-xs mono text-slate-500 hover:text-cyan-400 hover:bg-cyan-400/5 transition-all">`Â·`</button>
 
           {/* Code block */}
           <div className="relative">
@@ -73,7 +73,7 @@ export function CommentInput({ value, onChange, onSubmit, isPending, placeholder
             {showLang && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setShowLang(false)} />
-                <div className="absolute bottom-8 left-0 z-20 w-36 rounded-xl border shadow-xl py-1" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+                <div className="absolute bottom-8 left-0 z-20 w-36 rounded-xl border shadow-xl py-1" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
                   {LANGUAGES.map(l => (
                     <button key={l} onClick={() => insertCode(l)} className="w-full px-3 py-1.5 text-xs mono text-slate-400 hover:text-white hover:bg-white/5 transition-all text-left">{l}</button>
                   ))}
@@ -87,7 +87,7 @@ export function CommentInput({ value, onChange, onSubmit, isPending, placeholder
               onClick={onSubmit}
               disabled={!value.trim() || isPending}
               className="px-3 py-1 rounded text-xs mono font-semibold text-white disabled:opacity-40 transition-all hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #7C3AED, #00E5FF)' }}
+              style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))' }}
             >
               {isPending ? '...' : 'POST'}
             </button>

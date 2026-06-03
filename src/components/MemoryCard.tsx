@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Heart, Bookmark, GitFork, Clock, MessageSquare, Package, Quote } from 'lucide-react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
@@ -27,11 +27,11 @@ function AddToPackPopover({ memoryId, onClose }: { memoryId: string; onClose: ()
   return (
     <div
       className="absolute bottom-8 right-0 z-30 w-52 rounded-xl border shadow-xl p-2"
-      style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}
+      style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
     >
       <p className="mono text-xs text-slate-500 px-2 py-1 mb-1">ADD_TO_PACK</p>
       {myPacks.length === 0 ? (
-        <Link to="/packs" onClick={onClose} className="block px-2 py-1.5 text-xs mono text-violet-400 hover:text-violet-300 transition-colors">
+        <Link to="/packs" onClick={onClose} className="block px-2 py-1.5 text-xs mono text-slate-400 hover:text-violet-300 transition-colors">
           + Create a pack first
         </Link>
       ) : (
@@ -42,7 +42,7 @@ function AddToPackPopover({ memoryId, onClose }: { memoryId: string; onClose: ()
             disabled={addMut.isPending}
             className="flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-xs mono text-slate-300 hover:text-white hover:bg-white/5 transition-all text-left"
           >
-            <Package size={11} className="text-violet-400 flex-shrink-0" />
+            <Package size={11} className="text-slate-400 flex-shrink-0" />
             <span className="truncate">{pack.title}</span>
           </button>
         ))
@@ -76,14 +76,14 @@ export function MemoryCard({ memory, author, originalAuthorUsername }: MemoryCar
   const act = (fn: () => void) => { if (!user) { navigate('/login'); return; } fn(); };
 
   const categoryClass = CATEGORY_COLORS[memory.category] ?? 'text-slate-400 bg-slate-400/10 border-slate-400/20';
-  const preview = memory.content.length > 200 ? memory.content.slice(0, 200) + '…' : memory.content;
+  const preview = memory.content.length > 200 ? memory.content.slice(0, 200) + 'â€¦' : memory.content;
   const isFork = !!memory.forkedFromId;
   const showOriginal = isFork && memory.originalMemoryId && memory.originalMemoryId !== memory.forkedFromId;
 
   return (
     <div
       className="rounded-xl border p-5 card-hover group"
-      style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}
+      style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
     >
       {/* Fork attribution */}
       {isFork && (
@@ -96,8 +96,8 @@ export function MemoryCard({ memory, author, originalAuthorUsername }: MemoryCar
           </span>
           {showOriginal && originalAuthorUsername && (
             <span className="text-slate-600">
-              {' · '}original by{' '}
-              <Link to={`/memory/${memory.originalMemoryId}`} className="text-violet-400 hover:text-violet-300 transition-colors">
+              {' Â· '}original by{' '}
+              <Link to={`/memory/${memory.originalMemoryId}`} className="text-slate-400 hover:text-violet-300 transition-colors">
                 @{originalAuthorUsername}
               </Link>
             </span>
@@ -134,7 +134,7 @@ export function MemoryCard({ memory, author, originalAuthorUsername }: MemoryCar
               key={tag}
               to={`/browse?tag=${encodeURIComponent(tag)}`}
               onClick={e => e.stopPropagation()}
-              className="text-xs mono px-2 py-0.5 rounded transition-colors hover:text-violet-400"
+              className="text-xs mono px-2 py-0.5 rounded transition-colors hover:text-slate-400"
               style={{ backgroundColor: 'var(--color-elevated)', color: '#64748B' }}
             >
               #{tag}
@@ -176,7 +176,7 @@ export function MemoryCard({ memory, author, originalAuthorUsername }: MemoryCar
           {user && (
             <button
               onClick={() => setQuoteMemory({ memory, author: author! })}
-              className="flex items-center gap-1 text-xs mono text-slate-400 hover:text-violet-400 transition-colors"
+              className="flex items-center gap-1 text-xs mono text-slate-400 hover:text-slate-400 transition-colors"
               title="Quote this memory"
             >
               <Quote size={13} />
@@ -186,7 +186,7 @@ export function MemoryCard({ memory, author, originalAuthorUsername }: MemoryCar
             <div className="relative">
               <button
                 onClick={() => setShowPackPopover(p => !p)}
-                className="flex items-center gap-1 text-xs mono text-slate-400 hover:text-violet-400 transition-colors"
+                className="flex items-center gap-1 text-xs mono text-slate-400 hover:text-slate-400 transition-colors"
                 title="Add to pack"
               >
                 <Package size={13} />

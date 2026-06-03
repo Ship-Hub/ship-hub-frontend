@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { dmApi, type DirectMessage, type Conversation } from '../lib/api';
@@ -51,15 +51,15 @@ export function MessagesPage() {
     <Layout>
       <div className="flex h-[calc(100vh-0px)] md:h-screen overflow-hidden" style={{ maxHeight: 'calc(100dvh - 48px)' }}>
 
-        {/* Sidebar — conversations */}
+        {/* Sidebar â€” conversations */}
         <div className={`w-full md:w-72 flex-shrink-0 border-r flex flex-col ${username ? 'hidden md:flex' : 'flex'}`}
           style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-secondary)' }}>
           <div className="px-4 py-4 border-b flex items-center gap-2" style={{ borderColor: 'var(--color-border)' }}>
-            <MessageSquare size={16} className="text-violet-400" />
+            <MessageSquare size={16} className="text-slate-400" />
             <h1 className="mono text-sm font-bold text-white">MESSAGES</h1>
           </div>
 
-          {convoQ.isLoading && <div className="flex justify-center py-8"><Loader2 size={16} className="animate-spin text-violet-400" /></div>}
+          {convoQ.isLoading && <div className="flex justify-center py-8"><Loader2 size={16} className="animate-spin text-slate-400" /></div>}
 
           <div className="flex-1 overflow-y-auto">
             {conversations.length === 0 && !convoQ.isLoading && (
@@ -109,7 +109,7 @@ export function MessagesPage() {
                     style={{ background: 'linear-gradient(135deg,#7C3AED,#00E5FF)', color: 'white' }}>
                     {partner.avatar ? <img src={partner.avatar} alt={partner.username} className="w-full h-full object-cover" /> : partner.username[0].toUpperCase()}
                   </div>
-                  <Link to={`/u/${partner.username}`} className="mono text-sm font-semibold text-white hover:text-violet-300 transition-colors">
+                  <Link to={`/u/${partner.username}`} className="mono text-sm font-semibold text-white hover:opacity-80 transition-colors">
                     @{partner.username}
                   </Link>
                 </>
@@ -118,14 +118,14 @@ export function MessagesPage() {
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-              {messagesQ.isLoading && <div className="flex justify-center py-8"><Loader2 size={16} className="animate-spin text-violet-400" /></div>}
+              {messagesQ.isLoading && <div className="flex justify-center py-8"><Loader2 size={16} className="animate-spin text-slate-400" /></div>}
               {messages.map(msg => {
                 const isMe = msg.senderId === user?.id;
                 return (
                   <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[75%] px-3 py-2 rounded-2xl text-xs ${isMe ? 'rounded-tr-sm' : 'rounded-tl-sm'}`}
                       style={{
-                        backgroundColor: isMe ? 'var(--color-violet)' : 'var(--color-panel)',
+                        backgroundColor: isMe ? 'var(--color-violet)' : 'var(--color-card)',
                         border: isMe ? 'none' : '1px solid var(--color-border)',
                         color: isMe ? 'white' : '#CBD5E1',
                       }}>

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+﻿import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { graphApi, type Memory } from '../lib/api';
 import { Layout } from '../components/Layout';
@@ -43,7 +43,7 @@ export function GraphPage() {
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <Network size={20} className="text-violet-400" />
+            <Network size={20} className="text-slate-400" />
             <h1 className="mono text-lg font-bold text-white">KNOWLEDGE_GRAPH</h1>
           </div>
           <p className="text-xs text-slate-500">How memories, builders, and projects connect across ShipHub</p>
@@ -52,11 +52,11 @@ export function GraphPage() {
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-4 mb-8">
           {[
-            { label: 'MEMORIES', value: memories.length, icon: Network, color: 'text-violet-400' },
+            { label: 'MEMORIES', value: memories.length, icon: Network, color: 'text-slate-400' },
             { label: 'BUILDERS', value: users.length, icon: Users, color: 'text-cyan-400' },
             { label: 'PROJECTS', value: projects.filter(Boolean).length, icon: FolderKanban, color: 'text-emerald-400' },
           ].map(({ label, value, icon: Icon, color }) => (
-            <div key={label} className="rounded-xl border p-4 text-center" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+            <div key={label} className="rounded-xl border p-4 text-center" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
               <Icon size={20} className={cn('mx-auto mb-2', color)} />
               <div className={cn('mono text-2xl font-bold', color)}>{value}</div>
               <div className="mono text-xs text-slate-500 mt-1">{label}</div>
@@ -64,7 +64,7 @@ export function GraphPage() {
           ))}
         </div>
 
-        {isLoading && <div className="flex justify-center py-20"><Loader2 size={20} className="animate-spin text-violet-400" /></div>}
+        {isLoading && <div className="flex justify-center py-20"><Loader2 size={20} className="animate-spin text-slate-400" /></div>}
 
         {/* Knowledge nodes */}
         <div className="space-y-3">
@@ -78,8 +78,8 @@ export function GraphPage() {
             return (
               <div
                 key={memory.id}
-                className="rounded-xl border p-4 transition-all hover:border-violet-500/20"
-                style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}
+                className="rounded-xl border p-4 transition-all hover:border-slate-500/20"
+                style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
               >
                 <div className="flex items-start gap-4">
                   {/* Connection strength indicator */}
@@ -96,7 +96,7 @@ export function GraphPage() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <Link to={`/memory/${memory.id}`} className="mono text-sm font-semibold text-white hover:text-violet-300 transition-colors line-clamp-1">
+                      <Link to={`/memory/${memory.id}`} className="mono text-sm font-semibold text-white hover:opacity-80 transition-colors line-clamp-1">
                         {memory.title}
                       </Link>
                       <span className={cn('text-xs mono px-2 py-0.5 rounded border flex-shrink-0', categoryClass)}>
@@ -124,7 +124,7 @@ export function GraphPage() {
 
                       {memory.likeCount > 0 && (
                         <span className="text-xs mono text-pink-500">
-                          ♥ {memory.likeCount}
+                          â™¥ {memory.likeCount}
                         </span>
                       )}
 
@@ -140,7 +140,7 @@ export function GraphPage() {
                       )}
 
                       {memory.originalMemoryId && (
-                        <Link to={`/memory/${memory.originalMemoryId}`} className="flex items-center gap-1 text-xs mono text-violet-400 hover:text-violet-300 transition-colors">
+                        <Link to={`/memory/${memory.originalMemoryId}`} className="flex items-center gap-1 text-xs mono text-slate-400 hover:opacity-80 transition-colors">
                           <GitFork size={9} />
                           root
                         </Link>

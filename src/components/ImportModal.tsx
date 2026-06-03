@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { importExportApi, authApi } from '../lib/api';
@@ -59,7 +59,7 @@ export function ImportModal({ onClose, embedded = false }: Props) {
     if (!apiKey) return;
     setKeyError('');
     try {
-      // Log in / register via Memo Bank API key — works without existing ShipHub session
+      // Log in / register via Memo Bank API key â€” works without existing ShipHub session
       const res = await authApi.memobank(apiKey);
       localStorage.setItem('shiphub_token', res.data.token);
       setAuth(res.data.user, res.data.token);
@@ -81,7 +81,7 @@ export function ImportModal({ onClose, embedded = false }: Props) {
   };
 
   const inner = (
-    <div className={`w-full max-w-lg rounded-2xl border flex flex-col ${embedded ? '' : ''}`} style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)', maxHeight: embedded ? 'none' : '85vh' }}>
+    <div className={`w-full max-w-lg rounded-2xl border flex flex-col ${embedded ? '' : ''}`} style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)', maxHeight: embedded ? 'none' : '85vh' }}>
 
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b flex-shrink-0" style={{ borderColor: 'var(--color-border)' }}>
@@ -120,7 +120,7 @@ export function ImportModal({ onClose, embedded = false }: Props) {
             <div className="space-y-4">
               <p className="text-xs text-slate-400">
                 Enter your Memo Bank API key to browse and import your memories.
-                {' '}<a href="https://memobank.online/app/api-keys" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300">Find it here →</a>
+                {' '}<a href="https://memobank.online/app/api-keys" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300">Find it here â†’</a>
               </p>
 
               {keyError && (
@@ -138,9 +138,9 @@ export function ImportModal({ onClose, embedded = false }: Props) {
                     onChange={e => setApiKey(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && apiKey && connectAndProceed()}
                     autoFocus
-                    className="w-full px-3 py-2.5 pr-10 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-violet-500 transition-colors font-mono"
+                    className="w-full px-3 py-2.5 pr-10 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-slate-500 transition-colors font-mono"
                     style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }}
-                    placeholder="mb_••••••••••••••••"
+                    placeholder="mb_â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                   />
                   <button type="button" onClick={() => setShowKey(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
                     {showKey ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -153,7 +153,7 @@ export function ImportModal({ onClose, embedded = false }: Props) {
                 onClick={connectAndProceed}
                 disabled={!apiKey || fetchProjectsMut.isPending}
                 className="w-full py-2.5 rounded-lg text-xs mono font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
-                style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}
+                style={{ background: 'var(--color-accent)' }}
               >
                 {fetchProjectsMut.isPending ? <span className="flex items-center justify-center gap-2"><Loader2 size={13} className="animate-spin" />CONNECTING...</span> : 'CONNECT_&_BROWSE'}
               </button>
@@ -164,7 +164,7 @@ export function ImportModal({ onClose, embedded = false }: Props) {
           {step === 'projects' && (
             <div className="space-y-3">
               <p className="text-xs text-slate-500 mono mb-3">Select a project to import memories from:</p>
-              {projects.length === 0 && <div className="flex justify-center py-8"><Loader2 size={18} className="animate-spin text-violet-400" /></div>}
+              {projects.length === 0 && <div className="flex justify-center py-8"><Loader2 size={18} className="animate-spin text-slate-400" /></div>}
               {projects.map((p: any) => (
                 <button
                   key={p.id}
@@ -178,7 +178,7 @@ export function ImportModal({ onClose, embedded = false }: Props) {
                     {p.slug && <div className="text-xs mono text-slate-500">{p.slug}</div>}
                   </div>
                   {fetchMemoriesMut.isPending && selectedProject?.id === p.id
-                    ? <Loader2 size={14} className="animate-spin text-violet-400" />
+                    ? <Loader2 size={14} className="animate-spin text-slate-400" />
                     : <ChevronRight size={14} className="text-slate-500" />
                   }
                 </button>
@@ -193,7 +193,7 @@ export function ImportModal({ onClose, embedded = false }: Props) {
                 <p className="text-xs text-slate-400">
                   <span className="text-white mono font-semibold">{selected.size}</span> of {mbMemories.length} selected
                 </p>
-                <button onClick={toggleAll} className="text-xs mono text-violet-400 hover:text-violet-300 transition-colors">
+                <button onClick={toggleAll} className="text-xs mono text-slate-400 hover:text-violet-300 transition-colors">
                   {selected.size === mbMemories.length ? 'DESELECT_ALL' : 'SELECT_ALL'}
                 </button>
               </div>
@@ -204,7 +204,7 @@ export function ImportModal({ onClose, embedded = false }: Props) {
 
               <div className="space-y-2">
                 {mbMemories.map((m: any) => (
-                  <label key={m.mbId} className="flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all hover:border-violet-500/30" style={{ borderColor: selected.has(m.mbId) ? 'rgba(139,92,246,0.4)' : 'var(--color-border)', backgroundColor: selected.has(m.mbId) ? 'rgba(139,92,246,0.05)' : 'var(--color-elevated)' }}>
+                  <label key={m.mbId} className="flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all hover:border-slate-600" style={{ borderColor: selected.has(m.mbId) ? 'rgba(139,92,246,0.4)' : 'var(--color-border)', backgroundColor: selected.has(m.mbId) ? 'rgba(139,92,246,0.05)' : 'var(--color-elevated)' }}>
                     <div className="flex-shrink-0 mt-0.5">
                       <div className={cn('w-4 h-4 rounded flex items-center justify-center border transition-all', selected.has(m.mbId) ? 'border-violet-500 bg-violet-500' : 'border-slate-600')} onClick={() => toggle(m.mbId)}>
                         {selected.has(m.mbId) && <Check size={10} className="text-white" />}
@@ -218,7 +218,7 @@ export function ImportModal({ onClose, embedded = false }: Props) {
                       <p className="text-xs text-slate-500 line-clamp-1">{m.content.slice(0, 100)}</p>
                       <div className="flex items-center gap-1 mt-1">
                         <span className="text-xs mono text-slate-600">type: {m.mbType}</span>
-                        {m.tags?.length > 0 && <span className="text-xs text-slate-600">· {m.tags.slice(0, 3).map((t: string) => `#${t}`).join(' ')}</span>}
+                        {m.tags?.length > 0 && <span className="text-xs text-slate-600">Â· {m.tags.slice(0, 3).map((t: string) => `#${t}`).join(' ')}</span>}
                       </div>
                     </div>
                   </label>
@@ -235,7 +235,7 @@ export function ImportModal({ onClose, embedded = false }: Props) {
               </div>
               <h3 className="mono text-lg font-bold text-white mb-1">IMPORT_COMPLETE</h3>
               <p className="text-slate-400 text-sm">{importResult.imported} memor{importResult.imported === 1 ? 'y' : 'ies'} imported to your feed</p>
-              <button onClick={() => { onClose(); navigate('/'); }} className="mt-5 px-6 py-2.5 rounded-lg text-xs mono font-semibold text-white transition-all hover:opacity-90" style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}>
+              <button onClick={() => { onClose(); navigate('/'); }} className="mt-5 px-6 py-2.5 rounded-lg text-xs mono font-semibold text-white transition-all hover:opacity-90" style={{ background: 'var(--color-accent)' }}>
                 VIEW_FEED
               </button>
             </div>
@@ -245,12 +245,12 @@ export function ImportModal({ onClose, embedded = false }: Props) {
         {/* Footer actions */}
         {step === 'memories' && (
           <div className="flex items-center justify-between p-5 border-t flex-shrink-0" style={{ borderColor: 'var(--color-border)' }}>
-            <button onClick={() => setStep('projects')} className="text-xs mono text-slate-400 hover:text-white transition-colors">← BACK</button>
+            <button onClick={() => setStep('projects')} className="text-xs mono text-slate-400 hover:text-white transition-colors">â† BACK</button>
             <button
               onClick={() => importMut.mutate()}
               disabled={selected.size === 0 || importMut.isPending}
               className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs mono font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}
+              style={{ background: 'var(--color-accent)' }}
             >
               {importMut.isPending ? <><Loader2 size={13} className="animate-spin" />IMPORTING...</> : `IMPORT_${selected.size}`}
             </button>

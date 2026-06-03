@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { searchApi, type User } from '../lib/api';
@@ -42,7 +42,7 @@ export function SearchPage() {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto px-6 py-8">
+      <div className="max-w-[680px] mx-auto px-4 py-6">
         <div className="mb-6">
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
@@ -51,8 +51,8 @@ export function SearchPage() {
               onChange={e => setInput(e.target.value)}
               autoFocus
               placeholder="Search memories, builders, projects, packs..."
-              className="w-full pl-9 pr-4 py-3 rounded-xl border text-sm text-white bg-transparent outline-none focus:border-violet-500 transition-colors"
-              style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-panel)' }}
+              className="w-full pl-9 pr-4 py-3 rounded-xl border text-sm text-white bg-transparent outline-none focus:border-slate-500 transition-colors"
+              style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}
             />
           </div>
         </div>
@@ -62,13 +62,14 @@ export function SearchPage() {
             <div className="flex gap-1 mb-6 border-b overflow-x-auto" style={{ borderColor: 'var(--color-border)' }}>
               {TABS.map(({ key, label, icon: Icon }) => (
                 <button key={key} onClick={() => setTab(key)}
-                  className={`flex items-center gap-2 px-4 py-2.5 text-xs mono font-medium transition-all border-b-2 -mb-px whitespace-nowrap flex-shrink-0 ${tab === key ? 'text-white border-violet-500' : 'text-slate-500 border-transparent hover:text-slate-300'}`}>
+                  className={`flex items-center gap-2 px-3 py-2.5 text-sm font-semibold transition-all border-b-2 -mb-px whitespace-nowrap flex-shrink-0 ${tab === key ? 'text-white' : 'text-slate-500 border-transparent hover:text-slate-300'}`}
+                  style={tab === key ? { borderColor: 'var(--color-accent)' } : {}}>
                   <Icon size={12} />{label}
                 </button>
               ))}
             </div>
 
-            {isLoading && <div className="flex justify-center py-12"><Loader2 size={20} className="animate-spin text-violet-400" /></div>}
+            {isLoading && <div className="flex justify-center py-12"><Loader2 size={20} className="animate-spin text-slate-400" /></div>}
 
             {/* Memories */}
             {!isLoading && tab === 'memories' && (
@@ -83,8 +84,8 @@ export function SearchPage() {
               <div className="space-y-3">
                 {data?.users?.map((u: User) => (
                   <Link key={u.id} to={`/u/${u.username}`}>
-                    <div className="flex items-center gap-3 p-4 rounded-xl border hover:border-violet-500/30 transition-all" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
-                      <div className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center mono font-bold overflow-hidden" style={{ background: 'linear-gradient(135deg,#7C3AED,#00E5FF)', color: 'white' }}>
+                    <div className="flex items-center gap-3 p-4 rounded-xl border hover:border-slate-600 transition-all" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+                      <div className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center mono font-bold overflow-hidden" style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}>
                         {u.avatar ? <img src={u.avatar} alt={u.username} className="w-full h-full object-cover" /> : u.username[0].toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -108,8 +109,8 @@ export function SearchPage() {
               <div className="space-y-3">
                 {data?.projects?.map(({ project, owner }: any) => (
                   <Link key={project.id} to={`/projects/${project.id}`}>
-                    <div className="flex items-center gap-3 p-4 rounded-xl border hover:border-violet-500/30 transition-all" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
-                      <FolderKanban size={20} className="text-violet-400 flex-shrink-0" />
+                    <div className="flex items-center gap-3 p-4 rounded-xl border hover:border-slate-600 transition-all" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+                      <FolderKanban size={20} className="text-slate-400 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="mono text-sm font-semibold text-white">{project.name}</div>
                         {project.description && <div className="text-xs text-slate-500 line-clamp-1 mt-0.5">{project.description}</div>}
@@ -128,8 +129,8 @@ export function SearchPage() {
               <div className="space-y-3">
                 {data?.packs?.map(({ pack, owner }: any) => (
                   <Link key={pack.id} to={`/packs/${pack.id}`}>
-                    <div className="flex items-center gap-3 p-4 rounded-xl border hover:border-violet-500/30 transition-all" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
-                      <Package size={20} className="text-violet-400 flex-shrink-0" />
+                    <div className="flex items-center gap-3 p-4 rounded-xl border hover:border-slate-600 transition-all" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+                      <Package size={20} className="text-slate-400 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="mono text-sm font-semibold text-white">{pack.title}</div>
                         {pack.description && <div className="text-xs text-slate-500 line-clamp-1 mt-0.5">{pack.description}</div>}

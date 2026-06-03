@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { packsApi, type PackWithOwner } from '../lib/api';
@@ -22,10 +22,10 @@ function CreatePackModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
-      <div className="w-full max-w-md rounded-2xl border p-6" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+      <div className="w-full max-w-md rounded-2xl border p-6" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2">
-            <Package size={16} className="text-violet-400" />
+            <Package size={16} className="text-slate-400" />
             <h2 className="mono font-semibold text-white text-sm">CREATE_PACK</h2>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors"><X size={16} /></button>
@@ -38,7 +38,7 @@ function CreatePackModal({ onClose }: { onClose: () => void }) {
               value={form.title}
               onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
               placeholder="My Agentic Workflow Pack"
-              className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-violet-500 transition-colors"
+              className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-slate-500 transition-colors"
               style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }}
               autoFocus
             />
@@ -51,7 +51,7 @@ function CreatePackModal({ onClose }: { onClose: () => void }) {
               onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
               rows={3}
               placeholder="What's in this pack?"
-              className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-violet-500 transition-colors resize-none"
+              className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-slate-500 transition-colors resize-none"
               style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }}
             />
           </div>
@@ -66,7 +66,7 @@ function CreatePackModal({ onClose }: { onClose: () => void }) {
                   className={cn(
                     'flex items-center gap-2 px-3 py-2 rounded-lg border text-xs mono flex-1 justify-center transition-all',
                     form.visibility === v
-                      ? 'border-violet-500 text-violet-300'
+                      ? 'border-slate-500 opacity-80'
                       : 'text-slate-500 hover:text-slate-300'
                   )}
                   style={{ borderColor: form.visibility === v ? undefined : 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }}
@@ -82,7 +82,7 @@ function CreatePackModal({ onClose }: { onClose: () => void }) {
             onClick={() => createMut.mutate()}
             disabled={!form.title.trim() || createMut.isPending}
             className="w-full py-2.5 rounded-lg text-xs mono font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 mt-2"
-            style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}
+            style={{ background: 'var(--color-accent)' }}
           >
             {createMut.isPending ? 'CREATING...' : 'CREATE_PACK'}
           </button>
@@ -105,13 +105,13 @@ export function PacksPage() {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto px-6 py-8">
+      <div className="max-w-[680px] mx-auto px-4 py-6">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <Package size={20} className="text-violet-400" />
+              <Package size={20} className="text-slate-400" />
               <h1 className="mono text-lg font-bold text-white">MEMORY_PACKS</h1>
             </div>
             <p className="text-xs text-slate-500">Curated collections of memories, shareable as a unit</p>
@@ -120,7 +120,7 @@ export function PacksPage() {
             <button
               onClick={() => setShowCreate(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs mono font-semibold text-white transition-all hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}
+              style={{ background: 'var(--color-accent)' }}
             >
               <Plus size={13} /> NEW_PACK
             </button>
@@ -129,7 +129,7 @@ export function PacksPage() {
 
         {isLoading && (
           <div className="flex justify-center py-20">
-            <Loader2 size={20} className="animate-spin text-violet-400" />
+            <Loader2 size={20} className="animate-spin text-slate-400" />
           </div>
         )}
 
@@ -141,7 +141,7 @@ export function PacksPage() {
             {user && (
               <button
                 onClick={() => setShowCreate(true)}
-                className="mt-4 text-xs mono text-violet-400 hover:text-violet-300 transition-colors"
+                className="mt-4 text-xs mono text-slate-400 hover:opacity-80 transition-colors"
               >
                 + Create a pack
               </button>
@@ -154,21 +154,21 @@ export function PacksPage() {
             <Link
               key={pack.id}
               to={`/packs/${pack.id}`}
-              className="flex items-start gap-4 p-5 rounded-xl border transition-all hover:border-violet-500/30 group"
-              style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}
+              className="flex items-start gap-4 p-5 rounded-xl border transition-all hover:border-slate-600 group"
+              style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
             >
               {/* Icon */}
               <div
                 className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
                 style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(0,229,255,0.1))', border: '1px solid rgba(139,92,246,0.2)' }}
               >
-                <Package size={18} className="text-violet-400" />
+                <Package size={18} className="text-slate-400" />
               </div>
 
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-3">
-                  <h3 className="mono text-sm font-semibold text-white group-hover:text-violet-300 transition-colors line-clamp-1">
+                  <h3 className="mono text-sm font-semibold text-white group-hover:opacity-80 transition-colors line-clamp-1">
                     {pack.title}
                   </h3>
                   {pack.visibility === 'private' && (

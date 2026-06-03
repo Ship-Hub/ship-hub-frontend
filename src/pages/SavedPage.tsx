@@ -41,11 +41,11 @@ export function SavedPage() {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto px-6 py-8">
+      <div className="max-w-[680px] mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <Bookmark size={18} className="text-amber-400" />
-          <h1 className="mono text-lg font-bold text-white">SAVED</h1>
+          <h1 className="text-xl font-bold text-white">Saved</h1>
         </div>
 
         {/* Tabs */}
@@ -57,14 +57,14 @@ export function SavedPage() {
             <button
               key={key}
               onClick={() => setTab(key)}
-              className={`flex items-center gap-1.5 px-3 py-2.5 text-xs mono font-medium transition-all border-b-2 -mb-px ${
-                tab === key ? 'text-white border-amber-400' : 'text-slate-500 border-transparent hover:text-slate-300'
+              className={`flex items-center gap-1.5 px-3 py-2.5 text-sm font-semibold transition-all border-b-2 -mb-px ${
+                tab === key ? 'text-white' : 'text-slate-500 border-transparent hover:text-slate-300'
               }`}
             >
               <Icon size={12} />
               {label}
               <span className={`mono text-xs px-1.5 py-0.5 rounded-full ${tab === key ? 'text-white' : 'text-slate-600'}`}
-                style={{ backgroundColor: tab === key ? 'var(--color-elevated)' : 'transparent' }}>
+                style={{ backgroundColor: tab === key ? 'rgba(255,77,77,0.12)' : 'transparent', color: tab === key ? 'var(--color-accent)' : undefined }}>
                 {count}
               </span>
             </button>
@@ -74,7 +74,7 @@ export function SavedPage() {
         {/* Loading */}
         {isLoading && (
           <div className="flex items-center justify-center py-20">
-            <Loader2 size={20} className="animate-spin text-violet-400" />
+            <Loader2 size={20} className="animate-spin text-slate-600" />
           </div>
         )}
 

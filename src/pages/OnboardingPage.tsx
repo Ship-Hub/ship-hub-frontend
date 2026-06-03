@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { usersApi, leaderboardApi, authApi, type LeaderboardEntry } from '../lib/api';
@@ -25,7 +25,7 @@ export function OnboardingPage() {
     githubUsername: '',
   });
 
-  // Leaderboard for "follow builders" step — exclude self
+  // Leaderboard for "follow builders" step â€” exclude self
   const { data: lbData } = useQuery({
     queryKey: ['leaderboard'],
     queryFn: () => leaderboardApi.get(10).then(r => r.data),
@@ -60,11 +60,11 @@ export function OnboardingPage() {
         <div className="text-center mb-8">
           <div
             className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3"
-            style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}
+            style={{ background: 'var(--color-accent)' }}
           >
             <Zap size={22} className="text-white" />
           </div>
-          <h1 className="mono text-xl font-bold text-white">WELCOME_TO_SHIP_HUB</h1>
+          <h1 className="text-xl font-bold text-white">Welcome to ShipHub</h1>
           <p className="text-slate-400 text-xs mt-1">Let's get you set up in 3 quick steps</p>
         </div>
 
@@ -83,26 +83,26 @@ export function OnboardingPage() {
                     }`}
                     style={{
                       background: done
-                        ? 'linear-gradient(135deg, #7C3AED, #00E5FF)'
+                        ? 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))'
                         : active
-                        ? 'rgba(139,92,246,0.2)'
+                        ? 'rgba(255,77,77,0.12)'
                         : 'var(--color-elevated)',
-                      border: active ? '2px solid #8B5CF6' : '2px solid transparent',
+                      border: active ? '2px solid var(--color-accent)' : '2px solid transparent',
                     }}
                   >
                     {done
                       ? <CheckCircle2 size={18} className="text-white" />
-                      : <Icon size={16} className={active ? 'text-violet-400' : 'text-slate-500'} />
+                      : <Icon size={16} className={active ? 'text-slate-400' : 'text-slate-500'} />
                     }
                   </div>
-                  <span className={`mono text-xs ${active ? 'text-violet-300' : done ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <span className={`mono text-xs ${active ? 'opacity-80' : done ? 'text-slate-400' : 'text-slate-600'}`}>
                     {s.label.toUpperCase()}
                   </span>
                 </div>
                 {i < totalSteps - 1 && (
                   <div
                     className="w-16 h-0.5 mx-2 mb-4"
-                    style={{ backgroundColor: i < step ? 'var(--color-violet)' : 'var(--color-border)' }}
+                    style={{ backgroundColor: i < step ? 'var(--color-accent)' : 'var(--color-border)' }}
                   />
                 )}
               </div>
@@ -111,9 +111,9 @@ export function OnboardingPage() {
         </div>
 
         {/* Step panels */}
-        <div className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+        <div className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
 
-          {/* Step 0 — Profile */}
+          {/* Step 0 â€” Profile */}
           {step === 0 && (
             <div>
               <h2 className="mono text-sm font-bold text-white mb-1">COMPLETE_YOUR_PROFILE</h2>
@@ -134,7 +134,7 @@ export function OnboardingPage() {
                         onChange={e => setProfile(p => ({ ...p, [key]: e.target.value }))}
                         rows={2}
                         placeholder={placeholder}
-                        className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-violet-500 transition-colors resize-none"
+                        className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-slate-500 transition-colors resize-none"
                         style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }}
                       />
                     ) : (
@@ -142,7 +142,7 @@ export function OnboardingPage() {
                         value={(profile as any)[key]}
                         onChange={e => setProfile(p => ({ ...p, [key]: e.target.value }))}
                         placeholder={placeholder}
-                        className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-violet-500 transition-colors"
+                        className="w-full px-3 py-2.5 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-slate-500 transition-colors"
                         style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }}
                       />
                     )}
@@ -155,7 +155,7 @@ export function OnboardingPage() {
                   onClick={() => profileMut.mutate()}
                   disabled={profileMut.isPending}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs mono font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
-                  style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}
+                  style={{ background: 'var(--color-accent)' }}
                 >
                   {profileMut.isPending ? 'SAVING...' : 'SAVE_AND_CONTINUE'}
                   <ArrowRight size={13} />
@@ -167,7 +167,7 @@ export function OnboardingPage() {
             </div>
           )}
 
-          {/* Step 1 — Publish memory */}
+          {/* Step 1 â€” Publish memory */}
           {step === 1 && (
             <div>
               <h2 className="mono text-sm font-bold text-white mb-1">PUBLISH_YOUR_FIRST_MEMORY</h2>
@@ -176,11 +176,11 @@ export function OnboardingPage() {
               <div className="grid grid-cols-2 gap-3 mb-6">
                 <Link
                   to="/publish"
-                  className="flex flex-col items-center gap-3 p-5 rounded-xl border text-center transition-all hover:border-violet-500/50"
+                  className="flex flex-col items-center gap-3 p-5 rounded-xl border text-center transition-all hover:border-slate-500/50"
                   style={{ backgroundColor: 'var(--color-elevated)', borderColor: 'var(--color-border)' }}
                 >
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(0,229,255,0.1))' }}>
-                    <BookOpen size={18} className="text-violet-400" />
+                    <BookOpen size={18} className="text-slate-400" />
                   </div>
                   <div>
                     <div className="mono text-xs font-semibold text-white mb-0.5">CREATE_MEMORY</div>
@@ -207,19 +207,19 @@ export function OnboardingPage() {
                   onClick={() => setStep(2)}
                   className="text-xs mono text-slate-500 hover:text-slate-300 transition-colors"
                 >
-                  skip for now →
+                  skip for now â†’
                 </button>
               </div>
             </div>
           )}
 
-          {/* Step 2 — Follow builders */}
+          {/* Step 2 â€” Follow builders */}
           {step === 2 && (
             <div>
               <h2 className="mono text-sm font-bold text-white mb-1">FOLLOW_SOME_BUILDERS</h2>
               <p className="text-xs text-slate-500 mb-5">
                 Personalise your feed by following{' '}
-                <span className={followed.size >= 3 ? 'text-emerald-400' : 'text-violet-400'}>
+                <span className={followed.size >= 3 ? 'text-emerald-400' : 'text-slate-400'}>
                   {followed.size}/3
                 </span>
                 {' '}builders (or more!)
@@ -227,7 +227,7 @@ export function OnboardingPage() {
 
               <div className="space-y-2 mb-6">
                 {suggestions.length === 0 && (
-                  <p className="text-xs mono text-slate-600 text-center py-4">No builders yet — you'll be the first!</p>
+                  <p className="text-xs mono text-slate-600 text-center py-4">No builders yet â€” you'll be the first!</p>
                 )}
                 {suggestions.map((b: LeaderboardEntry) => {
                   const isFollowed = followed.has(b.username);
@@ -239,7 +239,7 @@ export function OnboardingPage() {
                     >
                       <div
                         className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center mono font-bold text-sm"
-                        style={{ background: 'linear-gradient(135deg, #7C3AED, #00E5FF)', color: 'white' }}
+                        style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}
                       >
                         {b.username[0].toUpperCase()}
                       </div>
@@ -247,7 +247,7 @@ export function OnboardingPage() {
                         <div className="mono text-xs font-semibold text-white truncate">
                           {b.displayName ?? b.username}
                         </div>
-                        <div className="text-xs mono text-slate-500">@{b.username} · {b.memoryCount} memories</div>
+                        <div className="text-xs mono text-slate-500">@{b.username} Â· {b.memoryCount} memories</div>
                       </div>
                       <button
                         onClick={() => {
@@ -259,9 +259,9 @@ export function OnboardingPage() {
                             ? 'text-emerald-400 border border-emerald-400/30'
                             : 'text-white hover:opacity-90'
                         }`}
-                        style={!isFollowed ? { background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' } : {}}
+                        style={!isFollowed ? { background: 'var(--color-accent)' } : {}}
                       >
-                        {isFollowed ? '✓ FOLLOWING' : 'FOLLOW'}
+                        {isFollowed ? 'âœ“ FOLLOWING' : 'FOLLOW'}
                       </button>
                     </div>
                   );
@@ -271,7 +271,7 @@ export function OnboardingPage() {
               <button
                 onClick={finish}
                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs mono font-semibold text-white transition-all hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}
+                style={{ background: 'var(--color-accent)' }}
               >
                 {followed.size >= 3 ? 'LETS_GO' : 'ENTER_SHIP_HUB'}
                 <ArrowRight size={13} />

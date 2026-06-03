@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { packsApi } from '../lib/api';
@@ -50,7 +50,7 @@ export function PackDetailPage() {
     setEditing(true);
   };
 
-  if (isLoading) return <Layout><div className="flex justify-center py-20"><Loader2 size={20} className="animate-spin text-violet-400" /></div></Layout>;
+  if (isLoading) return <Layout><div className="flex justify-center py-20"><Loader2 size={20} className="animate-spin text-slate-400" /></div></Layout>;
   if (!data) return null;
 
   const { pack, owner, memories } = data;
@@ -58,7 +58,7 @@ export function PackDetailPage() {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto px-6 py-8">
+      <div className="max-w-[680px] mx-auto px-4 py-6">
 
         {/* Back */}
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-xs mono text-slate-400 hover:text-white transition-colors mb-6">
@@ -66,13 +66,13 @@ export function PackDetailPage() {
         </button>
 
         {/* Pack header */}
-        <div className="rounded-2xl border p-6 mb-6" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+        <div className="rounded-2xl border p-6 mb-6" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
           <div className="flex items-start gap-4">
             <div
               className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
               style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(0,229,255,0.1))', border: '1px solid rgba(139,92,246,0.2)' }}
             >
-              <Package size={22} className="text-violet-400" />
+              <Package size={22} className="text-slate-400" />
             </div>
 
             <div className="flex-1 min-w-0">
@@ -80,7 +80,7 @@ export function PackDetailPage() {
                 <input
                   value={editTitle}
                   onChange={e => setEditTitle(e.target.value)}
-                  className="w-full mono text-lg font-bold text-white bg-transparent border-b border-violet-500 outline-none pb-1 mb-2"
+                  className="w-full mono text-lg font-bold text-white bg-transparent border-b border-slate-500 outline-none pb-1 mb-2"
                   autoFocus
                 />
               ) : (
@@ -121,7 +121,7 @@ export function PackDetailPage() {
                   onChange={e => setEditDesc(e.target.value)}
                   rows={2}
                   placeholder="Pack description..."
-                  className="w-full mt-3 px-3 py-2 rounded-lg border text-xs text-white bg-transparent outline-none resize-none focus:border-violet-500 transition-colors"
+                  className="w-full mt-3 px-3 py-2 rounded-lg border text-xs text-white bg-transparent outline-none resize-none focus:border-slate-500 transition-colors"
                   style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }}
                 />
               ) : (
@@ -146,7 +146,7 @@ export function PackDetailPage() {
                 </>
               ) : (
                 <>
-                  <button onClick={startEdit} className="flex items-center gap-1.5 text-xs mono text-slate-400 hover:text-violet-400 transition-colors">
+                  <button onClick={startEdit} className="flex items-center gap-1.5 text-xs mono text-slate-400 hover:text-slate-400 transition-colors">
                     <Pencil size={13} /> EDIT
                   </button>
                   <button
@@ -164,14 +164,14 @@ export function PackDetailPage() {
         {/* Memories list */}
         <div className="mb-4 flex items-center justify-between">
           <h2 className="mono text-sm font-semibold text-white flex items-center gap-2">
-            <BookOpen size={14} className="text-violet-400" />
+            <BookOpen size={14} className="text-slate-400" />
             MEMORIES <span className="text-slate-500 font-normal">({memories.length})</span>
           </h2>
           {isOwner && (
             <Link
               to="/"
-              className="flex items-center gap-1.5 text-xs mono text-slate-400 hover:text-violet-400 transition-colors"
-              title="Go to feed and use the ⊕ button on any memory to add it here"
+              className="flex items-center gap-1.5 text-xs mono text-slate-400 hover:text-slate-400 transition-colors"
+              title="Go to feed and use the âŠ• button on any memory to add it here"
             >
               <Plus size={13} /> ADD_FROM_FEED
             </Link>
@@ -179,7 +179,7 @@ export function PackDetailPage() {
         </div>
 
         {memories.length === 0 ? (
-          <div className="text-center py-16 rounded-xl border" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+          <div className="text-center py-16 rounded-xl border" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
             <BookOpen size={28} className="text-slate-700 mx-auto mb-3" />
             <p className="mono text-slate-400 text-sm">EMPTY_PACK</p>
             <p className="text-xs text-slate-600 mt-1">

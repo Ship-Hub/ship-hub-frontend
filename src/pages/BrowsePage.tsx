@@ -1,4 +1,4 @@
-import { useSearchParams, Link } from 'react-router-dom';
+﻿import { useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { browseApi, tagsApi, type MemoryWithAuthor } from '../lib/api';
 import { Layout } from '../components/Layout';
@@ -33,24 +33,24 @@ export function BrowsePage() {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto px-6 py-8">
+      <div className="max-w-[680px] mx-auto px-4 py-6">
 
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-1">
             {activeTag ? (
               <>
-                <Hash size={16} className="text-violet-400" />
+                <Hash size={16} className="text-slate-400" />
                 <h1 className="mono text-lg font-bold text-white">{activeTag}</h1>
               </>
             ) : activeCategory ? (
               <>
-                <Tag size={16} className="text-violet-400" />
+                <Tag size={16} className="text-slate-400" />
                 <h1 className="mono text-lg font-bold text-white">{activeCategory.toUpperCase()}</h1>
               </>
             ) : (
               <>
-                <LayoutGrid size={16} className="text-violet-400" />
+                <LayoutGrid size={16} className="text-slate-400" />
                 <h1 className="mono text-lg font-bold text-white">BROWSE</h1>
               </>
             )}
@@ -113,7 +113,7 @@ export function BrowsePage() {
           <>
             {isLoading && (
               <div className="flex justify-center py-16">
-                <Loader2 size={20} className="animate-spin text-violet-400" />
+                <Loader2 size={20} className="animate-spin text-slate-400" />
               </div>
             )}
 
@@ -123,7 +123,7 @@ export function BrowsePage() {
                 <p className="text-xs text-slate-600 mt-1">
                   {activeTag ? `No public memories tagged #${activeTag} yet` : `No public ${activeCategory} memories yet`}
                 </p>
-                <Link to="/publish" className="inline-block mt-4 text-xs mono text-violet-400 hover:text-violet-300 transition-colors">
+                <Link to="/publish" className="inline-block mt-4 text-xs mono text-slate-400 hover:opacity-80 transition-colors">
                   + Publish the first one
                 </Link>
               </div>
@@ -138,7 +138,7 @@ export function BrowsePage() {
                       onClick={() => setSearchParams({})}
                       className="text-xs mono text-slate-500 hover:text-white transition-colors"
                     >
-                      × clear tag
+                      Ã— clear tag
                     </button>
                   )}
                 </div>
@@ -152,7 +152,7 @@ export function BrowsePage() {
           </>
         )}
 
-        {/* Idle state — nothing selected yet */}
+        {/* Idle state â€” nothing selected yet */}
         {!activeTag && !activeCategory && (
           <div className="text-center py-12">
             <LayoutGrid size={32} className="text-slate-700 mx-auto mb-3" />

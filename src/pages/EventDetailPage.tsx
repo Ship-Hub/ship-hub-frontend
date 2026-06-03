@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from 'react-router-dom';
+﻿import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { eventsApi } from '../lib/api';
 import { Layout } from '../components/Layout';
@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 
 const EVENT_TYPE_CONFIG = {
-  demo_day:      { label: 'DEMO_DAY',      color: 'text-violet-400 bg-violet-400/10 border-violet-400/20', icon: Zap },
+  demo_day:      { label: 'DEMO_DAY',      color: 'text-slate-400 bg-violet-400/10 border-violet-400/20', icon: Zap },
   build_session: { label: 'BUILD_SESSION', color: 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20',   icon: Code },
   hackathon:     { label: 'HACKATHON',     color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20', icon: Trophy },
 } as const;
@@ -49,7 +49,7 @@ export function EventDetailPage() {
   if (isLoading) return (
     <Layout>
       <div className="flex justify-center py-20">
-        <Loader2 size={20} className="animate-spin text-violet-400" />
+        <Loader2 size={20} className="animate-spin text-slate-400" />
       </div>
     </Layout>
   );
@@ -63,7 +63,7 @@ export function EventDetailPage() {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto px-6 py-8">
+      <div className="max-w-[680px] mx-auto px-4 py-6">
         {/* Back */}
         <button
           onClick={() => navigate(-1)}
@@ -73,7 +73,7 @@ export function EventDetailPage() {
         </button>
 
         {/* Main card */}
-        <div className="rounded-2xl border p-6 mb-5" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+        <div className="rounded-2xl border p-6 mb-5" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
 
           {/* Type + past badge */}
           <div className="flex items-center gap-2 mb-4">
@@ -96,7 +96,7 @@ export function EventDetailPage() {
           {/* Meta */}
           <div className="space-y-2.5 mb-6 pb-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
             <div className="flex items-center gap-2 text-sm">
-              <CalendarDays size={14} className="text-violet-400 flex-shrink-0" />
+              <CalendarDays size={14} className="text-slate-400 flex-shrink-0" />
               <span className="text-slate-300">{formatDateTime(event.startsAt)}</span>
             </div>
 
@@ -136,7 +136,7 @@ export function EventDetailPage() {
               {organizer && (
                 <Link to={`/u/${organizer.username}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                   <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs mono font-bold"
-                       style={{ background: 'linear-gradient(135deg, #7C3AED, #00E5FF)', color: 'white' }}>
+                       style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}>
                     {organizer.username[0].toUpperCase()}
                   </div>
                   <span className="text-xs mono text-slate-300">@{organizer.username}</span>
@@ -156,10 +156,10 @@ export function EventDetailPage() {
                 }`}
                 style={rsvped
                   ? { borderColor: 'var(--color-border)', backgroundColor: 'transparent' }
-                  : { background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }
+                  : { background: 'var(--color-accent)' }
                 }
               >
-                {rsvpMut.isPending ? '...' : rsvped ? '✓ ATTENDING — CANCEL' : 'RSVP'}
+                {rsvpMut.isPending ? '...' : rsvped ? 'âœ“ ATTENDING â€” CANCEL' : 'RSVP'}
               </button>
             )}
 
@@ -167,7 +167,7 @@ export function EventDetailPage() {
               <Link
                 to="/login"
                 className="px-5 py-2 rounded-lg text-xs mono font-semibold text-white hover:opacity-90 transition-all"
-                style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)' }}
+                style={{ background: 'var(--color-accent)' }}
               >
                 SIGN_IN_TO_RSVP
               </Link>

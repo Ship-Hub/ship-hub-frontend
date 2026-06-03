@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { notificationsApi, type NotificationWithActor } from '../lib/api';
 import { Layout } from '../components/Layout';
@@ -7,12 +7,12 @@ import { Bell, GitFork, UserPlus, MessageSquare, Heart, Loader2, CheckCheck, AtS
 
 const NOTIF_CONFIG: Record<string, { icon: any; color: string; text: (a: string) => string }> = {
   fork:     { icon: GitFork,       color: 'text-cyan-400',    text: a => `@${a} forked your memory` },
-  follow:   { icon: UserPlus,      color: 'text-violet-400',  text: a => `@${a} followed you` },
+  follow:   { icon: UserPlus,      color: 'text-slate-400',  text: a => `@${a} followed you` },
   comment:  { icon: MessageSquare, color: 'text-blue-400',    text: a => `@${a} commented on your post or memory` },
   like:     { icon: Heart,         color: 'text-pink-400',    text: a => `@${a} liked your memory` },
   mention:  { icon: AtSign,        color: 'text-emerald-400', text: a => `@${a} mentioned you` },
   reaction: { icon: Smile,         color: 'text-amber-400',   text: a => `@${a} reacted to your post` },
-  quote:    { icon: Quote,         color: 'text-violet-300',  text: a => `@${a} quoted your post` },
+  quote:    { icon: Quote,         color: 'opacity-80',  text: a => `@${a} quoted your post` },
 };
 
 export function NotificationsPage() {
@@ -43,10 +43,10 @@ export function NotificationsPage() {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto px-6 py-8">
+      <div className="max-w-[680px] mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="mono text-lg font-bold text-white">NOTIFICATIONS</h1>
+            <h1 className="text-xl font-bold text-white">Notifications</h1>
             {unread > 0 && <p className="text-xs text-slate-500 mt-0.5">{unread} unread</p>}
           </div>
           {unread > 0 && (
@@ -56,7 +56,7 @@ export function NotificationsPage() {
           )}
         </div>
 
-        {isLoading && <div className="flex justify-center py-12"><Loader2 size={20} className="animate-spin text-violet-400" /></div>}
+        {isLoading && <div className="flex justify-center py-12"><Loader2 size={20} className="animate-spin text-slate-600" /></div>}
 
         <div className="space-y-2">
           {data?.notifications?.map(({ notification, actor }: NotificationWithActor) => {
@@ -68,15 +68,15 @@ export function NotificationsPage() {
               <div
                 key={notification.id}
                 onClick={() => isUnread && readOneMut.mutate(notification.id)}
-                className={`flex items-start gap-3 p-4 rounded-xl border transition-all cursor-pointer ${isUnread ? 'hover:border-violet-500/30' : 'opacity-60'}`}
+                className={`flex items-start gap-3 p-4 rounded-xl border transition-all cursor-pointer ${isUnread ? '' : 'opacity-50'}`}
                 style={{
-                  backgroundColor: isUnread ? 'var(--color-panel)' : 'transparent',
+                  backgroundColor: isUnread ? 'var(--color-card)' : 'transparent',
                   borderColor: isUnread ? 'var(--color-border)' : 'transparent',
                 }}
               >
                 {/* Actor avatar */}
                 <Link to={`/u/${actor?.username}`} onClick={e => e.stopPropagation()}>
-                  <div className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center mono font-bold text-sm" style={{ background: 'linear-gradient(135deg, #7C3AED, #00E5FF)', color: 'white' }}>
+                  <div className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center mono font-bold text-sm" style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}>
                     {actor?.username?.[0]?.toUpperCase() ?? '?'}
                   </div>
                 </Link>
@@ -86,26 +86,26 @@ export function NotificationsPage() {
                   <div className="flex items-center gap-2 mb-0.5">
                     <Icon size={12} className={cfg.color} />
                     <span className="text-xs text-slate-300">{cfg.text(actor?.username ?? 'someone')}</span>
-                    {isUnread && <span className="w-1.5 h-1.5 rounded-full bg-violet-500 flex-shrink-0" />}
+                    {isUnread && <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--color-accent)' }} />}
                   </div>
 
                   {notification.memoryId && (
-                    <Link to={`/memory/${notification.memoryId}`} onClick={e => e.stopPropagation()} className="text-xs mono text-violet-400 hover:text-violet-300 transition-colors">
-                      View memory →
+                    <Link to={`/memory/${notification.memoryId}`} onClick={e => e.stopPropagation()} className="text-xs font-medium transition-colors hover:opacity-80" style={{ color: 'var(--color-accent)' }}>
+                      View memory â†’
                     </Link>
                   )}
                   {notification.postId && !notification.memoryId && (
-                    <Link to={`/`} onClick={e => e.stopPropagation()} className="text-xs mono text-violet-400 hover:text-violet-300 transition-colors">
-                      View feed →
+                    <Link to={`/`} onClick={e => e.stopPropagation()} className="text-xs font-medium transition-colors hover:opacity-80" style={{ color: 'var(--color-accent)' }}>
+                      View feed â†’
                     </Link>
                   )}
                   {notification.type === 'follow' && actor && (
                     <Link
                       to={`/u/${actor.username}`}
                       onClick={e => e.stopPropagation()}
-                      className="text-xs mono text-violet-400 hover:text-violet-300 transition-colors"
+                      className="text-xs font-medium transition-colors hover:opacity-80" style={{ color: 'var(--color-accent)' }}
                     >
-                      View profile →
+                      View profile â†’
                     </Link>
                   )}
 

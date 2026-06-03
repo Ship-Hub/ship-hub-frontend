@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from 'react-router-dom';
+﻿import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { projectsApi, memoriesApi, type ProjectStatus } from '../lib/api';
@@ -46,7 +46,7 @@ export function ProjectDetailPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['project-memories', id] }),
   });
 
-  if (projectQ.isLoading) return <Layout><div className="flex items-center justify-center h-64"><Loader2 size={20} className="animate-spin text-violet-400" /></div></Layout>;
+  if (projectQ.isLoading) return <Layout><div className="flex items-center justify-center h-64"><Loader2 size={20} className="animate-spin text-slate-400" /></div></Layout>;
 
   const { project, owner } = projectQ.data ?? {};
   if (!project) return null;
@@ -61,14 +61,14 @@ export function ProjectDetailPage() {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto px-6 py-8">
+      <div className="max-w-[680px] mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">
           <button onClick={() => navigate('/projects')} className="flex items-center gap-2 text-xs mono text-slate-400 hover:text-white transition-colors">
             <ArrowLeft size={14} /> PROJECTS
           </button>
           {isOwner && (
             <div className="flex items-center gap-2">
-              <button onClick={startEdit} className="flex items-center gap-1.5 text-xs mono text-slate-400 hover:text-violet-400 transition-colors px-2 py-1 rounded border" style={{ borderColor: 'var(--color-border)' }}>
+              <button onClick={startEdit} className="flex items-center gap-1.5 text-xs mono text-slate-400 hover:text-slate-400 transition-colors px-2 py-1 rounded border" style={{ borderColor: 'var(--color-border)' }}>
                 <Pencil size={12} /> EDIT
               </button>
               <button onClick={() => confirm('Delete this project?') && deleteMut.mutate()} className="flex items-center gap-1.5 text-xs mono text-slate-400 hover:text-red-400 transition-colors px-2 py-1 rounded border" style={{ borderColor: 'var(--color-border)' }}>
@@ -79,16 +79,16 @@ export function ProjectDetailPage() {
         </div>
 
         {/* Project header */}
-        <div className="rounded-2xl border p-6 mb-6" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+        <div className="rounded-2xl border p-6 mb-6" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
           {editMode ? (
             <div className="space-y-3">
               {[{ k: 'name', l: 'NAME' }, { k: 'description', l: 'DESCRIPTION', ta: true }, { k: 'websiteUrl', l: 'WEBSITE' }, { k: 'githubUrl', l: 'GITHUB' }].map(({ k, l, ta }) => (
                 <div key={k}>
                   <label className="block text-xs mono text-slate-400 mb-1">{l}</label>
                   {ta ? (
-                    <textarea value={editForm[k]} onChange={e => setEditForm((f: any) => ({ ...f, [k]: e.target.value }))} rows={2} className="w-full px-3 py-2 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-violet-500 resize-none" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }} />
+                    <textarea value={editForm[k]} onChange={e => setEditForm((f: any) => ({ ...f, [k]: e.target.value }))} rows={2} className="w-full px-3 py-2 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-slate-500 resize-none" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }} />
                   ) : (
-                    <input value={editForm[k]} onChange={e => setEditForm((f: any) => ({ ...f, [k]: e.target.value }))} className="w-full px-3 py-2 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-violet-500" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }} />
+                    <input value={editForm[k]} onChange={e => setEditForm((f: any) => ({ ...f, [k]: e.target.value }))} className="w-full px-3 py-2 rounded-lg border text-sm text-white bg-transparent outline-none focus:border-slate-500" style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }} />
                   )}
                 </div>
               ))}
@@ -114,7 +114,7 @@ export function ProjectDetailPage() {
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--color-elevated)' }}>
-                    <FolderKanban size={22} className="text-violet-400" />
+                    <FolderKanban size={22} className="text-slate-400" />
                   </div>
                   <div>
                     <h1 className="mono text-xl font-bold text-white">{project.name}</h1>
@@ -124,7 +124,7 @@ export function ProjectDetailPage() {
                 <div className="flex items-center gap-2">
                   <span className={`text-xs mono px-2 py-0.5 rounded border ${STATUS_COLOR_MAP[project.status]}`}>{project.status.toUpperCase()}</span>
                   {!isOwner && user && (
-                    <button onClick={() => followMut.mutate()} disabled={followMut.isPending} className="px-4 py-2 rounded-lg text-xs mono font-semibold transition-all" style={isFollowing ? { backgroundColor: 'var(--color-elevated)', color: '#94a3b8', border: '1px solid var(--color-border)' } : { background: 'linear-gradient(135deg, #7C3AED 0%, #8B5CF6 45%, #22D3EE 100%)', color: 'white' }}>
+                    <button onClick={() => followMut.mutate()} disabled={followMut.isPending} className="px-4 py-2 rounded-lg text-xs mono font-semibold transition-all" style={isFollowing ? { backgroundColor: 'var(--color-elevated)', color: '#94a3b8', border: '1px solid var(--color-border)' } : { background: 'var(--color-accent)', color: 'white' }}>
                       {isFollowing ? 'FOLLOWING' : 'FOLLOW'}
                     </button>
                   )}
@@ -149,7 +149,7 @@ export function ProjectDetailPage() {
           <h2 className="mono text-sm font-semibold text-white">MEMORIES</h2>
         </div>
 
-        {memoriesQ.isLoading && <div className="flex justify-center py-10"><Loader2 size={16} className="animate-spin text-violet-400" /></div>}
+        {memoriesQ.isLoading && <div className="flex justify-center py-10"><Loader2 size={16} className="animate-spin text-slate-400" /></div>}
 
         <div className="space-y-4">
           {memoriesQ.data?.map(({ memory, author }: any) => (

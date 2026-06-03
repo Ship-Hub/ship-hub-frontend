@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+﻿import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { usersApi, memoriesApi, projectsApi, leaderboardApi } from '../lib/api';
 import { Layout } from '../components/Layout';
@@ -14,7 +14,7 @@ export function ShowcasePage() {
   const lbQ = useQuery({ queryKey: ['leaderboard'], queryFn: () => leaderboardApi.get(200).then(r => r.data) });
 
   const isLoading = profileQ.isLoading || memoriesQ.isLoading;
-  if (isLoading) return <Layout><div className="flex justify-center py-20"><Loader2 size={20} className="animate-spin text-violet-400" /></div></Layout>;
+  if (isLoading) return <Layout><div className="flex justify-center py-20"><Loader2 size={20} className="animate-spin text-slate-400" /></div></Layout>;
 
   const profile = profileQ.data;
   if (!profile) return <Layout><p className="text-center py-20 mono text-slate-500">USER_NOT_FOUND</p></Layout>;
@@ -29,11 +29,11 @@ export function ShowcasePage() {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto px-6 py-8">
+      <div className="max-w-[680px] mx-auto px-4 py-6">
 
         {/* Back link */}
         <Link to={`/u/${username}`} className="flex items-center gap-1.5 text-xs mono text-slate-500 hover:text-white transition-colors mb-6">
-          ← @{username}'s full profile
+          â† @{username}'s full profile
         </Link>
 
         {/* Hero card */}
@@ -45,7 +45,7 @@ export function ShowcasePage() {
           <div className="absolute inset-0 opacity-10" style={{ background: 'radial-gradient(ellipse at 50% 0%, #8B5CF6 0%, transparent 70%)' }} />
 
           <div className="relative">
-            <div className="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center text-3xl mono font-bold mx-auto mb-4" style={{ background: 'linear-gradient(135deg, #7C3AED, #00E5FF)', color: 'white' }}>
+            <div className="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center text-3xl mono font-bold mx-auto mb-4" style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}>
               {profile.avatar ? <img src={profile.avatar} alt={profile.username} className="w-full h-full object-cover" /> : profile.username[0].toUpperCase()}
             </div>
 
@@ -57,7 +57,7 @@ export function ShowcasePage() {
             {/* Social links */}
             <div className="flex items-center justify-center gap-4 mb-4">
               {profile.website && (
-                <a href={profile.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs mono text-violet-400 hover:text-violet-300 transition-colors">
+                <a href={profile.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs mono text-slate-400 hover:opacity-80 transition-colors">
                   <Globe size={12} />{profile.website.replace(/^https?:\/\//, '')}
                 </a>
               )}
@@ -74,11 +74,11 @@ export function ShowcasePage() {
         <div className="grid grid-cols-4 gap-3 mb-8">
           {[
             { icon: Zap, label: 'REP', value: rep.toLocaleString(), color: 'text-amber-400' },
-            { icon: Users, label: 'FOLLOWERS', value: profile.followerCount, color: 'text-violet-400' },
+            { icon: Users, label: 'FOLLOWERS', value: profile.followerCount, color: 'text-slate-400' },
             { icon: BookOpen, label: 'MEMORIES', value: profile.memoryCount, color: 'text-cyan-400' },
-            { icon: Trophy, label: 'RANK', value: rank >= 0 ? `#${rank + 1}` : '—', color: 'text-emerald-400' },
+            { icon: Trophy, label: 'RANK', value: rank >= 0 ? `#${rank + 1}` : 'â€”', color: 'text-emerald-400' },
           ].map(({ icon: Icon, label, value, color }) => (
-            <div key={label} className="rounded-xl border p-3 text-center" style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+            <div key={label} className="rounded-xl border p-3 text-center" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
               <Icon size={16} className={cn('mx-auto mb-1.5', color)} />
               <div className={cn('mono text-lg font-bold', color)}>{value}</div>
               <div className="mono text-xs text-slate-600">{label}</div>
@@ -90,20 +90,20 @@ export function ShowcasePage() {
         {topMemories.length > 0 && (
           <div className="mb-8">
             <h2 className="mono text-sm font-bold text-white mb-4 flex items-center gap-2">
-              <BookOpen size={14} className="text-violet-400" /> TOP_MEMORIES
+              <BookOpen size={14} className="text-slate-400" /> TOP_MEMORIES
             </h2>
             <div className="space-y-3">
               {topMemories.map((memory: any) => {
                 const cc = CATEGORY_COLORS[memory.category] ?? 'text-slate-400 bg-slate-400/10 border-slate-400/20';
                 return (
                   <Link key={memory.id} to={`/memory/${memory.id}`}
-                    className="flex items-start gap-3 p-4 rounded-xl border hover:border-violet-500/30 transition-all group"
-                    style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+                    className="flex items-start gap-3 p-4 rounded-xl border hover:border-slate-600 transition-all group"
+                    style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className={cn('text-xs mono px-1.5 py-0.5 rounded border flex-shrink-0', cc)}>{memory.category.toUpperCase()}</span>
                       </div>
-                      <h3 className="mono text-sm font-semibold text-white group-hover:text-violet-300 transition-colors line-clamp-1">{memory.title}</h3>
+                      <h3 className="mono text-sm font-semibold text-white group-hover:opacity-80 transition-colors line-clamp-1">{memory.title}</h3>
                       <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{memory.content.slice(0, 100)}</p>
                     </div>
                     <div className="flex flex-col items-end gap-1 flex-shrink-0 text-xs mono text-slate-500">
@@ -121,20 +121,20 @@ export function ShowcasePage() {
         {topProject && (
           <div className="mb-8">
             <h2 className="mono text-sm font-bold text-white mb-4 flex items-center gap-2">
-              <FolderKanban size={14} className="text-violet-400" /> FEATURED_PROJECT
+              <FolderKanban size={14} className="text-slate-400" /> FEATURED_PROJECT
             </h2>
             <Link to={`/projects/${topProject.id}`}
-              className="flex items-start gap-4 p-5 rounded-xl border hover:border-violet-500/30 transition-all"
-              style={{ backgroundColor: 'var(--color-panel)', borderColor: 'var(--color-border)' }}>
+              className="flex items-start gap-4 p-5 rounded-xl border hover:border-slate-600 transition-all"
+              style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
               <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(0,229,255,0.1))', border: '1px solid rgba(139,92,246,0.2)' }}>
-                <FolderKanban size={18} className="text-violet-400" />
+                <FolderKanban size={18} className="text-slate-400" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="mono text-sm font-semibold text-white mb-0.5">{topProject.name}</div>
                 {topProject.description && <p className="text-xs text-slate-400 line-clamp-2">{topProject.description}</p>}
                 <div className="flex items-center gap-3 mt-2">
                   {topProject.githubUrl && <a href={topProject.githubUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="flex items-center gap-1 text-xs mono text-slate-500 hover:text-white transition-colors"><GitBranch size={10} />GitHub</a>}
-                  {topProject.websiteUrl && <a href={topProject.websiteUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="flex items-center gap-1 text-xs mono text-slate-500 hover:text-violet-400 transition-colors"><ExternalLink size={10} />Live</a>}
+                  {topProject.websiteUrl && <a href={topProject.websiteUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="flex items-center gap-1 text-xs mono text-slate-500 hover:text-slate-400 transition-colors"><ExternalLink size={10} />Live</a>}
                 </div>
               </div>
             </Link>
@@ -144,7 +144,7 @@ export function ShowcasePage() {
         {/* Share CTA */}
         <div className="text-center py-6 border-t" style={{ borderColor: 'var(--color-border)' }}>
           <p className="text-xs mono text-slate-600 mb-2">Share this showcase</p>
-          <code className="text-xs mono text-violet-400 bg-violet-500/10 px-3 py-1.5 rounded-lg">
+          <code className="text-xs mono text-slate-400 bg-violet-500/10 px-3 py-1.5 rounded-lg">
             {window.location.origin}/u/{username}/showcase
           </code>
         </div>

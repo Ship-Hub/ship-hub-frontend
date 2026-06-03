@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+﻿import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { postsApi } from '../lib/api';
 import { Layout } from '../components/Layout';
@@ -35,12 +35,12 @@ export function PostDetailPage() {
         </Helmet>
       )}
 
-      <div className="max-w-2xl mx-auto px-6 py-8">
+      <div className="max-w-[680px] mx-auto px-4 py-6">
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-xs mono text-slate-400 hover:text-white transition-colors mb-6">
           <ArrowLeft size={14} /> BACK
         </button>
 
-        {isLoading && <div className="flex justify-center py-20"><Loader2 size={20} className="animate-spin text-violet-400" /></div>}
+        {isLoading && <div className="flex justify-center py-20"><Loader2 size={20} className="animate-spin text-slate-400" /></div>}
 
         {data && (
           <PostCard
