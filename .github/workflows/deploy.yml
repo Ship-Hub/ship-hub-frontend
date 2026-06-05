@@ -26,26 +26,23 @@ jobs:
         env:
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
 
-      - name: Deploy via SSH
-        env:
-          SSH_PRIVATE_KEY_B64: ${{ secrets.SSH_PRIVATE_KEY_B64 }}
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      - name: Load SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy static files to server
         run: |
-          DEPLOY_PATH="/var/www/ship-hub/frontend"
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "mkdir -p /var/www/ship-hub/frontend"
+          tar -czf - -C dist . \
+          | ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+              "tar -xzf - -C /var/www/ship-hub/frontend && chmod -R 755 /var/www/ship-hub/frontend"
 
-          mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          printf '%s' "$SSH_PRIVATE_KEY_B64" | base64 -d > ~/.ssh/id_ed25519
-          chmod 400 ~/.ssh/id_ed25519
-          eval $(ssh-agent -s)
-          ssh-add ~/.ssh/id_ed25519
-          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
-
-          SSH="ssh -o ServerAliveInterval=15 -o ServerAliveCountMax=8 -o ConnectTimeout=30"
-          TARGET="$DEPLOY_USER@$DEPLOY_HOST"
-
-          $SSH "$TARGET" "mkdir -p $DEPLOY_PATH && rm -rf $DEPLOY_PATH && mkdir -p $DEPLOY_PATH"
-
-          tar -czf - -C dist . | $SSH "$TARGET" "tar -xzf - -C $DEPLOY_PATH"
-
-          $SSH "$TARGET" "chmod -R 755 $DEPLOY_PATH && systemctl reload nginx || true"
+      - name: Reload nginx
+        run: |
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "systemctl reload nginx || true"
