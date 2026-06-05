@@ -150,7 +150,15 @@ export function ExplorePage() {
           <div className="space-y-3">
             {(trendingQ.data ?? []).map((item: FeedItem) => {
               if (item.type === 'memory') return <MemoryCard key={item.memory.id} memory={item.memory} author={item.author} />;
-              if (item.type === 'post') return <PostCard key={item.post.id} post={item.post} author={item.author} />;
+              if (item.type === 'post') return (
+                <PostCard
+                  key={item.post.id}
+                  post={item.post}
+                  author={item.author}
+                  quotedPost={item.quotedPost}
+                  quotedMemory={item.quotedMemory}
+                />
+              );
               return null;
             })}
           </div>
@@ -168,7 +176,15 @@ export function ExplorePage() {
             </div>
             <div className="space-y-3">
               {(buildupdatesQ.data ?? []).map((item: FeedItem) =>
-                item.type === 'post' ? <PostCard key={item.post.id} post={item.post} author={item.author} /> : null
+                item.type === 'post' ? (
+                  <PostCard
+                    key={item.post.id}
+                    post={item.post}
+                    author={item.author}
+                    quotedPost={item.quotedPost}
+                    quotedMemory={item.quotedMemory}
+                  />
+                ) : null
               )}
             </div>
           </section>
@@ -231,7 +247,15 @@ export function ExplorePage() {
             </div>
             <div className="space-y-3">
               {(codeQ.data ?? []).map((item: FeedItem) =>
-                item.type === 'post' ? <PostCard key={item.post.id} post={item.post} author={item.author} /> : null
+                item.type === 'post' ? (
+                  <PostCard
+                    key={item.post.id}
+                    post={item.post}
+                    author={item.author}
+                    quotedPost={item.quotedPost}
+                    quotedMemory={item.quotedMemory}
+                  />
+                ) : null
               )}
             </div>
           </section>
@@ -248,7 +272,15 @@ export function ExplorePage() {
             </div>
             <div className="space-y-3">
               {(collabQ.data ?? []).map((item: FeedItem) =>
-                item.type === 'post' ? <PostCard key={item.post.id} post={item.post} author={item.author} /> : null
+                item.type === 'post' ? (
+                  <PostCard
+                    key={item.post.id}
+                    post={item.post}
+                    author={item.author}
+                    quotedPost={item.quotedPost}
+                    quotedMemory={item.quotedMemory}
+                  />
+                ) : null
               )}
             </div>
           </section>

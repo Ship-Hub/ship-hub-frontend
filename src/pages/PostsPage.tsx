@@ -44,7 +44,13 @@ export function PostsPage() {
         <div className="space-y-3">
           {items.map((item: FeedItem) =>
             item.type === 'post' ? (
-              <PostCard key={item.post.id} post={item.post} author={item.author} />
+              <PostCard
+                key={item.post.id}
+                post={item.post}
+                author={item.author}
+                quotedPost={item.quotedPost}
+                quotedMemory={item.quotedMemory}
+              />
             ) : null
           )}
         </div>

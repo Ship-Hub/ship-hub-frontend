@@ -4,6 +4,7 @@ import {
   Home, Compass, FolderKanban, Brain, Code2, Users, Trophy, CalendarDays,
   ShoppingBag, MessageSquare, Mail, Bookmark, Network, Bell, Search,
   Settings, LogOut, Plus, X, Menu, TrendingUp, MessageCircle, FileText,
+  Shield,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '../lib/utils';
@@ -14,7 +15,7 @@ import { timeAgo } from '../lib/utils';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/v1';
 
-type NavItem = { to: string; icon: React.ElementType; label: string; authOnly?: boolean; badge?: string | number };
+type NavItem = { to: string; icon: React.ElementType; label: string; authOnly?: boolean; adminOnly?: boolean; badge?: string | number };
 type NavGroup = { label?: string; items: NavItem[] };
 
 const NAV_GROUPS: NavGroup[] = [
@@ -49,12 +50,13 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/saved',       icon: Bookmark,   label: 'Saved', authOnly: true },
       { to: '/marketplace', icon: ShoppingBag, label: 'Marketplace' },
       { to: '/graph',       icon: Network,    label: 'Knowledge Graph' },
+      { to: '/admin',       icon: Shield,     label: 'Admin Panel', authOnly: true, adminOnly: true },
     ],
   },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { user, clearAuth } = useAuthStore();
+  const { user, clearAuth, setAuth } = useAuthStore();
   const [searchVal, setSearchVal] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -62,6 +64,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    if (!user) return;
+    const token = localStorage.getItem('shiphub_token');
+    if (!token) return;
+    authApi.me()
+      .then(res => setAuth(res.data.user, token))
+      .catch(() => {});
+  }, [user?.id]);
 
   const dmUnreadQ = useQuery({
     queryKey: ['dm-unread'],
@@ -110,6 +121,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     ...group,
     items: group.items
       .filter(i => !i.authOnly || user)
+      .filter(i => !i.adminOnly || !!(user?.isAdmin || user?.platformAdmin))
       .map(item => ({
         ...item,
         badge: item.to === '/messages' ? (dmUnread > 0 ? dmUnread : undefined) : item.badge,
@@ -221,7 +233,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     </span>
                   )}
                 </Link>
-                <Link to="/profile" className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all">
+                <Link to={`/u/${user.username}`} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all">
                   <Settings size={14} />
                 </Link>
                 <button onClick={handleLogout} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-red-400 hover:bg-red-400/5 transition-all">

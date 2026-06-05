@@ -54,6 +54,12 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function ProfileRedirect() {
+  const { user } = useAuthStore();
+  if (!user) return <Navigate to="/login" replace />;
+  return <Navigate to={`/u/${user.username}`} replace />;
+}
+
 export default function App() {
   return (
     <HelmetProvider>
@@ -71,6 +77,7 @@ export default function App() {
               <Route path="/" element={<FeedPage />} />
               <Route path="/memory/:id" element={<MemoryPage />} />
               <Route path="/posts/:id" element={<PostDetailPage />} />
+              <Route path="/profile" element={<ProfileRedirect />} />
               <Route path="/u/:username" element={<ProfilePage />} />
               <Route path="/u/:username/showcase" element={<ShowcasePage />} />
               <Route path="/projects" element={<ProjectsPage />} />

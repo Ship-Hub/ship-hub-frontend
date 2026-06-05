@@ -108,8 +108,14 @@ export function SavedPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {savedPosts.map(({ post, author }: any) => (
-                  <PostCard key={post.id} post={post} author={author} />
+                {savedPosts.map(({ post, author, quotedPost, quotedMemory }: any) => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    author={author}
+                    quotedPost={quotedPost}
+                    quotedMemory={quotedMemory}
+                  />
                 ))}
               </div>
             )}
