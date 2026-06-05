@@ -17,6 +17,14 @@ export function AdminPage() {
     mutationFn: ({ id, banned }: { id: string; banned: boolean }) => adminApi.ban(id, banned),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-users'] }),
   });
+  const roleMut = useMutation({
+    mutationFn: ({ id, roles }: { id: string; roles: { platformAdmin?: boolean; communityAdmin?: boolean } }) => adminApi.roles(id, roles),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-users'] }),
+  });
+  const muteMut = useMutation({
+    mutationFn: ({ id, minutes }: { id: string; minutes: number | null }) => adminApi.muteCommunity(id, minutes),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-users'] }),
+  });
 
   const stats = statsQ.data;
 
@@ -70,13 +78,39 @@ export function AdminPage() {
                     <Link to={`/u/${u.username}`} className="mono text-sm font-semibold text-white hover:opacity-80 transition-colors">
                       @{u.username}
                     </Link>
-                    {u.isAdmin ? <span className="text-xs mono text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded">ADMIN</span> : null}
+                    {(u.isAdmin || u.platformAdmin) ? <span className="text-xs mono text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded">PLATFORM_ADMIN</span> : null}
+                    {u.communityAdmin ? <span className="text-xs mono text-cyan-400 bg-cyan-400/10 px-1.5 py-0.5 rounded">COMMUNITY_ADMIN</span> : null}
                     {u.banned ? <span className="text-xs mono text-red-400 bg-red-400/10 px-1.5 py-0.5 rounded">BANNED</span> : null}
+                    {u.communityMutedUntil && new Date(u.communityMutedUntil) > new Date()
+                      ? <span className="text-xs mono text-orange-400 bg-orange-400/10 px-1.5 py-0.5 rounded">CHAT_MUTED</span>
+                      : null}
                     {u.emailVerified ? <CheckCircle2 size={12} className="text-emerald-400" /> : null}
                   </div>
                   <div className="text-xs text-slate-500 mt-0.5">{u.email} Â· {u.memoryCount} memories Â· joined {timeAgo(u.createdAt)}</div>
                 </div>
-                {!u.isAdmin && (
+                <div className="flex items-center gap-2 flex-wrap justify-end">
+                <button
+                  onClick={() => roleMut.mutate({ id: u.id, roles: { communityAdmin: !u.communityAdmin } })}
+                  disabled={roleMut.isPending}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs mono font-medium border transition-all text-cyan-400 border-cyan-400/30 hover:bg-cyan-400/10 disabled:opacity-50"
+                >
+                  {u.communityAdmin ? 'REMOVE_COMMUNITY' : 'MAKE_COMMUNITY'}
+                </button>
+                <button
+                  onClick={() => roleMut.mutate({ id: u.id, roles: { platformAdmin: !u.platformAdmin && !u.isAdmin } })}
+                  disabled={roleMut.isPending}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs mono font-medium border transition-all text-amber-400 border-amber-400/30 hover:bg-amber-400/10 disabled:opacity-50"
+                >
+                  {(u.platformAdmin || u.isAdmin) ? 'REMOVE_PLATFORM' : 'MAKE_PLATFORM'}
+                </button>
+                <button
+                  onClick={() => muteMut.mutate({ id: u.id, minutes: u.communityMutedUntil && new Date(u.communityMutedUntil) > new Date() ? null : 60 })}
+                  disabled={muteMut.isPending}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs mono font-medium border transition-all text-orange-400 border-orange-400/30 hover:bg-orange-400/10 disabled:opacity-50"
+                >
+                  {u.communityMutedUntil && new Date(u.communityMutedUntil) > new Date() ? 'UNMUTE_CHAT' : 'MUTE_1H'}
+                </button>
+                {!u.isAdmin && !u.platformAdmin && (
                   <button
                     onClick={() => banMut.mutate({ id: u.id, banned: !u.banned })}
                     disabled={banMut.isPending}
@@ -90,6 +124,7 @@ export function AdminPage() {
                     {u.banned ? 'UNBAN' : 'BAN'}
                   </button>
                 )}
+                </div>
               </div>
             ))}
           </div>

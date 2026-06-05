@@ -32,7 +32,8 @@ export interface User {
   avatar: string | null; website: string | null; githubUsername: string | null;
   followerCount: number; followingCount: number; memoryCount: number;
   memoBankUserId: string | null; memoBankUsername: string | null;
-  emailVerified: number; isAdmin: number; banned: number;
+  emailVerified: number; isAdmin: number; platformAdmin: number; communityAdmin: number; banned: number;
+  communityMutedUntil: string | null;
   pinnedMemoryIds: string[] | null;
   createdAt: string;
 }
@@ -252,6 +253,7 @@ export interface Post {
   // stats
   likeCount: number; saveCount: number; commentCount: number;
   editedAt: string | null; createdAt: string;
+  pinnedAt: string | null; pinnedById: string | null;
 }
 
 export interface PostWithAuthor {
@@ -291,6 +293,7 @@ export const postsApi = {
   deleteComment: (id: string) => api.delete(`/posts/comments/${id}`),
   saved: () => api.get<{ posts: PostWithAuthor[] }>('/posts/saved/me'),
   edit: (id: string, content: string) => api.patch<PostWithAuthor>(`/posts/${id}`, { content }),
+  pin: (id: string) => api.post<{ pinned: boolean }>(`/posts/${id}/pin`),
   reactions: (id: string) => api.get<{ reactions: ReactionMap }>(`/posts/${id}/reactions`),
   react: (id: string, emoji: string) => api.post<{ reacted: boolean; emoji: string }>(`/posts/${id}/reactions`, { emoji }),
   pollResults: (id: string) => api.get<PollResults>(`/posts/${id}/poll`),
@@ -328,6 +331,8 @@ export const adminApi = {
   stats: () => api.get<{ users: number; memories: number; posts: number; newUsersToday: number }>('/admin/stats'),
   users: (q = '', limit = 30, offset = 0) => api.get('/admin/users', { params: { q, limit, offset } }),
   ban: (id: string, banned: boolean) => api.patch(`/admin/users/${id}/ban`, { banned }),
+  roles: (id: string, roles: { platformAdmin?: boolean; communityAdmin?: boolean }) => api.patch(`/admin/users/${id}/roles`, roles),
+  muteCommunity: (id: string, minutes: number | null) => api.patch(`/admin/users/${id}/community-mute`, { minutes }),
   deleteMemory: (id: string) => api.delete(`/admin/memories/${id}`),
   deletePost: (id: string) => api.delete(`/admin/posts/${id}`),
 };
@@ -374,7 +379,10 @@ export const presenceApi = {
 
 // ── Chat ───────────────────────────────────────────────────────────────────
 export interface ChatChannel { id: string; name: string; slug: string; description: string | null; isDefault: number; messageCount: number; createdAt: string; }
-export interface ChatMessage { id: string; channelId: string; userId: string; content: string; createdAt: string; }
+export interface ChatMessage {
+  id: string; channelId: string; userId: string; content: string;
+  pinnedAt: string | null; pinnedById: string | null; createdAt: string;
+}
 export interface ChatMessageWithAuthor { message: ChatMessage; author: AuthorSnippet; }
 export const chatApi = {
   channels: () => api.get<{ channels: ChatChannel[] }>('/chat/channels'),
@@ -382,6 +390,7 @@ export const chatApi = {
     api.get<{ messages: ChatMessageWithAuthor[]; channelId: string }>(`/chat/channels/${slug}/messages`, { params: before ? { before } : {} }),
   send: (slug: string, content: string) =>
     api.post<ChatMessageWithAuthor>(`/chat/channels/${slug}/messages`, { content }),
+  pin: (id: string) => api.post<{ pinned: boolean }>(`/chat/messages/${id}/pin`),
 };
 
 // ── Trending builders ───────────────────────────────────────────────────────

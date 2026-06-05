@@ -6,7 +6,7 @@ import { chatApi, type ChatChannel, type ChatMessageWithAuthor } from '../lib/ap
 import { Layout } from '../components/Layout';
 import { useAuthStore } from '../store/auth';
 import { timeAgo } from '../lib/utils';
-import { Send, Hash, Loader2 } from 'lucide-react';
+import { Send, Hash, Loader2, Pin } from 'lucide-react';
 import { CommentBody } from '../components/CommentInput';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/v1';
@@ -67,9 +67,18 @@ export function CommunityChatPage() {
       setMessages(prev => [...prev, res.data]);
     },
   });
+  const pinMut = useMutation({
+    mutationFn: (messageId: string) => chatApi.pin(messageId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['chat-messages', activeSlug] });
+      qc.invalidateQueries({ queryKey: ['chat-channels'] });
+    },
+  });
 
   const channels = channelsQ.data ?? [];
   const activeChannel = channels.find(c => c.slug === activeSlug);
+  const canModerate = !!user?.isAdmin || !!user?.platformAdmin || !!user?.communityAdmin;
+  const pinnedMessages = messages.filter(m => m.message?.pinnedAt);
 
   return (
     <Layout>
@@ -83,6 +92,15 @@ export function CommunityChatPage() {
             <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Channels</p>
           </div>
           <div className="flex-1 overflow-y-auto px-2 space-y-0.5">
+            {channelsQ.isLoading && (
+              <div className="flex justify-center py-8"><Loader2 size={16} className="animate-spin text-slate-600" /></div>
+            )}
+            {channelsQ.isError && (
+              <div className="px-3 py-2 text-xs text-red-400">Could not load channels.</div>
+            )}
+            {!channelsQ.isLoading && channels.length === 0 && (
+              <div className="px-3 py-2 text-xs text-slate-500">No channels available.</div>
+            )}
             {channels.map(ch => (
               <button key={ch.slug} onClick={() => setActiveSlug(ch.slug)}
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
@@ -113,6 +131,19 @@ export function CommunityChatPage() {
             {historyQ.isLoading && (
               <div className="flex justify-center py-8"><Loader2 size={18} className="animate-spin text-slate-600" /></div>
             )}
+            {pinnedMessages.length > 0 && (
+              <div className="mb-4 rounded-xl border p-3 space-y-2" style={{ borderColor: 'rgba(255,77,77,0.25)', backgroundColor: 'rgba(255,77,77,0.06)' }}>
+                <div className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: 'var(--color-accent)' }}>
+                  <Pin size={12} /> PINNED_CHAT
+                </div>
+                {pinnedMessages.slice(0, 3).map(m => (
+                  <div key={m.message.id} className="text-xs text-slate-300 line-clamp-2">
+                    <span className="font-semibold text-white">@{m.author?.username}: </span>
+                    {m.message.content}
+                  </div>
+                ))}
+              </div>
+            )}
             {messages.map((m, i) => {
               const prevMsg = messages[i - 1];
               const sameAuthor = prevMsg?.author?.id === m.author?.id;
@@ -138,6 +169,16 @@ export function CommunityChatPage() {
                     <div className="text-sm text-slate-300 leading-relaxed">
                       <CommentBody content={m.message?.content ?? ''} />
                     </div>
+                    {canModerate && (
+                      <button
+                        onClick={() => pinMut.mutate(m.message.id)}
+                        disabled={pinMut.isPending}
+                        className="mt-1 inline-flex items-center gap-1 text-xs text-slate-600 hover:text-red-400 transition-colors disabled:opacity-50"
+                      >
+                        <Pin size={10} />
+                        {m.message.pinnedAt ? 'Unpin' : 'Pin'}
+                      </button>
+                    )}
                   </div>
                 </div>
               );

@@ -9,7 +9,7 @@ import { timeAgo, processContent } from '../lib/utils';
 import {
   Heart, Bookmark, MessageSquare, Trash2, ChevronDown, ChevronUp,
   Code2, Quote, Pencil, Check, X, Copy, Users, BarChart3,
-  HelpCircle, Zap, ExternalLink, MoreHorizontal, Repeat2,
+  HelpCircle, Zap, MoreHorizontal, Repeat2, Pin,
 } from 'lucide-react';
 import { PostMarkdown } from './ComposeBox';
 import { CommentInput, CommentBody } from './CommentInput';
@@ -109,6 +109,11 @@ function PostHeader({ post, author, onDelete, canDelete, canEdit, onStartEdit }:
             <span className="text-xs text-slate-600">@{author?.username}</span>
             <span className="text-xs text-slate-600">Â·</span>
             <span className="text-xs text-slate-600">{timeAgo(post.createdAt)}</span>
+            {post.pinnedAt && (
+              <span className="inline-flex items-center gap-1 text-xs font-semibold" style={{ color: 'var(--color-accent)' }}>
+                <Pin size={10} /> PINNED
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -459,6 +464,7 @@ export function PostCard({ post, author, quotedPost, quotedMemory }: PostCardPro
   const likeMut = useMutation({ mutationFn: () => postsApi.like(post.id), onSuccess: invalidate });
   const saveMut = useMutation({ mutationFn: () => postsApi.save(post.id), onSuccess: invalidate });
   const deleteMut = useMutation({ mutationFn: () => postsApi.delete(post.id), onSuccess: invalidate });
+  const pinMut = useMutation({ mutationFn: () => postsApi.pin(post.id), onSuccess: invalidate });
   const editMut = useMutation({
     mutationFn: () => postsApi.edit(post.id, editContent),
     onSuccess: () => { invalidate(); setEditing(false); },
@@ -473,8 +479,10 @@ export function PostCard({ post, author, quotedPost, quotedMemory }: PostCardPro
   });
 
   const isOwner = user?.id === post.userId;
+  const isPlatformAdmin = !!user?.isAdmin || !!user?.platformAdmin;
+  const isCommunityAdmin = isPlatformAdmin || !!user?.communityAdmin;
   const canEdit = isOwner && (Date.now() - new Date(post.createdAt).getTime() < 15 * 60 * 1000);
-  const canDelete = isOwner;
+  const canDelete = isOwner || isPlatformAdmin;
 
   const act = (fn: () => void) => { if (!user) { navigate('/login'); return; } fn(); };
 
@@ -502,6 +510,20 @@ export function PostCard({ post, author, quotedPost, quotedMemory }: PostCardPro
         onDelete={() => act(() => deleteMut.mutate())}
         onStartEdit={() => { setEditContent(post.content); setEditing(true); }}
       />
+
+      {isCommunityAdmin && !editing && (
+        <div className="px-4 pb-2 -mt-1">
+          <button
+            onClick={() => pinMut.mutate()}
+            disabled={pinMut.isPending}
+            className="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-all hover:bg-white/5 disabled:opacity-50"
+            style={{ borderColor: 'rgba(255,77,77,0.25)', color: post.pinnedAt ? 'var(--color-accent)' : 'var(--color-muted)' }}
+          >
+            <Pin size={12} />
+            {post.pinnedAt ? 'Unpin post' : 'Pin post'}
+          </button>
+        </div>
+      )}
 
       {/* Inline edit */}
       {editing && (
