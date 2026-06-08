@@ -278,11 +278,6 @@ pre { overflow-x: auto; max-width: 100%; }
    CUSTOM CURSOR SYSTEM
    ══════════════════════════════════════════════════════════════════════════════ */
 
-/* Hide native cursor on precise-pointer (non-touch) devices */
-@media (hover: hover) and (pointer: fine) {
-  *, *::before, *::after { cursor: none !important; }
-}
-
 /* Shared base — ring and spot are centered on the mouse */
 .cursor-ring,
 .cursor-spot {
@@ -736,7 +731,4 @@ code:not([class]) {
   body::before, body::after,
   #root::before { animation: none !important; }
   .cursor-arrow, .cursor-ring, .cursor-spot { display: none !important; }
-  @media (hover: hover) and (pointer: fine) {
-    *, *::before, *::after { cursor: auto !important; }
-  }
 }

@@ -7,7 +7,6 @@ function isTouchDevice() {
 }
 
 export function Cursor() {
-  const arrowRef  = useRef<SVGSVGElement>(null);
   const ringRef   = useRef<HTMLDivElement>(null);
   const spotRef   = useRef<HTMLDivElement>(null);
   const stateRef  = useRef<CursorState>('default');
@@ -22,8 +21,6 @@ export function Cursor() {
   useEffect(() => {
     if (isTouchDevice()) return;
 
-    document.documentElement.style.cursor = 'none';
-
     let ring = { x: -300, y: -300 };
     let spot = { x: -300, y: -300 };
     let rafId: number;
@@ -32,14 +29,6 @@ export function Cursor() {
     const SPOT_LERP  = 0.055;
     const MAG_RADIUS = 58;
     const MAG_PULL   = 0.20;
-
-    // Arrow tip is at (1,1) in SVG coords — position SVG so tip lands on mouse
-    const moveArrow = (x: number, y: number) => {
-      const el = arrowRef.current;
-      if (!el) return;
-      el.style.left = `${x - 1}px`;
-      el.style.top  = `${y - 1}px`;
-    };
 
     const tick = () => {
       const { x: mx, y: my } = mouseRef.current;
@@ -99,7 +88,6 @@ export function Cursor() {
 
     const onMove = (e: MouseEvent) => {
       mouseRef.current = { x: e.clientX, y: e.clientY };
-      moveArrow(e.clientX, e.clientY);
       showCursor();
       const s = detectState(e.clientX, e.clientY);
       if (s !== stateRef.current) { stateRef.current = s; setStateUI(s); }
@@ -118,7 +106,6 @@ export function Cursor() {
     rafId = requestAnimationFrame(tick);
 
     return () => {
-      document.documentElement.style.cursor = '';
       document.removeEventListener('mousemove',  onMove);
       document.removeEventListener('mouseenter', onEnter);
       document.removeEventListener('mouseleave', onLeave);
@@ -144,24 +131,6 @@ export function Cursor() {
         style={{ opacity: visible ? 1 : 0 }}
       />
 
-      {/* Arrow cursor — tip at exact mouse position, instant follow */}
-      <svg
-        ref={arrowRef}
-        className={`cursor-arrow cursor-arrow-${stateUI}${ck}`}
-        style={{ opacity: visible ? 1 : 0 }}
-        width="14" height="18"
-        viewBox="0 0 14 18"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        {/* Classic cursor arrow: tip at (1,1), body goes down then right */}
-        <path
-          d="M1 1 L1 15 L4.5 11 L7 17 L8.5 16 L6 10.5 L11 10.5 Z"
-          fill="#FF8A00"
-          stroke="#1C0A00"
-          strokeWidth="0.75"
-          strokeLinejoin="round"
-        />
-      </svg>
     </>
   );
 }
