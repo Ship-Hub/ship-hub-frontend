@@ -576,10 +576,16 @@ function FeaturedProjectBanner() {
         <div className="flex gap-4">
           {/* Project icon */}
           <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}
+            className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
+            style={{
+              background: 'linear-gradient(145deg, #051F0E 0%, #0D4A22 55%, #136E30 100%)',
+              boxShadow: '0 0 14px rgba(52,211,153,0.3), 0 0 28px rgba(52,211,153,0.12)',
+            }}
           >
-            {project.name[0]?.toUpperCase()}
+            <FolderKanban
+              size={24}
+              style={{ color: '#6EE7B7', filter: 'drop-shadow(0 0 5px rgba(52,211,153,0.85))' }}
+            />
           </div>
 
           <div className="flex-1 min-w-0">
