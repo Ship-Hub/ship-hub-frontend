@@ -274,11 +274,487 @@ pre { overflow-x: auto; max-width: 100%; }
 /* ── Primary button glow (duplicate to override above) ─────────────────────── */
 .btn-primary:hover { animation: glowOrangePulse 1.6s ease-in-out infinite; }
 
-/* ── Reduce motion ──────────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════════
+   CUSTOM CURSOR SYSTEM
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Hide native cursor on precise-pointer (non-touch) devices */
+@media (hover: hover) and (pointer: fine) {
+  *, *::before, *::after { cursor: none !important; }
+}
+
+/* Shared base for all cursor pieces */
+.cursor-dot,
+.cursor-ring,
+.cursor-spot {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  will-change: left, top;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* ── Cursor spot — ambient glow, slowest follow ─────────────────────────────── */
+.cursor-spot {
+  width: 400px;
+  height: 400px;
+  z-index: 99990;
+  background: radial-gradient(circle, rgba(255,138,0,0.052) 0%, rgba(255,138,0,0.018) 40%, transparent 68%);
+  transition: opacity 0.5s ease;
+  mix-blend-mode: screen;
+}
+
+/* ── Cursor dot — instant follow ────────────────────────────────────────────── */
+.cursor-dot {
+  width: 6px;
+  height: 6px;
+  transition:
+    width    0.18s cubic-bezier(0.16, 1, 0.3, 1),
+    height   0.18s cubic-bezier(0.16, 1, 0.3, 1),
+    border-radius 0.18s ease,
+    background-color 0.16s ease,
+    box-shadow 0.16s ease,
+    opacity  0.28s ease;
+  mix-blend-mode: screen;
+}
+
+.cursor-dot-default {
+  background: #FF8A00;
+  box-shadow:
+    0 0  6px rgba(255,138,0,1),
+    0 0 14px rgba(255,138,0,0.65),
+    0 0 26px rgba(255,138,0,0.28);
+}
+
+.cursor-dot-pointer {
+  width: 5px;
+  height: 5px;
+  background: #FF8A00;
+  box-shadow:
+    0 0 10px rgba(255,138,0,1),
+    0 0 24px rgba(255,138,0,0.85),
+    0 0 48px rgba(255,138,0,0.42);
+}
+
+.cursor-dot-text {
+  width: 2px;
+  height: 22px;
+  border-radius: 1px;
+  background: #00E5FF;
+  box-shadow:
+    0 0  8px rgba(0,229,255,0.98),
+    0 0 18px rgba(0,229,255,0.55);
+  animation: cursorBlink 1s steps(1) infinite;
+}
+
+/* Click flash — dot snaps smaller + flares */
+.cursor-dot.cursor-clicking {
+  transform: translate(-50%, -50%) scale(0.45) !important;
+  box-shadow:
+    0 0 18px rgba(255,138,0,1),
+    0 0 40px rgba(255,138,0,0.75) !important;
+}
+
+/* ── Cursor ring — trails with lerp ─────────────────────────────────────────── */
+.cursor-ring {
+  background: transparent;
+  border-style: solid;
+  transition:
+    width        0.24s cubic-bezier(0.16, 1, 0.3, 1),
+    height       0.24s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.20s ease,
+    border-width 0.20s ease,
+    background-color 0.20s ease,
+    box-shadow   0.20s ease,
+    border-radius 0.20s ease,
+    opacity      0.28s ease;
+}
+
+.cursor-ring-default {
+  width: 32px;
+  height: 32px;
+  border-width: 1.5px;
+  border-color: rgba(255,138,0,0.40);
+}
+
+.cursor-ring-pointer {
+  width: 46px;
+  height: 46px;
+  border-width: 1.5px;
+  border-color: rgba(255,138,0,0.68);
+  background: rgba(255,138,0,0.05);
+  box-shadow:
+    0 0 14px rgba(255,138,0,0.22),
+    inset 0 0 10px rgba(255,138,0,0.06);
+  animation: cursorRingPulse 1.5s ease-in-out infinite;
+}
+
+.cursor-ring-text {
+  width: 30px;
+  height: 22px;
+  border-radius: 3px;
+  border-width: 1px;
+  border-color: rgba(0,229,255,0.52);
+  background: rgba(0,229,255,0.03);
+}
+
+/* Click flash — ring crushes inward */
+.cursor-ring.cursor-clicking {
+  transform: translate(-50%, -50%) scale(0.68) !important;
+  border-color: rgba(255,138,0,0.88) !important;
+  box-shadow:
+    0 0 24px rgba(255,138,0,0.5),
+    0 0 48px rgba(255,138,0,0.2) !important;
+}
+
+/* ── Cursor keyframes ────────────────────────────────────────────────────────── */
+@keyframes cursorBlink {
+  0%, 49%  { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes cursorRingPulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(255,138,0,0.18), inset 0 0  8px rgba(255,138,0,0.04);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(255,138,0,0.32), inset 0 0 16px rgba(255,138,0,0.10);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   BUTTON EFFECTS — shimmer, press, glow
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Shimmer sweep on hover */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: -20%; bottom: -20%;
+  left: -80%;
+  width: 55%;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255,255,255,0.22) 50%,
+    transparent 100%
+  );
+  transform: skewX(-12deg);
+  pointer-events: none;
+  /* Instant snap-back when un-hover */
+  transition: left 0.01s;
+}
+.btn-primary:hover::before {
+  left: 160%;
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Press down scale */
+button:active:not(:disabled),
+[role="button"]:active,
+a:active {
+  transform: scale(0.965);
+  transition: transform 0.07s ease !important;
+}
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.95) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   CARD SCAN-LINE — horizontal light sweep on hover
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* PostCard types */
+[class*="card-hover-"],
+.card-scanline {
+  position: relative;
+}
+
+[class*="card-hover-"]::before,
+.card-scanline::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 110px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(255,255,255,0.024) 50%,
+    transparent 100%
+  );
+  top: -110px;
+  pointer-events: none;
+  z-index: 5;
+  /* No transition on non-hover = instant reset */
+  transition: top 0.01s;
+}
+
+[class*="card-hover-"]:hover::before,
+.card-scanline:hover::before {
+  top: 100%;
+  transition: top 0.95s linear;
+}
+
+/* Card lift on hover — add vertical lift to type-specific cards */
+.card-hover-build:hover,
+.card-hover-code:hover,
+.card-hover-collab:hover,
+.card-hover-poll:hover,
+.card-hover-question:hover {
+  transform: translateY(-2px);
+}
+.card-hover-general:hover {
+  transform: translateY(-1px);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   BADGE HOVER EFFECTS
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.badge-build,
+.badge-code,
+.badge-memory,
+.badge-collab,
+.badge-poll,
+.badge-question,
+.badge-project {
+  transition: filter 0.15s ease, transform 0.15s cubic-bezier(0.16,1,0.3,1);
+}
+.badge-build:hover    { filter: brightness(1.2) saturate(1.1); transform: scale(1.06); }
+.badge-code:hover     { filter: brightness(1.2) saturate(1.1); transform: scale(1.06); }
+.badge-memory:hover   { filter: brightness(1.2) saturate(1.1); transform: scale(1.06); }
+.badge-collab:hover   { filter: brightness(1.2) saturate(1.1); transform: scale(1.06); }
+.badge-poll:hover     { filter: brightness(1.2) saturate(1.1); transform: scale(1.06); }
+.badge-question:hover { filter: brightness(1.2) saturate(1.1); transform: scale(1.06); }
+.badge-project:hover  { filter: brightness(1.2) saturate(1.1); transform: scale(1.06); }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   ICON BLOCK — enhanced hover glow on cards
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.card-hover-build:hover   .icon-block-build    { animation-duration: 0.8s; }
+.card-hover-code:hover    .icon-block-code     { animation-duration: 0.8s; }
+.card-hover-collab:hover  .icon-block-collab   { animation-duration: 0.8s; }
+.card-hover-poll:hover    .icon-block-poll     { animation-duration: 0.8s; }
+.card-hover-question:hover .icon-block-question { animation-duration: 0.8s; }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   NAV ENHANCEMENTS
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Nav item hover — faint accent shimmer */
+@keyframes navItemGlow {
+  from { opacity: 0; transform: translateX(-100%); }
+  to   { opacity: 1; transform: translateX(200%); }
+}
+
+/* Active nav pill — stronger animated glow */
+.nav-active {
+  animation: navActivePulse 3s ease-in-out infinite !important;
+}
+@keyframes navActivePulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(255,138,0,0.38), 0 0 24px rgba(255,138,0,0.12); }
+  50%       { box-shadow: 0 0 20px rgba(255,138,0,0.55), 0 0 40px rgba(255,138,0,0.20); }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   ENHANCED INPUT FOCUS
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: rgba(255,138,0,0.55) !important;
+  box-shadow:
+    0 0 0 1.5px rgba(255,138,0,0.30),
+    0 0 22px rgba(255,138,0,0.11),
+    inset 0 0 14px rgba(255,138,0,0.028) !important;
+  outline: none !important;
+}
+
+/* Keyboard focus-visible ring */
+:focus-visible {
+  outline: 2px solid rgba(255,138,0,0.65) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(255,138,0,0.14) !important;
+  border-radius: 4px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   TEXT SELECTION
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+::selection {
+  background: rgba(255,138,0,0.30);
+  color: #fff;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   AMBIENT BACKGROUND — additional depth layers
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Third orb — violet, fixed centre-right — adds depth */
+#root::before {
+  content: '';
+  position: fixed;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(168,85,247,0.032) 0%, transparent 65%);
+  top: 30%; right: 20%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(80px);
+  animation: ambientShift 50s ease-in-out infinite alternate;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   ANIMATED GRID OVERLAY — subtle for panels/sidebars
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.grid-bg {
+  position: relative;
+}
+.grid-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,138,0,0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,138,0,0.028) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   INTERACTIVE LINK UNDERLINES
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Profile/username links in cards */
+.link-glow:hover {
+  text-shadow: 0 0 10px currentColor;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   AVATAR HOVER RING
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Avatars in feeds grow a subtle ring on hover */
+a:hover .avatar-sm,
+button:hover .avatar-sm {
+  box-shadow: 0 0 0 2px rgba(255,138,0,0.5), 0 0 10px rgba(255,138,0,0.25);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   STAGGER / ENTRANCE ANIMATION UTILITIES
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.stagger-1 { animation-delay: 0.04s; }
+.stagger-2 { animation-delay: 0.08s; }
+.stagger-3 { animation-delay: 0.12s; }
+.stagger-4 { animation-delay: 0.16s; }
+.stagger-5 { animation-delay: 0.20s; }
+
+/* Live dot — pulsing online indicator */
+@keyframes liveDot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.6); opacity: 0.5; }
+}
+.live-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--color-success);
+  box-shadow: 0 0 6px rgba(0,217,126,0.8);
+  animation: liveDot 1.8s ease-in-out infinite;
+  display: inline-block;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   SCROLLBAR ENHANCEMENT
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+::-webkit-scrollbar       { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255,138,0,0.22);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255,138,0,0.48); }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   CODE TAG GLOW
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Inline code snippets in markdown */
+code:not([class]) {
+  background: rgba(0,229,255,0.08);
+  color: var(--color-cyan);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  border: 1px solid rgba(0,229,255,0.18);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   HOLOGRAPHIC GRADIENT BORDER (special cards)
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+@keyframes holoShift {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
+}
+
+.border-holo {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--color-card), var(--color-card)) padding-box,
+    linear-gradient(135deg,
+      rgba(255,138,0,0.65)  0%,
+      rgba(0,229,255,0.55) 33%,
+      rgba(168,85,247,0.5) 66%,
+      rgba(255,138,0,0.65) 100%
+    ) border-box;
+  background-size: 300% 300%;
+  animation: holoShift 5s ease infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   TYPEWRITER CURSOR (headings, composer prompts)
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+@keyframes typeCursor {
+  0%, 49%  { border-right-color: rgba(255,138,0,0.9); }
+  50%, 100% { border-right-color: transparent; }
+}
+.type-cursor {
+  border-right: 2px solid rgba(255,138,0,0.9);
+  animation: typeCursor 1s steps(1) infinite;
+  padding-right: 2px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   REDUCE MOTION
+   ══════════════════════════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+    animation-duration:   0.01ms !important;
+    transition-duration:  0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
-  body::before, body::after { animation: none !important; }
+  body::before, body::after,
+  #root::before { animation: none !important; }
+  .cursor-dot, .cursor-ring, .cursor-spot { display: none !important; }
+  @media (hover: hover) and (pointer: fine) {
+    *, *::before, *::after { cursor: auto !important; }
+  }
 }

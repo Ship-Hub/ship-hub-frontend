@@ -92,7 +92,7 @@ export function MemoryCard({ memory, author, originalAuthorUsername }: MemoryCar
 
   return (
     <div
-      className="rounded-2xl border overflow-hidden transition-all group"
+      className="rounded-2xl border overflow-hidden transition-all group card-scanline"
       style={{
         backgroundColor: 'var(--color-card)',
         borderColor: 'var(--color-border)',
@@ -100,10 +100,12 @@ export function MemoryCard({ memory, author, originalAuthorUsername }: MemoryCar
       onMouseEnter={e => {
         (e.currentTarget as HTMLElement).style.borderColor = 'rgba(168,85,247,0.35)';
         (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(168,85,247,0.08), 0 0 0 1px rgba(168,85,247,0.12)';
+        (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
       }}
       onMouseLeave={e => {
         (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)';
         (e.currentTarget as HTMLElement).style.boxShadow = '';
+        (e.currentTarget as HTMLElement).style.transform = '';
       }}
     >
       <div className="flex">

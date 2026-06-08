@@ -817,15 +817,17 @@ function ProjectFeedCard({ project, author }: { project: any; author: any }) {
 
   return (
     <div
-      className="rounded-2xl border overflow-hidden transition-all"
+      className="rounded-2xl border overflow-hidden transition-all card-scanline"
       style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
       onMouseEnter={e => {
         (e.currentTarget as HTMLElement).style.borderColor = 'rgba(52,211,153,0.35)';
         (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(52,211,153,0.07), 0 0 0 1px rgba(52,211,153,0.1)';
+        (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
       }}
       onMouseLeave={e => {
         (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)';
         (e.currentTarget as HTMLElement).style.boxShadow = '';
+        (e.currentTarget as HTMLElement).style.transform = '';
       }}
     >
       <div className="flex">
