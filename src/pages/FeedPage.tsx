@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
 import { feedApi, postsApi, type FeedItem, type FeedTabType, type PostType } from '../lib/api';
 import { MemoryCard } from '../components/MemoryCard';
@@ -9,20 +9,23 @@ import { useAuthStore } from '../store/auth';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Loader2, Zap, Code2, Brain, FolderKanban, Users, BarChart3,
-  HelpCircle, MoreHorizontal, X, Plus, ChevronDown,
+  HelpCircle, MoreHorizontal, X, Plus, ChevronDown, Bold, Italic,
+  Link2, List, Image, Smile, SlidersHorizontal, Globe, Sparkles,
+  ExternalLink, Star, Users2,
 } from 'lucide-react';
 
 // ── Tab definition ────────────────────────────────────────────────────────
 
 type TabDef = { key: FeedTabType; label: string };
 const TABS: TabDef[] = [
-  { key: 'all',            label: 'All' },
-  { key: 'build_updates',  label: 'Build Updates' },
+  { key: 'all',            label: 'For You' },
+  { key: 'build_updates',  label: 'Build' },
   { key: 'projects',       label: 'Projects' },
-  { key: 'code',           label: 'Code' },
   { key: 'memories',       label: 'Memories' },
-  { key: 'collaborations', label: 'Collaborations' },
+  { key: 'code',           label: 'Snippets' },
+  { key: 'collaborations', label: 'Collabs' },
   { key: 'polls',          label: 'Polls' },
+  { key: 'questions',      label: 'Questions' },
 ];
 
 const PAGE_SIZE = 30;
@@ -32,14 +35,35 @@ const PAGE_SIZE = 30;
 type ComposerType = PostType | 'memory_import';
 
 const POST_TYPES: { key: ComposerType; icon: React.ElementType; label: string; color: string; shortLabel: string }[] = [
-  { key: 'build_update',   icon: Zap,          label: 'Build Update',             shortLabel: 'Build Update',  color: '#FF8A00' },
-  { key: 'code_snippet',   icon: Code2,         label: 'Code Snippet',             shortLabel: 'Code Snippet',  color: '#00E5FF' },
-  { key: 'memory_import',  icon: Brain,         label: 'Memory',                   shortLabel: 'Memory',        color: '#A855F7' },
-  { key: 'general',        icon: FolderKanban,  label: 'Project',                  shortLabel: 'Project',       color: '#00D97E' },
-  { key: 'collab_request', icon: Users,         label: 'Looking for Collaborator', shortLabel: 'Collab',        color: '#FFA62B' },
-  { key: 'poll',           icon: BarChart3,     label: 'Poll',                     shortLabel: 'Poll',          color: '#4F9EFF' },
-  { key: 'question',       icon: HelpCircle,    label: 'Question',                 shortLabel: 'Question',      color: '#FFD60A' },
+  { key: 'build_update',   icon: Zap,          label: 'Build Update',             shortLabel: 'Build',     color: '#FF8A00' },
+  { key: 'code_snippet',   icon: Code2,         label: 'Code Snippet',             shortLabel: 'Snippet',   color: '#00E5FF' },
+  { key: 'memory_import',  icon: Brain,         label: 'Memory',                   shortLabel: 'Memory',    color: '#A855F7' },
+  { key: 'general',        icon: FolderKanban,  label: 'Project Update',           shortLabel: 'Project',   color: '#00D97E' },
+  { key: 'collab_request', icon: Users,         label: 'Looking for Collaborator', shortLabel: 'Collab',    color: '#FFA62B' },
+  { key: 'poll',           icon: BarChart3,     label: 'Poll',                     shortLabel: 'Poll',      color: '#4F9EFF' },
+  { key: 'question',       icon: HelpCircle,    label: 'Question',                 shortLabel: 'Question',  color: '#FFD60A' },
 ];
+
+// ── Markdown insert helper ────────────────────────────────────────────────
+
+function insertAtCursor(
+  content: string,
+  setContent: (v: string) => void,
+  ta: HTMLTextAreaElement | null,
+  before: string,
+  after = ''
+) {
+  if (!ta) return;
+  const start = ta.selectionStart;
+  const end = ta.selectionEnd;
+  const selected = content.slice(start, end);
+  const newText = content.slice(0, start) + before + selected + after + content.slice(end);
+  setContent(newText);
+  setTimeout(() => {
+    ta.setSelectionRange(start + before.length, start + before.length + selected.length);
+    ta.focus();
+  }, 0);
+}
 
 // ── Feed Composer ─────────────────────────────────────────────────────────
 
@@ -104,12 +128,12 @@ function FeedComposer({ onPosted }: { onPosted: () => void }) {
   };
 
   const placeholder = {
-    build_update: "What did you ship today? Share your progress...",
-    code_snippet: "Paste or write your code snippet...",
-    general:      "Tell us about your project...",
-    collab_request: "Describe what you're building and who you're looking for...",
-    poll:         "Write your poll question...",
-    question:     "Ask the community anything...",
+    build_update:    "What did you ship today? Share your progress...",
+    code_snippet:    "Paste or write your code snippet...",
+    general:         "Tell us about your project...",
+    collab_request:  "Describe what you're building and who you're looking for...",
+    poll:            "Write your poll question...",
+    question:        "Ask the community anything...",
   }[selectedType as string] ?? "What are you building today?";
 
   const addSkill = () => {
@@ -122,17 +146,33 @@ function FeedComposer({ onPosted }: { onPosted: () => void }) {
     setPollOptions(prev => prev.map((o, idx) => idx === i ? val : o));
   };
 
+  const ins = (before: string, after = '') =>
+    insertAtCursor(content, setContent, textareaRef.current, before, after);
+
   const selectedTypeDef = POST_TYPES.find(t => t.key === selectedType);
 
   if (!user) {
     return (
-      <div className="rounded-2xl border p-6 mb-4" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+      <div
+        className="rounded-2xl border p-6 mb-4"
+        style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
+      >
         <p className="text-center text-slate-400 text-sm mb-4">Join the community to share your work</p>
         <div className="flex gap-3 justify-center">
-          <Link to="/login" className="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-all"
-            style={{ backgroundColor: 'var(--color-accent)' }}>Sign in</Link>
-          <Link to="/register" className="px-5 py-2 rounded-xl text-sm font-semibold border transition-all hover:bg-white/5"
-            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}>Register</Link>
+          <Link
+            to="/login"
+            className="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-all"
+            style={{ backgroundColor: 'var(--color-accent)' }}
+          >
+            Sign in
+          </Link>
+          <Link
+            to="/register"
+            className="px-5 py-2 rounded-xl text-sm font-semibold border transition-all hover:bg-white/5"
+            style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+          >
+            Register
+          </Link>
         </div>
       </div>
     );
@@ -143,30 +183,46 @@ function FeedComposer({ onPosted }: { onPosted: () => void }) {
     : 'linear-gradient(var(--color-card), var(--color-card)) padding-box, linear-gradient(135deg, rgba(255,138,0,0.55) 0%, rgba(255,138,0,0.12) 35%, rgba(0,229,255,0.12) 65%, rgba(0,229,255,0.5) 100%) border-box';
 
   return (
-    <div className="rounded-2xl mb-4 overflow-hidden transition-all relative"
-      style={{ background: borderGrad, border: '1px solid transparent' }}>
-
+    <div
+      className="rounded-2xl mb-4 overflow-hidden transition-all relative"
+      style={{ background: borderGrad, border: '1px solid transparent' }}
+    >
       {/* Dot grid texture */}
       <div className="absolute inset-0 dot-grid opacity-30 pointer-events-none rounded-2xl" />
 
       {/* Composer header */}
-      <div className="relative flex items-center gap-3 p-4" onClick={() => !expanded && setExpanded(true)}>
-        <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-sm font-bold flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}>
+      <div
+        className="relative flex items-start gap-3 p-4"
+        onClick={() => !expanded && setExpanded(true)}
+      >
+        <div
+          className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5"
+          style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}
+        >
           {user.avatar
             ? <img src={user.avatar} alt="" className="w-full h-full object-cover" />
             : user.username[0].toUpperCase()}
         </div>
+
         {!expanded ? (
-          <div className="flex-1 px-4 py-3 rounded-xl text-sm text-slate-400 cursor-text border transition-colors hover:border-slate-500 font-medium"
-            style={{ backgroundColor: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)' }}>
-            What are you shipping today?
+          <div className="flex-1">
+            <div
+              className="px-4 py-3 rounded-xl text-sm text-slate-400 cursor-text border transition-colors hover:border-slate-500 font-medium"
+              style={{ backgroundColor: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)' }}
+            >
+              What are you shipping today?
+            </div>
+            <p className="text-xs text-slate-600 mt-1.5 pl-1">
+              Share an update, memory, snippet, or ask the community.
+            </p>
           </div>
         ) : (
           <div className="flex-1 flex items-center gap-2">
             {selectedTypeDef && (
-              <span className="text-xs font-semibold px-2 py-1 rounded-md"
-                style={{ backgroundColor: `${selectedTypeDef.color}18`, color: selectedTypeDef.color }}>
+              <span
+                className="text-xs font-semibold px-2 py-1 rounded-md"
+                style={{ backgroundColor: `${selectedTypeDef.color}18`, color: selectedTypeDef.color }}
+              >
                 {selectedTypeDef.shortLabel.toUpperCase()}
               </span>
             )}
@@ -175,23 +231,29 @@ function FeedComposer({ onPosted }: { onPosted: () => void }) {
             </span>
           </div>
         )}
+
         {expanded && (
-          <button onClick={e => { e.stopPropagation(); setExpanded(false); setSelectedType(null); }}
-            className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-white/5 transition-all">
+          <button
+            onClick={e => { e.stopPropagation(); setExpanded(false); setSelectedType(null); }}
+            className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-white/5 transition-all"
+          >
             <X size={16} />
           </button>
         )}
       </div>
 
-      {/* Type selector */}
+      {/* Type selector (collapsed) */}
       {!expanded && (
         <div className="relative flex items-center gap-2 px-4 pb-4 overflow-x-auto scrollbar-none">
-          {POST_TYPES.map(({ key, icon: Icon, label, shortLabel, color }) => (
-            <button key={key} onClick={() => handleTypeClick(key)}
+          {POST_TYPES.map(({ key, icon: Icon, shortLabel, color }) => (
+            <button
+              key={key}
+              onClick={() => handleTypeClick(key)}
               className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border flex-shrink-0 transition-all hover:scale-105"
               style={{ borderColor: `${color}45`, backgroundColor: `${color}10`, color }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = `0 0 12px ${color}40, 0 0 24px ${color}18`; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = ''; }}>
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = ''; }}
+            >
               <Icon size={13} />
               <span className="hidden sm:inline">{shortLabel}</span>
             </button>
@@ -202,14 +264,17 @@ function FeedComposer({ onPosted }: { onPosted: () => void }) {
       {/* Expanded composer */}
       {expanded && (
         <div className="relative px-4 pb-4 space-y-3">
-          {/* Type selector when expanded */}
+          {/* Type selector row */}
           <div className="flex items-center gap-2 flex-wrap">
             {POST_TYPES.filter(t => t.key !== 'memory_import').map(({ key, icon: Icon, shortLabel, color }) => (
-              <button key={key} onClick={() => setSelectedType(key)}
+              <button
+                key={key}
+                onClick={() => setSelectedType(key)}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all"
                 style={selectedType === key
                   ? { borderColor: color, backgroundColor: `${color}18`, color }
-                  : { borderColor: 'var(--color-border)', color: 'var(--color-muted)' }}>
+                  : { borderColor: 'var(--color-border)', color: 'var(--color-muted)' }}
+              >
                 <Icon size={12} />{shortLabel}
               </button>
             ))}
@@ -228,9 +293,12 @@ function FeedComposer({ onPosted }: { onPosted: () => void }) {
 
           {/* Code snippet — language selector */}
           {selectedType === 'code_snippet' && (
-            <select value={language} onChange={e => setLanguage(e.target.value)}
+            <select
+              value={language}
+              onChange={e => setLanguage(e.target.value)}
               className="px-3 py-2 rounded-lg text-xs border outline-none"
-              style={{ backgroundColor: 'var(--color-elevated)', borderColor: 'var(--color-border)', color: 'var(--color-cyan)' }}>
+              style={{ backgroundColor: 'var(--color-elevated)', borderColor: 'var(--color-border)', color: 'var(--color-cyan)' }}
+            >
               {['typescript', 'javascript', 'tsx', 'jsx', 'python', 'rust', 'go', 'bash', 'sql', 'json', 'html', 'css'].map(l => (
                 <option key={l} value={l}>{l}</option>
               ))}
@@ -244,7 +312,7 @@ function FeedComposer({ onPosted }: { onPosted: () => void }) {
               value={content}
               onChange={e => setContent(e.target.value)}
               placeholder={placeholder}
-              rows={selectedType === 'code_snippet' ? 6 : 3}
+              rows={selectedType === 'code_snippet' ? 6 : 5}
               className="w-full px-3 py-2.5 rounded-xl text-sm border outline-none resize-none transition-colors"
               style={{
                 backgroundColor: 'var(--color-elevated)',
@@ -254,6 +322,59 @@ function FeedComposer({ onPosted }: { onPosted: () => void }) {
               }}
               onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSubmit(); }}
             />
+          )}
+
+          {/* Rich text toolbar (non-code posts) */}
+          {selectedType !== 'poll' && selectedType !== 'code_snippet' && (
+            <div
+              className="flex items-center gap-0.5 px-2 py-1.5 rounded-lg border"
+              style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-elevated)' }}
+            >
+              <button
+                onClick={() => ins('**', '**')}
+                className="p-1.5 rounded text-slate-500 hover:text-white hover:bg-white/8 transition-all"
+                title="Bold"
+              >
+                <Bold size={13} />
+              </button>
+              <button
+                onClick={() => ins('*', '*')}
+                className="p-1.5 rounded text-slate-500 hover:text-white hover:bg-white/8 transition-all"
+                title="Italic"
+              >
+                <Italic size={13} />
+              </button>
+              <button
+                onClick={() => ins('`', '`')}
+                className="p-1.5 rounded text-slate-500 hover:text-white hover:bg-white/8 transition-all font-mono text-xs font-bold"
+                title="Inline code"
+              >
+                {'</>'}
+              </button>
+              <button
+                onClick={() => ins('[', '](url)')}
+                className="p-1.5 rounded text-slate-500 hover:text-white hover:bg-white/8 transition-all"
+                title="Link"
+              >
+                <Link2 size={13} />
+              </button>
+              <div className="w-px h-4 mx-1" style={{ backgroundColor: 'var(--color-border)' }} />
+              <button
+                onClick={() => ins('\n- ')}
+                className="p-1.5 rounded text-slate-500 hover:text-white hover:bg-white/8 transition-all"
+                title="Bullet list"
+              >
+                <List size={13} />
+              </button>
+              <button
+                onClick={() => ins('\n```\n', '\n```')}
+                className="p-1.5 rounded text-slate-500 hover:text-white hover:bg-white/8 transition-all"
+                title="Code block"
+              >
+                <Code2 size={13} />
+              </button>
+              <span className="text-[10px] text-slate-700 ml-auto pr-1 hidden sm:block">⌘+Enter to publish</span>
+            </div>
           )}
 
           {/* Poll options */}
@@ -278,16 +399,20 @@ function FeedComposer({ onPosted }: { onPosted: () => void }) {
                     style={{ backgroundColor: 'var(--color-elevated)', borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
                   />
                   {pollOptions.length > 2 && (
-                    <button onClick={() => setPollOptions(prev => prev.filter((_, idx) => idx !== i))}
-                      className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 transition-colors">
+                    <button
+                      onClick={() => setPollOptions(prev => prev.filter((_, idx) => idx !== i))}
+                      className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 transition-colors"
+                    >
                       <X size={14} />
                     </button>
                   )}
                 </div>
               ))}
               {pollOptions.length < 6 && (
-                <button onClick={() => setPollOptions(prev => [...prev, ''])}
-                  className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-white transition-colors px-1">
+                <button
+                  onClick={() => setPollOptions(prev => [...prev, ''])}
+                  className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-white transition-colors px-1"
+                >
                   <Plus size={13} /> Add option
                 </button>
               )}
@@ -323,9 +448,12 @@ function FeedComposer({ onPosted }: { onPosted: () => void }) {
                   className="flex-1 px-3 py-2 rounded-lg text-sm border outline-none"
                   style={{ backgroundColor: 'var(--color-elevated)', borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
                 />
-                <select value={compensation} onChange={e => setCompensation(e.target.value)}
+                <select
+                  value={compensation}
+                  onChange={e => setCompensation(e.target.value)}
                   className="px-3 py-2 rounded-lg text-xs border outline-none"
-                  style={{ backgroundColor: 'var(--color-elevated)', borderColor: 'var(--color-border)', color: 'var(--color-muted)' }}>
+                  style={{ backgroundColor: 'var(--color-elevated)', borderColor: 'var(--color-border)', color: 'var(--color-muted)' }}
+                >
                   <option value="">Compensation</option>
                   <option value="paid">Paid</option>
                   <option value="equity">Equity</option>
@@ -336,10 +464,16 @@ function FeedComposer({ onPosted }: { onPosted: () => void }) {
               {skills.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {skills.map(s => (
-                    <span key={s} className="flex items-center gap-1 px-2 py-0.5 rounded-md text-xs border"
-                      style={{ borderColor: 'rgba(255,166,43,0.3)', color: 'var(--color-amber)', backgroundColor: 'rgba(255,166,43,0.08)' }}>
+                    <span
+                      key={s}
+                      className="flex items-center gap-1 px-2 py-0.5 rounded-md text-xs border"
+                      style={{ borderColor: 'rgba(255,166,43,0.3)', color: 'var(--color-amber)', backgroundColor: 'rgba(255,166,43,0.08)' }}
+                    >
                       {s}
-                      <button onClick={() => setSkills(prev => prev.filter(x => x !== s))} className="hover:text-red-400 transition-colors">
+                      <button
+                        onClick={() => setSkills(prev => prev.filter(x => x !== s))}
+                        className="hover:text-red-400 transition-colors"
+                      >
                         <X size={10} />
                       </button>
                     </span>
@@ -349,19 +483,147 @@ function FeedComposer({ onPosted }: { onPosted: () => void }) {
             </div>
           )}
 
-          {/* Actions */}
-          <div className="flex items-center justify-between pt-1">
-            <span className="text-xs text-slate-600">⌘ + Enter to post</span>
+          {/* Bottom bar: audience + publish */}
+          <div className="flex items-center gap-3 pt-1">
+            {/* Audience selector */}
+            <button
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all hover:bg-white/5"
+              style={{ borderColor: 'var(--color-border)', color: 'var(--color-muted)' }}
+            >
+              <Globe size={12} />
+              Everyone
+              <ChevronDown size={11} />
+            </button>
+
+            {/* Publish button */}
             <button
               onClick={handleSubmit}
               disabled={createMut.isPending || (!content.trim() && selectedType !== 'poll')}
-              className="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-40 btn-primary"
-              style={{ backgroundColor: selectedTypeDef?.color ?? 'var(--color-accent)' }}>
-              {createMut.isPending ? 'Posting...' : 'Post'}
+              className="ml-auto px-6 py-2 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-40 btn-primary"
+              style={{ backgroundColor: selectedTypeDef?.color ?? 'var(--color-accent)' }}
+            >
+              {createMut.isPending ? 'Publishing...' : 'Publish'}
             </button>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Featured Project Card ─────────────────────────────────────────────────
+
+function FeaturedProjectBanner() {
+  const projectsQ = useQuery({
+    queryKey: ['featured-project'],
+    queryFn: () => feedApi.get('projects', 1, 0).then(r => r.data.items[0]),
+    staleTime: 5 * 60_000,
+  });
+
+  const item = projectsQ.data as any;
+  if (!item) return null;
+
+  const project = item.project ?? item;
+  const author = item.author;
+
+  if (!project?.name) return null;
+
+  return (
+    <div
+      className="rounded-2xl border mb-4 overflow-hidden relative"
+      style={{
+        background: 'linear-gradient(var(--color-card), var(--color-card)) padding-box, linear-gradient(135deg, rgba(0,217,126,0.4) 0%, rgba(0,229,255,0.2) 50%, rgba(255,138,0,0.2) 100%) border-box',
+        border: '1px solid transparent',
+      }}
+    >
+      <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
+      <div className="relative p-5">
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-3">
+          <span
+            className="text-[10px] font-bold px-2 py-0.5 rounded-md tracking-wide"
+            style={{ backgroundColor: 'rgba(52,211,153,0.12)', color: 'var(--color-success)' }}
+          >
+            ✦ FEATURED PROJECT
+          </span>
+          {project.status === 'launched' && (
+            <span
+              className="text-[10px] font-bold px-2 py-0.5 rounded-md"
+              style={{ backgroundColor: 'rgba(0,217,126,0.1)', color: 'var(--color-success)' }}
+            >
+              LAUNCHED
+            </span>
+          )}
+        </div>
+
+        <div className="flex gap-4">
+          {/* Project icon */}
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold flex-shrink-0"
+            style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}
+          >
+            {project.name[0]?.toUpperCase()}
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <Link
+              to={`/projects/${project.id}`}
+              className="text-lg font-bold text-white hover:opacity-80 transition-opacity block leading-tight"
+            >
+              {project.name}
+            </Link>
+            {project.description && (
+              <p className="text-sm text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                {project.description}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Tags */}
+        {project.tags?.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-3">
+            {project.tags.slice(0, 5).map((tag: string) => (
+              <span
+                key={tag}
+                className="text-xs px-2.5 py-1 rounded-lg"
+                style={{ backgroundColor: 'var(--color-elevated)', color: 'var(--color-muted)' }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="flex items-center gap-3 mt-4 pt-3 border-t" style={{ borderColor: 'var(--color-border)' }}>
+          {author && (
+            <Link to={`/u/${author.username}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <div
+                className="w-6 h-6 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold"
+                style={{ background: 'var(--color-accent)', color: 'white' }}
+              >
+                {author.avatar
+                  ? <img src={author.avatar} alt="" className="w-full h-full object-cover" />
+                  : author.username?.[0]?.toUpperCase()}
+              </div>
+              <span className="text-xs text-slate-500">{author.displayName || author.username}</span>
+            </Link>
+          )}
+          <div className="flex items-center gap-1 text-xs text-slate-500 ml-auto">
+            <Users2 size={12} />
+            <span>{(project.followerCount ?? 0).toLocaleString()} followers</span>
+          </div>
+          <Link
+            to={`/projects/${project.id}`}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-white transition-all btn-primary"
+            style={{ backgroundColor: 'var(--color-success)' }}
+          >
+            View Project
+            <ExternalLink size={11} />
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
@@ -398,24 +660,45 @@ export function FeedPage() {
         {/* Composer */}
         <FeedComposer onPosted={() => qc.invalidateQueries({ queryKey: ['feed'] })} />
 
+        {/* Featured Project */}
+        <FeaturedProjectBanner />
+
         {/* Tabs */}
-        <div className="sticky top-0 z-20 -mx-4 px-4 pt-2 pb-1 mb-3"
-          style={{ backgroundColor: 'var(--color-base)' }}>
-          <div className="flex gap-1 overflow-x-auto scrollbar-none border-b pb-0"
-            style={{ borderColor: 'var(--color-border)' }}>
-            {TABS.map(({ key, label }) => (
-              <button key={key} onClick={() => setTab(key)}
-                className={`px-3 py-2.5 text-sm font-semibold whitespace-nowrap flex-shrink-0 border-b-2 -mb-px transition-all ${
-                  tab === key ? 'text-white' : 'text-slate-600 border-transparent hover:text-slate-400'
-                }`}
-                style={tab === key ? {
-                  borderColor: 'var(--color-accent)',
-                  color: 'var(--color-text)',
-                  textShadow: '0 0 12px rgba(255,138,0,0.5)',
-                } : {}}>
-                {label}
-              </button>
-            ))}
+        <div
+          className="sticky top-14 z-20 -mx-4 px-4 pt-1 pb-0 mb-3"
+          style={{ backgroundColor: 'var(--color-base)' }}
+        >
+          <div
+            className="flex items-center gap-0 overflow-x-auto scrollbar-none border-b"
+            style={{ borderColor: 'var(--color-border)' }}
+          >
+            <div className="flex gap-0 flex-1 overflow-x-auto scrollbar-none">
+              {TABS.map(({ key, label }) => (
+                <button
+                  key={key + label}
+                  onClick={() => setTab(key)}
+                  className={`px-3 py-2.5 text-sm font-semibold whitespace-nowrap flex-shrink-0 border-b-2 -mb-px transition-all ${
+                    tab === key && label === (TABS.find(t => t.key === tab)?.label)
+                      ? 'text-white'
+                      : 'text-slate-600 border-transparent hover:text-slate-400'
+                  }`}
+                  style={tab === key ? {
+                    borderColor: 'var(--color-accent)',
+                    color: 'var(--color-text)',
+                    textShadow: '0 0 12px rgba(255,138,0,0.5)',
+                  } : {}}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {/* Filter icon */}
+            <button
+              className="flex-shrink-0 p-2 ml-1 rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/5 transition-all"
+              title="Filter"
+            >
+              <SlidersHorizontal size={14} />
+            </button>
           </div>
         </div>
 
@@ -443,8 +726,15 @@ export function FeedPage() {
             if (item.type === 'project') {
               return <ProjectFeedCard key={item.project.id} project={item.project} author={item.author} />;
             }
-            return <PostCard key={item.post.id} post={item.post} author={item.author}
-              quotedPost={(item as any).quotedPost} quotedMemory={(item as any).quotedMemory} />;
+            return (
+              <PostCard
+                key={item.post.id}
+                post={item.post}
+                author={item.author}
+                quotedPost={(item as any).quotedPost}
+                quotedMemory={(item as any).quotedMemory}
+              />
+            );
           })}
         </div>
 
@@ -452,13 +742,18 @@ export function FeedPage() {
         {!isLoading && items.length > 0 && (
           <div className="flex justify-center mt-8 pb-4">
             {hasNextPage ? (
-              <button onClick={() => query.fetchNextPage()} disabled={isFetchingNextPage}
+              <button
+                onClick={() => query.fetchNextPage()}
+                disabled={isFetchingNextPage}
                 className="px-6 py-2.5 rounded-xl border text-sm font-medium text-slate-400 hover:text-white hover:border-slate-500 transition-all disabled:opacity-50"
-                style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}>
-                {isFetchingNextPage ? <Loader2 size={14} className="animate-spin mx-auto" /> : 'Load more'}
+                style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}
+              >
+                {isFetchingNextPage
+                  ? <Loader2 size={14} className="animate-spin mx-auto" />
+                  : 'Load more'}
               </button>
             ) : (
-              <p className="text-xs text-slate-600">You're all caught up</p>
+              <p className="text-xs text-slate-600">You're all caught up ✓</p>
             )}
           </div>
         )}
@@ -471,13 +766,18 @@ export function FeedPage() {
 
 function ProjectFeedCard({ project, author }: { project: any; author: any }) {
   return (
-    <div className="rounded-2xl border overflow-hidden"
-      style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+    <div
+      className="rounded-2xl border overflow-hidden card-hover-general transition-all"
+      style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
+    >
       <div className="p-4">
         <div className="flex items-center gap-2 mb-3">
           <span className="text-xs font-bold px-2 py-0.5 rounded-md badge-project">PROJECT</span>
           {project.status === 'launched' && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-md" style={{ backgroundColor: 'rgba(0,217,126,0.1)', color: 'var(--color-success)' }}>
+            <span
+              className="text-xs font-bold px-2 py-0.5 rounded-md"
+              style={{ backgroundColor: 'rgba(0,217,126,0.1)', color: 'var(--color-success)' }}
+            >
               LAUNCHED
             </span>
           )}
@@ -485,7 +785,10 @@ function ProjectFeedCard({ project, author }: { project: any; author: any }) {
 
         <div className="flex gap-4">
           <div className="flex-1 min-w-0">
-            <Link to={`/projects/${project.id}`} className="text-base font-semibold text-white hover:text-slate-200 transition-colors block mb-1">
+            <Link
+              to={`/projects/${project.id}`}
+              className="text-base font-semibold text-white hover:text-slate-200 transition-colors block mb-1"
+            >
               {project.name}
             </Link>
             {project.description && (
@@ -494,8 +797,11 @@ function ProjectFeedCard({ project, author }: { project: any; author: any }) {
             {project.tags?.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {project.tags.slice(0, 4).map((tag: string) => (
-                  <span key={tag} className="text-xs px-2 py-0.5 rounded-md"
-                    style={{ backgroundColor: 'var(--color-elevated)', color: 'var(--color-muted)' }}>
+                  <span
+                    key={tag}
+                    className="text-xs px-2 py-0.5 rounded-md"
+                    style={{ backgroundColor: 'var(--color-elevated)', color: 'var(--color-muted)' }}
+                  >
                     {tag}
                   </span>
                 ))}
@@ -505,9 +811,13 @@ function ProjectFeedCard({ project, author }: { project: any; author: any }) {
 
           <div className="flex flex-col items-end gap-2 flex-shrink-0">
             {project.websiteUrl && (
-              <a href={project.websiteUrl} target="_blank" rel="noopener noreferrer"
+              <a
+                href={project.websiteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-                style={{ backgroundColor: 'rgba(0,217,126,0.1)', color: 'var(--color-success)' }}>
+                style={{ backgroundColor: 'rgba(0,217,126,0.1)', color: 'var(--color-success)' }}
+              >
                 Visit Demo →
               </a>
             )}
@@ -517,11 +827,21 @@ function ProjectFeedCard({ project, author }: { project: any; author: any }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 mt-3 pt-3 border-t" style={{ borderColor: 'var(--color-border)' }}>
-          <Link to={`/u/${author?.username}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <div className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold"
-              style={{ background: 'var(--color-accent)', color: 'white' }}>
-              {author?.avatar ? <img src={author.avatar} alt="" className="w-full h-full object-cover" /> : author?.username?.[0]?.toUpperCase()}
+        <div
+          className="flex items-center gap-2 mt-3 pt-3 border-t"
+          style={{ borderColor: 'var(--color-border)' }}
+        >
+          <Link
+            to={`/u/${author?.username}`}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <div
+              className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold"
+              style={{ background: 'var(--color-accent)', color: 'white' }}
+            >
+              {author?.avatar
+                ? <img src={author.avatar} alt="" className="w-full h-full object-cover" />
+                : author?.username?.[0]?.toUpperCase()}
             </div>
             <span className="text-xs text-slate-500">{author?.displayName || author?.username}</span>
           </Link>
