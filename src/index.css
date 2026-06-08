@@ -140,7 +140,10 @@ body::after {
   filter: blur(60px);
 }
 
-#root > * { position: relative; z-index: 1; }
+#root > :not(.cursor-ring):not(.cursor-spot) {
+  position: relative;
+  z-index: 1;
+}
 
 body::before,
 body::after,
