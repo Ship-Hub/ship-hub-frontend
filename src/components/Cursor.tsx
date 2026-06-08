@@ -14,6 +14,8 @@ export function Cursor() {
   const targetRef = useRef<Element | null>(null);
   const mouseRef  = useRef({ x: -300, y: -300 });
 
+  const visibleRef = useRef(false);
+
   const [stateUI,  setStateUI]  = useState<CursorState>('default');
   const [visible,  setVisible]  = useState(false);
   const [clicking, setClicking] = useState(false);
@@ -95,17 +97,22 @@ export function Cursor() {
       return 'default';
     };
 
+    const showCursor = () => {
+      if (!visibleRef.current) { visibleRef.current = true; setVisible(true); }
+    };
+
     const onMove = (e: MouseEvent) => {
       mouseRef.current = { x: e.clientX, y: e.clientY };
       moveDot(e.clientX, e.clientY);
+      showCursor(); // make visible on first move, even if mouseenter never fired
       const s = detectState(e.clientX, e.clientY);
       if (s !== stateRef.current) { stateRef.current = s; setStateUI(s); }
     };
 
     const onDown  = () => setClicking(true);
     const onUp    = () => setClicking(false);
-    const onEnter = () => setVisible(true);
-    const onLeave = () => { setVisible(false); setClicking(false); };
+    const onEnter = () => showCursor();
+    const onLeave = () => { visibleRef.current = false; setVisible(false); setClicking(false); };
 
     document.addEventListener('mousemove',  onMove,  { passive: true });
     document.addEventListener('mouseenter', onEnter);
