@@ -538,7 +538,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* ── Main content area ───────────────────────────────────── */}
       <div className="flex flex-1 md:ml-[280px] xl:mr-[340px]">
-        <main className="flex-1 min-w-0 pt-14 pb-20 md:pb-0 animate-in">
+        <main className="flex-1 min-w-0 pt-14 pb-20 md:pb-0">
           {children}
         </main>
       </div>
