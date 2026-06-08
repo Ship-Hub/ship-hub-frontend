@@ -22,6 +22,7 @@ interface PostCardProps {
   author: AuthorSnippet | null;
   quotedPost?: PostWithAuthor | null;
   quotedMemory?: any | null;
+  quotedProject?: any | null;
 }
 
 // ── Type icon metadata ────────────────────────────────────────────────────────
@@ -639,7 +640,7 @@ function GeneralContent({ post }: { post: Post }) {
 
 // ── Main PostCard ─────────────────────────────────────────────────────────────
 
-export function PostCard({ post, author, quotedPost, quotedMemory }: PostCardProps) {
+export function PostCard({ post, author, quotedPost, quotedMemory, quotedProject }: PostCardProps) {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -757,9 +758,9 @@ export function PostCard({ post, author, quotedPost, quotedMemory }: PostCardPro
       )}
 
       {/* ── Quoted content ── */}
-      {(quotedPost || quotedMemory) && !editing && (
+      {(quotedPost || quotedMemory || quotedProject) && !editing && (
         <div className="pr-4 pb-3">
-          <EmbeddedQuote quotedPost={quotedPost ?? undefined} quotedMemory={quotedMemory ?? undefined} />
+          <EmbeddedQuote quotedPost={quotedPost ?? undefined} quotedMemory={quotedMemory ?? undefined} quotedProject={quotedProject ?? undefined} />
         </div>
       )}
 

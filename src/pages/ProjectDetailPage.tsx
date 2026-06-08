@@ -5,8 +5,10 @@ import { projectsApi, memoriesApi, type ProjectStatus } from '../lib/api';
 import { Layout } from '../components/Layout';
 import { MemoryCard } from '../components/MemoryCard';
 import { useAuthStore } from '../store/auth';
+import { useComposeStore } from '../store/compose';
 import { timeAgo } from '../lib/utils';
-import { Loader2, FolderKanban, Globe, GitBranch, Users, BookOpen, Plus, Trash2, X, ArrowLeft, Pencil } from 'lucide-react';
+import { CommentBody, CommentInput } from '../components/CommentInput';
+import { Loader2, FolderKanban, Globe, GitBranch, Users, BookOpen, Trash2, X, ArrowLeft, Pencil, Heart, MessageSquare, Quote } from 'lucide-react';
 
 const STATUS_COLOR_MAP: Record<ProjectStatus, string> = {
   building: 'text-amber-400 bg-amber-400/10 border-amber-400/20',
@@ -19,8 +21,13 @@ export function ProjectDetailPage() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { setQuoteProject } = useComposeStore();
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState<any>(null);
+  const [showComments, setShowComments] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [comments, setComments] = useState<any[]>([]);
+  const [commentsLoaded, setCommentsLoaded] = useState(false);
 
   const projectQ = useQuery({ queryKey: ['project', id], queryFn: () => projectsApi.get(id!).then(r => r.data) });
   const memoriesQ = useQuery({ queryKey: ['project-memories', id], queryFn: () => projectsApi.memories(id!).then(r => r.data.memories) });
@@ -29,6 +36,27 @@ export function ProjectDetailPage() {
   const followMut = useMutation({
     mutationFn: () => projectsApi.follow(id!),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['project', id] }); qc.invalidateQueries({ queryKey: ['project-follow', id] }); },
+  });
+  const likeMut = useMutation({
+    mutationFn: () => projectsApi.like(id!),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['project', id] }); qc.invalidateQueries({ queryKey: ['feed'] }); },
+  });
+  const commentMut = useMutation({
+    mutationFn: () => projectsApi.comment(id!, commentText),
+    onSuccess: (res) => {
+      setComments(prev => [...prev, res.data]);
+      setCommentText('');
+      qc.invalidateQueries({ queryKey: ['project', id] });
+      qc.invalidateQueries({ queryKey: ['feed'] });
+    },
+  });
+  const deleteCommentMut = useMutation({
+    mutationFn: (commentId: string) => projectsApi.deleteComment(commentId),
+    onSuccess: (_data, commentId) => {
+      setComments(prev => prev.filter((c: any) => c.comment.id !== commentId));
+      qc.invalidateQueries({ queryKey: ['project', id] });
+      qc.invalidateQueries({ queryKey: ['feed'] });
+    },
   });
 
   const deleteMut = useMutation({
@@ -53,6 +81,16 @@ export function ProjectDetailPage() {
 
   const isOwner = user?.id === project.userId;
   const isFollowing = followStatusQ.data;
+  const act = (fn: () => void) => { if (!user) { navigate('/login'); return; } fn(); };
+
+  const loadComments = async () => {
+    if (!commentsLoaded) {
+      const res = await projectsApi.comments(project.id);
+      setComments(res.data.comments ?? []);
+      setCommentsLoaded(true);
+    }
+    setShowComments(p => !p);
+  };
 
   const startEdit = () => {
     setEditForm({ name: project.name, description: project.description ?? '', status: project.status, websiteUrl: project.websiteUrl ?? '', githubUrl: project.githubUrl ?? '' });
@@ -140,6 +178,58 @@ export function ProjectDetailPage() {
                 {project.githubUrl && <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs mono text-slate-400 hover:text-white"><GitBranch size={11} />github</a>}
                 <span className="ml-auto text-xs mono text-slate-600">{timeAgo(project.createdAt)}</span>
               </div>
+
+              <div className="flex items-center gap-1 mt-4 pt-4 border-t" style={{ borderColor: 'var(--color-border)' }}>
+                <button onClick={() => act(() => likeMut.mutate())} className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-pink-400 hover:bg-white/5 transition-all">
+                  <Heart size={13} />
+                  {(project.likeCount ?? 0) > 0 && <span>{project.likeCount}</span>}
+                </button>
+                <button onClick={() => act(loadComments)} className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all">
+                  <MessageSquare size={13} />
+                  {(project.commentCount ?? 0) > 0 && <span>{project.commentCount}</span>}
+                </button>
+                <button onClick={() => act(() => setQuoteProject({ project, owner: owner! }))} className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-violet-400 hover:bg-white/5 transition-all">
+                  <Quote size={13} />
+                  Quote
+                </button>
+              </div>
+
+              {showComments && (
+                <div className="mt-4 pt-4 border-t space-y-3" style={{ borderColor: 'var(--color-border)' }}>
+                  {comments.map((c: any) => (
+                    <div key={c.comment.id} className="flex gap-2.5">
+                      <Link to={`/u/${c.author?.username}`} className="flex-shrink-0">
+                        <div className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold" style={{ background: 'var(--color-accent)', color: 'white' }}>
+                          {c.author?.avatar
+                            ? <img src={c.author.avatar} alt="" className="w-full h-full object-cover" />
+                            : c.author?.username?.[0]?.toUpperCase()}
+                        </div>
+                      </Link>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs text-slate-500 mb-0.5">
+                          <span className="font-semibold text-slate-300">{c.author?.displayName || c.author?.username}</span>
+                          {' - '}{timeAgo(c.comment.createdAt)}
+                        </div>
+                        <CommentBody content={c.comment.content} />
+                        {user?.id === c.comment.userId && (
+                          <button onClick={() => deleteCommentMut.mutate(c.comment.id)} className="text-xs text-slate-600 hover:text-red-400 transition-colors mt-0.5">
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {user && (
+                    <CommentInput
+                      value={commentText}
+                      onChange={setCommentText}
+                      onSubmit={() => { if (commentText.trim()) commentMut.mutate(); }}
+                      placeholder="Write a project reply..."
+                      isPending={commentMut.isPending}
+                    />
+                  )}
+                </div>
+              )}
             </>
           )}
         </div>

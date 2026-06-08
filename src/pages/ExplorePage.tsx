@@ -157,6 +157,7 @@ export function ExplorePage() {
                   author={item.author}
                   quotedPost={item.quotedPost}
                   quotedMemory={item.quotedMemory}
+                  quotedProject={(item as any).quotedProject}
                 />
               );
               return null;
@@ -183,6 +184,7 @@ export function ExplorePage() {
                     author={item.author}
                     quotedPost={item.quotedPost}
                     quotedMemory={item.quotedMemory}
+                    quotedProject={(item as any).quotedProject}
                   />
                 ) : null
               )}
@@ -254,6 +256,7 @@ export function ExplorePage() {
                     author={item.author}
                     quotedPost={item.quotedPost}
                     quotedMemory={item.quotedMemory}
+                    quotedProject={(item as any).quotedProject}
                   />
                 ) : null
               )}
@@ -279,6 +282,7 @@ export function ExplorePage() {
                     author={item.author}
                     quotedPost={item.quotedPost}
                     quotedMemory={item.quotedMemory}
+                    quotedProject={(item as any).quotedProject}
                   />
                 ) : null
               )}

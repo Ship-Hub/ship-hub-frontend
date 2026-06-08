@@ -5,11 +5,11 @@ import { useComposeStore } from '../store/compose';
 import { PostMarkdown } from './ComposeBox';
 import { processContent, timeAgo, CATEGORY_COLORS } from '../lib/utils';
 import { cn } from '../lib/utils';
-import { X, Send, Loader2, Code2, Bold, Quote } from 'lucide-react';
+import { X, Send, Loader2, Code2, Bold, Quote, FolderKanban } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 // Embedded quoted item preview (read-only)
-function QuotedPostPreview({ quotePost, quoteMemory }: { quotePost?: any; quoteMemory?: any }) {
+function QuotedPostPreview({ quotePost, quoteMemory, quoteProject }: { quotePost?: any; quoteMemory?: any; quoteProject?: any }) {
   if (quotePost) {
     const { post, author } = quotePost;
     return (
@@ -41,11 +41,28 @@ function QuotedPostPreview({ quotePost, quoteMemory }: { quotePost?: any; quoteM
       </div>
     );
   }
+  if (quoteProject) {
+    const { project, owner, author } = quoteProject;
+    const projectAuthor = owner ?? author;
+    return (
+      <div className="rounded-lg border p-3" style={{ borderColor: 'rgba(139,92,246,0.2)', backgroundColor: 'var(--color-elevated)' }}>
+        <div className="flex items-center gap-2 mb-1.5">
+          <FolderKanban size={13} className="text-emerald-400" />
+          <span className="text-xs mono text-white font-semibold truncate">{project.name}</span>
+          <span className="text-xs mono text-slate-600">{project.status}</span>
+        </div>
+        {project.description && (
+          <div className="text-xs text-slate-400 line-clamp-2">{project.description}</div>
+        )}
+        <div className="text-xs mono text-slate-600 mt-1">by @{projectAuthor?.username}</div>
+      </div>
+    );
+  }
   return null;
 }
 
 export function QuoteModal() {
-  const { quotePost, quoteMemory, clear } = useComposeStore();
+  const { quotePost, quoteMemory, quoteProject, clear } = useComposeStore();
   const qc = useQueryClient();
   const [content, setContent] = useState('');
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -55,6 +72,7 @@ export function QuoteModal() {
       content: content.trim(),
       quotePostId: quotePost?.post.id,
       quoteMemoryId: quoteMemory?.memory.id,
+      quoteProjectId: quoteProject?.project.id,
     }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['feed'] });
@@ -63,7 +81,7 @@ export function QuoteModal() {
     },
   });
 
-  if (!quotePost && !quoteMemory) return null;
+  if (!quotePost && !quoteMemory && !quoteProject) return null;
 
   const insert = (before: string, after: string, ph: string) => {
     const el = ref.current;
@@ -77,7 +95,9 @@ export function QuoteModal() {
 
   const label = quotePost
     ? `Quoting @${quotePost.author?.username}'s post`
-    : `Quoting memory: ${quoteMemory?.memory.title}`;
+    : quoteMemory
+      ? `Quoting memory: ${quoteMemory.memory.title}`
+      : `Quoting project: ${quoteProject?.project.name}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.75)' }}>
@@ -104,7 +124,7 @@ export function QuoteModal() {
           />
 
           {/* Quoted item */}
-          <QuotedPostPreview quotePost={quotePost ?? undefined} quoteMemory={quoteMemory ?? undefined} />
+          <QuotedPostPreview quotePost={quotePost ?? undefined} quoteMemory={quoteMemory ?? undefined} quoteProject={quoteProject ?? undefined} />
         </div>
 
         {/* Toolbar */}
@@ -133,11 +153,11 @@ export function QuoteModal() {
 }
 
 // Small embedded quote card shown inside PostCard for already-posted quotes
-export function EmbeddedQuote({ quotedPost, quotedMemory }: { quotedPost?: any; quotedMemory?: any }) {
-  if (!quotedPost && !quotedMemory) return null;
+export function EmbeddedQuote({ quotedPost, quotedMemory, quotedProject }: { quotedPost?: any; quotedMemory?: any; quotedProject?: any }) {
+  if (!quotedPost && !quotedMemory && !quotedProject) return null;
   return (
     <div className="mt-3 rounded-lg border overflow-hidden" style={{ borderColor: 'rgba(139,92,246,0.15)', backgroundColor: 'var(--color-elevated)' }}>
-      <QuotedPostPreview quotePost={quotedPost} quoteMemory={quotedMemory} />
+      <QuotedPostPreview quotePost={quotedPost} quoteMemory={quotedMemory} quoteProject={quotedProject} />
     </div>
   );
 }

@@ -283,8 +283,7 @@ pre { overflow-x: auto; max-width: 100%; }
   *, *::before, *::after { cursor: none !important; }
 }
 
-/* Shared base for all cursor pieces */
-.cursor-dot,
+/* Shared base — ring and spot are centered on the mouse */
 .cursor-ring,
 .cursor-spot {
   position: fixed;
@@ -302,60 +301,43 @@ pre { overflow-x: auto; max-width: 100%; }
   width: 400px;
   height: 400px;
   z-index: 99990;
-  background: radial-gradient(circle, rgba(255,138,0,0.052) 0%, rgba(255,138,0,0.018) 40%, transparent 68%);
+  background: radial-gradient(circle, rgba(255,138,0,0.06) 0%, rgba(255,138,0,0.02) 40%, transparent 68%);
   transition: opacity 0.5s ease;
-  mix-blend-mode: screen;
 }
 
-/* ── Cursor dot — instant follow ────────────────────────────────────────────── */
-.cursor-dot {
-  width: 6px;
-  height: 6px;
-  transition:
-    width    0.18s cubic-bezier(0.16, 1, 0.3, 1),
-    height   0.18s cubic-bezier(0.16, 1, 0.3, 1),
-    border-radius 0.18s ease,
-    background-color 0.16s ease,
-    box-shadow 0.16s ease,
-    opacity  0.28s ease;
-  mix-blend-mode: screen;
+/* ── Cursor arrow — SVG, tip at exact mouse position ────────────────────────── */
+.cursor-arrow {
+  position: fixed;
+  pointer-events: none;
+  z-index: 99999;
+  /* No transform — top-left of SVG is positioned so tip lands on mouse */
+  will-change: left, top;
+  transition: opacity 0.28s ease, filter 0.16s ease;
+  filter:
+    drop-shadow(0 0  3px rgba(255,138,0,0.95))
+    drop-shadow(0 0  8px rgba(255,138,0,0.60))
+    drop-shadow(0 0 18px rgba(255,138,0,0.25));
 }
 
-.cursor-dot-default {
-  background: #FF8A00;
-  box-shadow:
-    0 0  6px rgba(255,138,0,1),
-    0 0 14px rgba(255,138,0,0.65),
-    0 0 26px rgba(255,138,0,0.28);
+.cursor-arrow-pointer {
+  filter:
+    drop-shadow(0 0  4px rgba(255,138,0,1))
+    drop-shadow(0 0 12px rgba(255,138,0,0.85))
+    drop-shadow(0 0 28px rgba(255,138,0,0.45));
 }
 
-.cursor-dot-pointer {
-  width: 5px;
-  height: 5px;
-  background: #FF8A00;
-  box-shadow:
-    0 0 10px rgba(255,138,0,1),
-    0 0 24px rgba(255,138,0,0.85),
-    0 0 48px rgba(255,138,0,0.42);
+/* Text state: hide arrow, ring becomes I-beam */
+.cursor-arrow-text {
+  opacity: 0 !important;
 }
 
-.cursor-dot-text {
-  width: 2px;
-  height: 22px;
-  border-radius: 1px;
-  background: #00E5FF;
-  box-shadow:
-    0 0  8px rgba(0,229,255,0.98),
-    0 0 18px rgba(0,229,255,0.55);
-  animation: cursorBlink 1s steps(1) infinite;
-}
-
-/* Click flash — dot snaps smaller + flares */
-.cursor-dot.cursor-clicking {
-  transform: translate(-50%, -50%) scale(0.45) !important;
-  box-shadow:
-    0 0 18px rgba(255,138,0,1),
-    0 0 40px rgba(255,138,0,0.75) !important;
+/* Click: arrow flares */
+.cursor-arrow.cursor-clicking {
+  filter:
+    drop-shadow(0 0  8px rgba(255,138,0,1))
+    drop-shadow(0 0 20px rgba(255,138,0,0.9))
+    drop-shadow(0 0 40px rgba(255,138,0,0.55)) !important;
+  transform: scale(0.88);
 }
 
 /* ── Cursor ring — trails with lerp ─────────────────────────────────────────── */
@@ -753,7 +735,7 @@ code:not([class]) {
   }
   body::before, body::after,
   #root::before { animation: none !important; }
-  .cursor-dot, .cursor-ring, .cursor-spot { display: none !important; }
+  .cursor-arrow, .cursor-ring, .cursor-spot { display: none !important; }
   @media (hover: hover) and (pointer: fine) {
     *, *::before, *::after { cursor: auto !important; }
   }

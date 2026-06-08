@@ -52,10 +52,13 @@ export interface MemoryWithAuthor { memory: Memory; author: AuthorSnippet; }
 export interface Comment { id: string; memoryId: string; userId: string; content: string; createdAt: string; }
 export interface CommentWithAuthor { comment: Comment; author: AuthorSnippet; }
 
+export interface ProjectComment { id: string; projectId: string; userId: string; content: string; createdAt: string; }
+export interface ProjectCommentWithAuthor { comment: ProjectComment; author: AuthorSnippet; }
+
 export interface Project {
   id: string; userId: string; name: string; slug: string; description: string | null;
   status: ProjectStatus; tags: string[]; websiteUrl: string | null; githubUrl: string | null;
-  followerCount: number; memoryCount: number; createdAt: string;
+  followerCount: number; memoryCount: number; likeCount: number; commentCount: number; createdAt: string;
 }
 export interface ProjectWithOwner { project: Project; owner: AuthorSnippet; }
 
@@ -137,6 +140,10 @@ export const projectsApi = {
   removeMemory: (id: string, memoryId: string) => api.delete(`/projects/${id}/memories/${memoryId}`),
   follow: (id: string) => api.post<{ following: boolean }>(`/projects/${id}/follow`),
   followStatus: (id: string) => api.get<{ following: boolean }>(`/projects/${id}/follow-status`),
+  like: (id: string) => api.post<{ liked: boolean }>(`/projects/${id}/like`),
+  comments: (id: string) => api.get<{ comments: ProjectCommentWithAuthor[] }>(`/projects/${id}/comments`),
+  comment: (id: string, content: string) => api.post<ProjectCommentWithAuthor>(`/projects/${id}/comments`, { content }),
+  deleteComment: (id: string) => api.delete(`/projects/comments/${id}`),
   byUser: (username: string) => api.get<{ projects: Project[] }>(`/users/${username}/projects`),
 };
 
@@ -236,7 +243,7 @@ export interface Post {
   content: string;
   visibility: 'public' | 'private';
   mediaUrl: string | null; mediaType: 'image' | 'video' | null;
-  quotePostId: string | null; quoteMemoryId: string | null;
+  quotePostId: string | null; quoteMemoryId: string | null; quoteProjectId: string | null;
   // code snippet
   language: string | null;
   // build update
@@ -260,6 +267,7 @@ export interface PostWithAuthor {
   post: Post; author: AuthorSnippet;
   quotedPost?: PostWithAuthor | null;
   quotedMemory?: MemoryWithAuthor | null;
+  quotedProject?: ProjectWithOwner | null;
   poll?: { options: PollOption[] } | null;
 }
 
@@ -280,7 +288,7 @@ export const postsApi = {
   create: (data: {
     type?: PostType; content: string; visibility?: 'public' | 'private';
     mediaUrl?: string; mediaType?: 'image' | 'video';
-    quotePostId?: string; quoteMemoryId?: string;
+    quotePostId?: string; quoteMemoryId?: string; quoteProjectId?: string;
     language?: string; projectId?: string; milestone?: string;
     roleNeeded?: string; skills?: string[]; compensation?: string; applyUrl?: string;
     pollOptions?: string[]; pollIsAnonymous?: boolean; pollAllowMultiple?: boolean;

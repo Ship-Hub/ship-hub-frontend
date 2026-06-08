@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { projectsApi, type ProjectWithOwner, type ProjectStatus } from '../lib/api';
 import { Layout } from '../components/Layout';
+import { ProjectCard } from '../components/ProjectCard';
 import { useAuthStore } from '../store/auth';
 import { timeAgo } from '../lib/utils';
 import { FolderKanban, Globe, GitBranch, Users, BookOpen, Plus, X, Loader2 } from 'lucide-react';
@@ -94,38 +95,7 @@ export function ProjectsPage() {
 
         <div className="grid gap-4">
           {data?.projects?.map(({ project, owner }: ProjectWithOwner) => (
-            <Link key={project.id} to={`/projects/${project.id}`}>
-              <div className="rounded-xl border p-5 hover:border-slate-600 transition-all group" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--color-elevated)' }}>
-                      <FolderKanban size={18} className="text-slate-400" />
-                    </div>
-                    <div>
-                      <h3 className="mono font-semibold text-white text-sm group-hover:opacity-80 transition-colors">{project.name}</h3>
-                      <Link to={`/u/${owner?.username}`} className="text-xs mono text-slate-500 hover:text-slate-300 transition-colors" onClick={e => e.stopPropagation()}>
-                        @{owner?.username}
-                      </Link>
-                    </div>
-                  </div>
-                  <span className={`text-xs mono px-2 py-0.5 rounded border flex-shrink-0 ${STATUS_COLORS[project.status]}`}>
-                    {project.status.toUpperCase()}
-                  </span>
-                </div>
-
-                {project.description && (
-                  <p className="text-slate-400 text-xs leading-relaxed mb-3 line-clamp-2">{project.description}</p>
-                )}
-
-                <div className="flex items-center gap-4">
-                  <span className="flex items-center gap-1 text-xs mono text-slate-500"><BookOpen size={11} />{project.memoryCount} memories</span>
-                  <span className="flex items-center gap-1 text-xs mono text-slate-500"><Users size={11} />{project.followerCount} followers</span>
-                  {project.websiteUrl && <a href={project.websiteUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="flex items-center gap-1 text-xs mono text-cyan-500 hover:text-cyan-400 transition-colors"><Globe size={11} />website</a>}
-                  {project.githubUrl && <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="flex items-center gap-1 text-xs mono text-slate-400 hover:text-white transition-colors"><GitBranch size={11} />github</a>}
-                  <span className="ml-auto text-xs mono text-slate-600">{timeAgo(project.createdAt)}</span>
-                </div>
-              </div>
-            </Link>
+            <ProjectCard key={project.id} project={project} author={owner} />
           ))}
 
           {!isLoading && data?.projects?.length === 0 && (

@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { feedApi, postsApi, projectsApi, type FeedItem, type FeedTabType, type PostType } from '../lib/api';
 import { MemoryCard } from '../components/MemoryCard';
 import { PostCard } from '../components/PostCard';
+import { ProjectCard } from '../components/ProjectCard';
 import { Layout } from '../components/Layout';
 import { useAuthStore } from '../store/auth';
 import { useNavigate, Link } from 'react-router-dom';
@@ -754,7 +755,7 @@ export function FeedPage() {
               return <MemoryCard key={item.memory.id} memory={item.memory} author={item.author} />;
             }
             if (item.type === 'project') {
-              return <ProjectFeedCard key={item.project.id} project={item.project} author={item.author} />;
+              return <ProjectCard key={item.project.id} project={item.project} author={item.author} />;
             }
             return (
               <PostCard
@@ -763,6 +764,7 @@ export function FeedPage() {
                 author={item.author}
                 quotedPost={(item as any).quotedPost}
                 quotedMemory={(item as any).quotedMemory}
+                quotedProject={(item as any).quotedProject}
               />
             );
           })}
