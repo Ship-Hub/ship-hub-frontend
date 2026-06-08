@@ -6,7 +6,7 @@ import { PostCard } from '../components/PostCard';
 import { Helmet } from 'react-helmet-async';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
-const APP_URL = import.meta.env.VITE_APP_URL ?? 'https://community.memobank.online';
+const APP_URL = import.meta.env.VITE_APP_URL ?? 'https://community.chainscreener.site';
 
 export function PostDetailPage() {
   const { id } = useParams<{ id: string }>();

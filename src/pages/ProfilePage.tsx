@@ -13,7 +13,7 @@ import {
   Camera, Package, MessageSquare, Pin, PinOff,
 } from 'lucide-react';
 
-const APP_URL = import.meta.env.VITE_APP_URL ?? 'https://community.memobank.online';
+const APP_URL = import.meta.env.VITE_APP_URL ?? 'https://community.chainscreener.site';
 
 const STATUS_COLOR_MAP: Record<string, string> = {
   building: 'text-amber-400 bg-amber-400/10 border-amber-400/20',

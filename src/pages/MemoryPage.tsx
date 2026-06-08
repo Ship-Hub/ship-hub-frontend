@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Helmet } from 'react-helmet-async';
 
-const APP_URL = import.meta.env.VITE_APP_URL ?? 'https://community.memobank.online';
+const APP_URL = import.meta.env.VITE_APP_URL ?? 'https://community.chainscreener.site';
 import { memoriesApi, type CommentWithAuthor } from '../lib/api';
 import { Layout } from '../components/Layout';
 import { useAuthStore } from '../store/auth';
