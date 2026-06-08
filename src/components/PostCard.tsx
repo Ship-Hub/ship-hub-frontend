@@ -9,7 +9,7 @@ import { timeAgo, processContent } from '../lib/utils';
 import {
   Heart, Bookmark, MessageSquare, Trash2, ChevronDown, ChevronUp,
   Code2, Quote, Pencil, Check, X, Copy, Users, BarChart3,
-  HelpCircle, Zap, MoreHorizontal, Repeat2, Pin, MessageCircle,
+  HelpCircle, Zap, MoreHorizontal, Pin, MessageCircle,
 } from 'lucide-react';
 import { PostMarkdown } from './ComposeBox';
 import { CommentInput, CommentBody } from './CommentInput';
@@ -318,12 +318,13 @@ function CardFooter({ post, author, onLike, onSave, onComment, onQuote, liked, s
         {commentCount > 0 && <span>{commentCount}</span>}
       </button>
 
-      {/* Repost / Quote */}
+      {/* Quote */}
       <button
         onClick={onQuote}
-        className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all"
+        className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-violet-400 hover:bg-white/5 transition-all"
+        title="Quote post"
       >
-        <Repeat2 size={13} />
+        <Quote size={13} />
       </button>
 
       {/* Save */}

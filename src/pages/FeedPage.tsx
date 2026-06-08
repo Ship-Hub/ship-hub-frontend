@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
-import { feedApi, postsApi, type FeedItem, type FeedTabType, type PostType } from '../lib/api';
+import { feedApi, postsApi, projectsApi, type FeedItem, type FeedTabType, type PostType } from '../lib/api';
 import { MemoryCard } from '../components/MemoryCard';
 import { PostCard } from '../components/PostCard';
 import { Layout } from '../components/Layout';
@@ -514,6 +514,10 @@ function FeedComposer({ onPosted }: { onPosted: () => void }) {
 // ── Featured Project Card ─────────────────────────────────────────────────
 
 function FeaturedProjectBanner() {
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+
   const projectsQ = useQuery({
     queryKey: ['featured-project'],
     queryFn: () => feedApi.get('projects', 1, 0).then(r => r.data.items[0]),
@@ -521,12 +525,24 @@ function FeaturedProjectBanner() {
   });
 
   const item = projectsQ.data as any;
-  if (!item) return null;
+  const project = item?.project ?? item;
+  const author = item?.author;
 
-  const project = item.project ?? item;
-  const author = item.author;
+  const followStatusQ = useQuery({
+    queryKey: ['project-follow', project?.id],
+    queryFn: () => projectsApi.followStatus(project!.id).then(r => r.data.following),
+    enabled: !!user && !!project?.id,
+  });
 
-  if (!project?.name) return null;
+  const followMut = useMutation({
+    mutationFn: () => projectsApi.follow(project!.id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['project-follow', project!.id] });
+      qc.invalidateQueries({ queryKey: ['featured-project'] });
+    },
+  });
+
+  if (!item || !project?.name) return null;
 
   return (
     <div
@@ -610,18 +626,32 @@ function FeaturedProjectBanner() {
               <span className="text-xs text-slate-500">{author.displayName || author.username}</span>
             </Link>
           )}
-          <div className="flex items-center gap-1 text-xs text-slate-500 ml-auto">
+          <div className="flex items-center gap-1 text-xs text-slate-500">
             <Users2 size={12} />
             <span>{(project.followerCount ?? 0).toLocaleString()} followers</span>
           </div>
-          <Link
-            to={`/projects/${project.id}`}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-white transition-all btn-primary"
-            style={{ backgroundColor: 'var(--color-success)' }}
-          >
-            View Project
-            <ExternalLink size={11} />
-          </Link>
+          <div className="ml-auto flex items-center gap-2">
+            {/* Follow button */}
+            <button
+              onClick={() => { if (!user) { navigate('/login'); return; } followMut.mutate(); }}
+              disabled={followMut.isPending}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border disabled:opacity-50"
+              style={followStatusQ.data
+                ? { borderColor: 'rgba(52,211,153,0.3)', color: 'var(--color-success)', backgroundColor: 'rgba(52,211,153,0.08)' }
+                : { borderColor: 'rgba(52,211,153,0.4)', color: 'var(--color-success)', backgroundColor: 'rgba(52,211,153,0.1)' }
+              }
+            >
+              {followStatusQ.data ? '✓ Following' : '+ Follow'}
+            </button>
+            <Link
+              to={`/projects/${project.id}`}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-white transition-all btn-primary"
+              style={{ backgroundColor: 'var(--color-success)' }}
+            >
+              View
+              <ExternalLink size={11} />
+            </Link>
+          </div>
         </div>
       </div>
     </div>
@@ -765,6 +795,26 @@ export function FeedPage() {
 // ── Project feed card ─────────────────────────────────────────────────────
 
 function ProjectFeedCard({ project, author }: { project: any; author: any }) {
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+
+  const followStatusQ = useQuery({
+    queryKey: ['project-follow', project.id],
+    queryFn: () => projectsApi.followStatus(project.id).then(r => r.data.following),
+    enabled: !!user,
+  });
+
+  const followMut = useMutation({
+    mutationFn: () => projectsApi.follow(project.id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['project-follow', project.id] });
+      qc.invalidateQueries({ queryKey: ['feed'] });
+    },
+  });
+
+  const isFollowing = followStatusQ.data;
+
   return (
     <div
       className="rounded-2xl border overflow-hidden transition-all"
@@ -876,9 +926,31 @@ function ProjectFeedCard({ project, author }: { project: any; author: any }) {
               </div>
               <span className="text-xs text-slate-500">{author?.displayName || author?.username}</span>
             </Link>
-            <span className="text-xs text-slate-600 ml-auto">
-              <span className="font-semibold text-white">{project.followerCount}</span> followers
+
+            <span className="text-slate-700 text-xs mx-0.5 hidden sm:block">·</span>
+            <span className="text-xs text-slate-600 hidden sm:block">
+              <span className="font-semibold text-slate-400">{project.followerCount ?? 0}</span> followers
             </span>
+
+            {/* Follow button */}
+            <button
+              onClick={() => { if (!user) { navigate('/login'); return; } followMut.mutate(); }}
+              disabled={followMut.isPending}
+              className="ml-auto flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border disabled:opacity-50"
+              style={isFollowing
+                ? { borderColor: 'rgba(52,211,153,0.25)', color: 'var(--color-success)', backgroundColor: 'rgba(52,211,153,0.06)' }
+                : { borderColor: 'rgba(52,211,153,0.35)', color: 'var(--color-success)', backgroundColor: 'rgba(52,211,153,0.08)' }
+              }
+            >
+              {isFollowing ? (
+                <>✓ Following</>
+              ) : (
+                <>
+                  <Star size={11} />
+                  Follow
+                </>
+              )}
+            </button>
           </div>
         </div>
       </div>
