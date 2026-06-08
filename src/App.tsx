@@ -37,6 +37,7 @@ import { MarketplacePage } from './pages/MarketplacePage';
 import { CommunityChatPage } from './pages/CommunityChatPage';
 import { PostsPage } from './pages/PostsPage';
 import { useAuthStore } from './store/auth';
+import { Cursor } from './components/Cursor';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -65,6 +66,7 @@ export default function App() {
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <ErrorBoundary>
+          <Cursor />
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
