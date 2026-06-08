@@ -111,37 +111,33 @@ const CARD_HOVER_CLASS: Record<string, string> = {
 
 // ── Type icon column (left column) ────────────────────────────────────────────
 
-function TypeIconColumn({ type, author }: { type: string; author: AuthorSnippet | null }) {
+function TypeIconColumn({ type }: { type: string; author?: AuthorSnippet | null }) {
   const meta = TYPE_ICON_META[type] ?? TYPE_ICON_META['general'];
   const Icon = meta.icon;
-  const isGeneral = type === 'general' || !TYPE_ICON_META[type];
+  const isGeneral = !meta.gradient; // general has empty gradient string
 
   return (
     <div className="flex-shrink-0 flex flex-col items-center pt-3 pb-3 w-[64px] md:w-[72px]">
-      {isGeneral ? (
-        /* General posts: show author avatar as the "icon block" */
-        <Link to={`/u/${author?.username ?? ''}`} className="flex-shrink-0">
-          <div
-            className="w-12 h-12 md:w-[52px] md:h-[52px] rounded-2xl overflow-hidden flex items-center justify-center text-base font-bold"
-            style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}
-          >
-            {author?.avatar
-              ? <img src={author.avatar} alt={author.username} className="w-full h-full object-cover" />
-              : <span>{author?.username?.[0]?.toUpperCase() ?? '?'}</span>}
-          </div>
-        </Link>
-      ) : (
-        /* Typed posts: gradient icon block with glowing icon */
-        <div
-          className={`w-12 h-12 md:w-[52px] md:h-[52px] rounded-2xl flex items-center justify-center ${meta.glowClass}`}
-          style={{ background: meta.gradient }}
-        >
-          <Icon
-            size={22}
-            style={{ color: meta.iconColor, filter: `drop-shadow(0 0 5px ${meta.glowColor})` }}
-          />
-        </div>
-      )}
+      {/* Every post shows a type icon block — no avatars in left column */}
+      <div
+        className={`w-12 h-12 md:w-[52px] md:h-[52px] rounded-2xl flex items-center justify-center ${meta.glowClass}`}
+        style={{
+          background: isGeneral
+            ? 'linear-gradient(145deg, #0D1220 0%, #1A2438 55%, #232F43 100%)'
+            : meta.gradient,
+        }}
+      >
+        <Icon
+          size={22}
+          style={{
+            color: meta.iconColor,
+            filter: meta.glowColor && meta.glowColor !== 'transparent'
+              ? `drop-shadow(0 0 5px ${meta.glowColor})`
+              : undefined,
+            opacity: isGeneral ? 0.5 : 1,
+          }}
+        />
+      </div>
       {/* Connector line */}
       <div className="flex-1 mt-2 w-px min-h-[12px]" style={{ backgroundColor: 'var(--color-border)' }} />
     </div>
@@ -162,7 +158,7 @@ function CardShell({ children, post, author }: { children: React.ReactNode; post
     >
       <div className="flex">
         {/* Left: Type icon column */}
-        <TypeIconColumn type={type} author={author} />
+        <TypeIconColumn type={type} />
 
         {/* Center: All post content */}
         <div className="flex-1 min-w-0 flex">

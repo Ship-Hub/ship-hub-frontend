@@ -655,7 +655,7 @@ export function FeedPage() {
         <meta name="description" content="Join builders shipping projects, sharing code, and finding collaborators." />
       </Helmet>
 
-      <div className="max-w-[680px] mx-auto px-4 py-5">
+      <div className="px-4 md:px-6 py-5">
 
         {/* Composer */}
         <FeedComposer onPosted={() => qc.invalidateQueries({ queryKey: ['feed'] })} />
@@ -767,84 +767,119 @@ export function FeedPage() {
 function ProjectFeedCard({ project, author }: { project: any; author: any }) {
   return (
     <div
-      className="rounded-2xl border overflow-hidden card-hover-general transition-all"
+      className="rounded-2xl border overflow-hidden transition-all"
       style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(52,211,153,0.35)';
+        (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(52,211,153,0.07), 0 0 0 1px rgba(52,211,153,0.1)';
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)';
+        (e.currentTarget as HTMLElement).style.boxShadow = '';
+      }}
     >
-      <div className="p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-xs font-bold px-2 py-0.5 rounded-md badge-project">PROJECT</span>
-          {project.status === 'launched' && (
-            <span
-              className="text-xs font-bold px-2 py-0.5 rounded-md"
-              style={{ backgroundColor: 'rgba(0,217,126,0.1)', color: 'var(--color-success)' }}
-            >
-              LAUNCHED
-            </span>
-          )}
+      <div className="flex">
+        {/* Left icon column */}
+        <div className="flex-shrink-0 flex flex-col items-center pt-3 pb-3 w-[64px] md:w-[72px]">
+          <div
+            className="w-12 h-12 md:w-[52px] md:h-[52px] rounded-2xl flex items-center justify-center"
+            style={{
+              background: 'linear-gradient(145deg, #051F0E 0%, #0D4A22 55%, #136E30 100%)',
+              boxShadow: '0 0 14px rgba(52,211,153,0.3), 0 0 28px rgba(52,211,153,0.12)',
+              animation: 'none',
+            }}
+          >
+            <FolderKanban
+              size={22}
+              style={{ color: '#6EE7B7', filter: 'drop-shadow(0 0 5px rgba(52,211,153,0.85))' }}
+            />
+          </div>
+          <div className="flex-1 mt-2 w-px min-h-[12px]" style={{ backgroundColor: 'var(--color-border)' }} />
         </div>
 
-        <div className="flex gap-4">
-          <div className="flex-1 min-w-0">
-            <Link
-              to={`/projects/${project.id}`}
-              className="text-base font-semibold text-white hover:text-slate-200 transition-colors block mb-1"
-            >
-              {project.name}
-            </Link>
-            {project.description && (
-              <p className="text-sm text-slate-400 leading-relaxed line-clamp-2">{project.description}</p>
-            )}
-            {project.tags?.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {project.tags.slice(0, 4).map((tag: string) => (
-                  <span
-                    key={tag}
-                    className="text-xs px-2 py-0.5 rounded-md"
-                    style={{ backgroundColor: 'var(--color-elevated)', color: 'var(--color-muted)' }}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
+        {/* Right content */}
+        <div className="flex-1 min-w-0">
+          {/* Top row */}
+          <div className="flex items-center gap-2 pr-3 pt-3 pb-1.5">
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md tracking-wide badge-project flex-shrink-0">
+              PROJECT
+            </span>
+            {project.status === 'launched' && (
+              <span
+                className="text-[10px] font-bold px-2 py-0.5 rounded-md flex-shrink-0"
+                style={{ backgroundColor: 'rgba(0,217,126,0.1)', color: 'var(--color-success)' }}
+              >
+                LAUNCHED
+              </span>
             )}
           </div>
 
-          <div className="flex flex-col items-end gap-2 flex-shrink-0">
+          {/* Title */}
+          <div className="pr-4 pb-1">
+            <Link
+              to={`/projects/${project.id}`}
+              className="text-base font-semibold text-white hover:text-slate-200 transition-colors leading-snug block"
+            >
+              {project.name}
+            </Link>
+          </div>
+
+          {/* Description + optional demo link */}
+          <div className="pr-4 pb-2 flex gap-3 items-start">
+            <div className="flex-1 min-w-0">
+              {project.description && (
+                <p className="text-sm text-slate-400 leading-relaxed line-clamp-2">{project.description}</p>
+              )}
+              {project.tags?.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {project.tags.slice(0, 4).map((tag: string) => (
+                    <span
+                      key={tag}
+                      className="text-xs px-2 py-0.5 rounded-md"
+                      style={{ backgroundColor: 'var(--color-elevated)', color: 'var(--color-muted)' }}
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
             {project.websiteUrl && (
               <a
                 href={project.websiteUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
                 style={{ backgroundColor: 'rgba(0,217,126,0.1)', color: 'var(--color-success)' }}
               >
-                Visit Demo →
+                Demo →
               </a>
             )}
-            <div className="text-xs text-slate-500 text-right">
-              <span className="font-semibold text-white">{project.followerCount}</span> followers
-            </div>
           </div>
-        </div>
 
-        <div
-          className="flex items-center gap-2 mt-3 pt-3 border-t"
-          style={{ borderColor: 'var(--color-border)' }}
-        >
-          <Link
-            to={`/u/${author?.username}`}
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          {/* Footer */}
+          <div
+            className="flex items-center gap-2 pr-3 py-2 border-t"
+            style={{ borderColor: 'var(--color-border)' }}
           >
-            <div
-              className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold"
-              style={{ background: 'var(--color-accent)', color: 'white' }}
+            <Link
+              to={`/u/${author?.username}`}
+              className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
             >
-              {author?.avatar
-                ? <img src={author.avatar} alt="" className="w-full h-full object-cover" />
-                : author?.username?.[0]?.toUpperCase()}
-            </div>
-            <span className="text-xs text-slate-500">{author?.displayName || author?.username}</span>
-          </Link>
+              <div
+                className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center text-[10px] font-bold"
+                style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}
+              >
+                {author?.avatar
+                  ? <img src={author.avatar} alt="" className="w-full h-full object-cover" />
+                  : author?.username?.[0]?.toUpperCase()}
+              </div>
+              <span className="text-xs text-slate-500">{author?.displayName || author?.username}</span>
+            </Link>
+            <span className="text-xs text-slate-600 ml-auto">
+              <span className="font-semibold text-white">{project.followerCount}</span> followers
+            </span>
+          </div>
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, Bookmark, GitFork, Clock, MessageSquare, Package, Quote } from 'lucide-react';
+import { Heart, Bookmark, GitFork, Clock, MessageSquare, Package, Quote, Brain, MoreHorizontal } from 'lucide-react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { memoriesApi, packsApi, type Memory, type AuthorSnippet } from '../lib/api';
 import { cn, timeAgo, CATEGORY_COLORS } from '../lib/utils';
@@ -31,7 +31,11 @@ function AddToPackPopover({ memoryId, onClose }: { memoryId: string; onClose: ()
     >
       <p className="mono text-xs text-slate-500 px-2 py-1 mb-1">ADD_TO_PACK</p>
       {myPacks.length === 0 ? (
-        <Link to="/packs" onClick={onClose} className="block px-2 py-1.5 text-xs mono text-slate-400 hover:text-violet-300 transition-colors">
+        <Link
+          to="/packs"
+          onClick={onClose}
+          className="block px-2 py-1.5 text-xs mono text-slate-400 hover:text-violet-300 transition-colors"
+        >
           + Create a pack first
         </Link>
       ) : (
@@ -66,139 +70,207 @@ export function MemoryCard({ memory, author, originalAuthorUsername }: MemoryCar
   const likeMut = useMutation({ mutationFn: () => memoriesApi.like(memory.id), onSuccess: invalidate });
   const saveMut = useMutation({
     mutationFn: () => memoriesApi.save(memory.id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['feed'] }); queryClient.invalidateQueries({ queryKey: ['saved'] }); },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feed'] });
+      queryClient.invalidateQueries({ queryKey: ['saved'] });
+    },
   });
   const forkMut = useMutation({
     mutationFn: () => memoriesApi.fork(memory.id),
-    onSuccess: (res) => { queryClient.invalidateQueries({ queryKey: ['feed'] }); navigate(`/memory/${res.data.id}`); },
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['feed'] });
+      navigate(`/memory/${res.data.id}`);
+    },
   });
 
   const act = (fn: () => void) => { if (!user) { navigate('/login'); return; } fn(); };
 
-  const categoryClass = CATEGORY_COLORS[memory.category] ?? 'text-slate-400 bg-slate-400/10 border-slate-400/20';
-  const preview = memory.content.length > 200 ? memory.content.slice(0, 200) + 'â€¦' : memory.content;
   const isFork = !!memory.forkedFromId;
-  const showOriginal = isFork && memory.originalMemoryId && memory.originalMemoryId !== memory.forkedFromId;
+  const preview = memory.content.length > 200
+    ? memory.content.slice(0, 200) + '…'
+    : memory.content;
 
   return (
     <div
-      className="rounded-xl border p-5 card-hover group"
-      style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
+      className="rounded-2xl border overflow-hidden transition-all group"
+      style={{
+        backgroundColor: 'var(--color-card)',
+        borderColor: 'var(--color-border)',
+      }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(168,85,247,0.35)';
+        (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(168,85,247,0.08), 0 0 0 1px rgba(168,85,247,0.12)';
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)';
+        (e.currentTarget as HTMLElement).style.boxShadow = '';
+      }}
     >
-      {/* Fork attribution */}
-      {isFork && (
-        <div className="flex items-center gap-1.5 text-xs mono text-slate-500 mb-2">
-          <GitFork size={10} className="text-cyan-500" />
-          <span>forked from{' '}
-            <Link to={`/memory/${memory.forkedFromId}`} className="text-cyan-400 hover:text-cyan-300 transition-colors">
-              {memory.forkedFromUserId ? `@${memory.forkedFromUserId.slice(0, 8)}` : 'original'}
-            </Link>
-          </span>
-          {showOriginal && originalAuthorUsername && (
-            <span className="text-slate-600">
-              {' Â· '}original by{' '}
-              <Link to={`/memory/${memory.originalMemoryId}`} className="text-slate-400 hover:text-violet-300 transition-colors">
-                @{originalAuthorUsername}
-              </Link>
-            </span>
-          )}
+      <div className="flex">
+        {/* ── Left icon column ── */}
+        <div className="flex-shrink-0 flex flex-col items-center pt-3 pb-3 w-[64px] md:w-[72px]">
+          <div
+            className="w-12 h-12 md:w-[52px] md:h-[52px] rounded-2xl flex items-center justify-center icon-block-memory"
+            style={{ background: 'linear-gradient(145deg, #1A0A3A 0%, #3B1A7A 55%, #5B2FBA 100%)' }}
+          >
+            <Brain
+              size={22}
+              style={{
+                color: '#C084FC',
+                filter: 'drop-shadow(0 0 5px rgba(168,85,247,0.85))',
+              }}
+            />
+          </div>
+          {/* Connector line */}
+          <div className="flex-1 mt-2 w-px min-h-[12px]" style={{ backgroundColor: 'var(--color-border)' }} />
         </div>
-      )}
 
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3 mb-3">
+        {/* ── Right content ── */}
         <div className="flex-1 min-w-0">
-          <Link to={`/memory/${memory.id}`}>
-            <h3 className="mono font-semibold text-white text-sm group-hover:text-violet-300 transition-colors line-clamp-2">
-              {memory.title}
-            </h3>
-          </Link>
-        </div>
-        <Link
-          to={`/browse?category=${memory.category}`}
-          onClick={e => e.stopPropagation()}
-          className={cn('text-xs mono px-2 py-0.5 rounded border flex-shrink-0 hover:opacity-80 transition-opacity', categoryClass)}
-        >
-          {memory.category.toUpperCase()}
-        </Link>
-      </div>
 
-      {/* Content preview */}
-      <p className="text-slate-400 text-xs leading-relaxed mb-4 line-clamp-3">{preview}</p>
-
-      {/* Tags */}
-      {memory.tags?.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-4">
-          {memory.tags.slice(0, 4).map((tag) => (
-            <Link
-              key={tag}
-              to={`/browse?tag=${encodeURIComponent(tag)}`}
-              onClick={e => e.stopPropagation()}
-              className="text-xs mono px-2 py-0.5 rounded transition-colors hover:text-slate-400"
-              style={{ backgroundColor: 'var(--color-elevated)', color: '#64748B' }}
-            >
-              #{tag}
-            </Link>
-          ))}
-        </div>
-      )}
-
-      {/* Footer */}
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-2">
-          {author && (
-            <Link to={`/u/${author.username}`} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
-              <div className="w-5 h-5 rounded-full flex items-center justify-center text-xs mono font-bold" style={{ backgroundColor: 'var(--color-violet)', color: 'white' }}>
-                {author.username[0].toUpperCase()}
+          {/* Top row: badge + time + menu */}
+          <div className="flex items-center gap-2 pr-3 pt-3 pb-1.5">
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md tracking-wide badge-memory flex-shrink-0">
+              MEMORY
+            </span>
+            <span className="text-xs text-slate-600 flex-shrink-0">{timeAgo(memory.createdAt)}</span>
+            {isFork && (
+              <span className="flex items-center gap-1 text-[10px] text-slate-600 flex-shrink-0">
+                <GitFork size={9} className="text-cyan-600" />
+                forked
+              </span>
+            )}
+            <div className="relative ml-auto flex-shrink-0">
+              <div className="p-1 rounded-lg text-slate-700">
+                <MoreHorizontal size={14} />
               </div>
-              <span className="text-xs mono text-slate-400">@{author.username}</span>
-            </Link>
-          )}
-          <span className="flex items-center gap-1 text-xs text-slate-500 mono">
-            <Clock size={10} />
-            {timeAgo(memory.createdAt)}
-          </span>
-        </div>
+            </div>
+          </div>
 
-        <div className="flex items-center gap-3">
-          <button onClick={() => act(() => likeMut.mutate())} className="flex items-center gap-1 text-xs mono text-slate-400 hover:text-pink-400 transition-colors">
-            <Heart size={13} />{memory.likeCount}
-          </button>
-          <Link to={`/memory/${memory.id}`} className="flex items-center gap-1 text-xs mono text-slate-400 hover:text-slate-200 transition-colors">
-            <MessageSquare size={13} />
-          </Link>
-          <button onClick={() => act(() => forkMut.mutate())} disabled={forkMut.isPending || memory.userId === user?.id} className="flex items-center gap-1 text-xs mono text-slate-400 hover:text-cyan-400 transition-colors disabled:opacity-30">
-            <GitFork size={13} />{memory.forkCount}
-          </button>
-          <button onClick={() => act(() => saveMut.mutate())} className="flex items-center gap-1 text-xs mono text-slate-400 hover:text-amber-400 transition-colors">
-            <Bookmark size={13} />{memory.saveCount}
-          </button>
-          {user && (
-            <button
-              onClick={() => setQuoteMemory({ memory, author: author! })}
-              className="flex items-center gap-1 text-xs mono text-slate-400 hover:text-slate-400 transition-colors"
-              title="Quote this memory"
-            >
-              <Quote size={13} />
-            </button>
-          )}
-          {user && (
-            <div className="relative">
-              <button
-                onClick={() => setShowPackPopover(p => !p)}
-                className="flex items-center gap-1 text-xs mono text-slate-400 hover:text-slate-400 transition-colors"
-                title="Add to pack"
-              >
-                <Package size={13} />
-              </button>
-              {showPackPopover && (
-                <>
-                  <div className="fixed inset-0 z-20" onClick={() => setShowPackPopover(false)} />
-                  <AddToPackPopover memoryId={memory.id} onClose={() => setShowPackPopover(false)} />
-                </>
-              )}
+          {/* Title */}
+          <div className="pr-4 pb-1">
+            <Link to={`/memory/${memory.id}`}>
+              <h3 className="font-semibold text-white text-base leading-snug group-hover:text-violet-300 transition-colors line-clamp-2">
+                {memory.title}
+              </h3>
+            </Link>
+          </div>
+
+          {/* Content preview */}
+          <div className="pr-4 pb-2">
+            <p className="text-sm text-slate-400 leading-relaxed line-clamp-2">{preview}</p>
+          </div>
+
+          {/* Tags */}
+          {memory.tags?.length > 0 && (
+            <div className="flex flex-wrap gap-1 pr-4 pb-3">
+              {memory.tags.slice(0, 4).map(tag => (
+                <Link
+                  key={tag}
+                  to={`/browse?tag=${encodeURIComponent(tag)}`}
+                  onClick={e => e.stopPropagation()}
+                  className="text-xs px-2 py-0.5 rounded-md transition-colors hover:text-slate-300"
+                  style={{ backgroundColor: 'rgba(168,85,247,0.08)', color: '#A855F7', border: '1px solid rgba(168,85,247,0.2)' }}
+                >
+                  {tag}
+                </Link>
+              ))}
             </div>
           )}
+
+          {/* Footer: author + engagement */}
+          <div
+            className="flex items-center pr-3 py-2 border-t"
+            style={{ borderColor: 'var(--color-border)' }}
+          >
+            {/* Author */}
+            {author && (
+              <Link
+                to={`/u/${author.username}`}
+                className="flex items-center gap-1.5 mr-2 hover:opacity-80 transition-opacity flex-shrink-0"
+              >
+                <div
+                  className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center text-[10px] font-bold"
+                  style={{ background: 'linear-gradient(135deg, #A855F7, #00E5FF)', color: 'white' }}
+                >
+                  {author.avatar
+                    ? <img src={author.avatar} alt={author.username} className="w-full h-full object-cover" />
+                    : author.username[0].toUpperCase()}
+                </div>
+                <span className="text-xs text-slate-500 max-w-[72px] truncate hidden sm:block">
+                  {author.displayName || author.username}
+                </span>
+              </Link>
+            )}
+
+            <span className="text-slate-700 text-xs mx-1 hidden sm:block">·</span>
+
+            {/* Like */}
+            <button
+              onClick={() => act(() => likeMut.mutate())}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-pink-400 hover:bg-white/5 transition-all"
+            >
+              <Heart size={13} />
+              {memory.likeCount > 0 && <span>{memory.likeCount}</span>}
+            </button>
+
+            {/* Comments */}
+            <Link
+              to={`/memory/${memory.id}`}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all"
+            >
+              <MessageSquare size={13} />
+            </Link>
+
+            {/* Fork */}
+            <button
+              onClick={() => act(() => forkMut.mutate())}
+              disabled={forkMut.isPending || memory.userId === user?.id}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-cyan-400 hover:bg-white/5 transition-all disabled:opacity-30"
+            >
+              <GitFork size={13} />
+              {memory.forkCount > 0 && <span>{memory.forkCount}</span>}
+            </button>
+
+            {/* Quote */}
+            {user && (
+              <button
+                onClick={() => setQuoteMemory({ memory, author: author! })}
+                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all"
+                title="Quote this memory"
+              >
+                <Quote size={13} />
+              </button>
+            )}
+
+            {/* Save */}
+            <button
+              onClick={() => act(() => saveMut.mutate())}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-amber-400 hover:bg-white/5 transition-all ml-auto"
+            >
+              <Bookmark size={13} />
+              {memory.saveCount > 0 && <span>{memory.saveCount}</span>}
+            </button>
+
+            {/* Add to pack */}
+            {user && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowPackPopover(p => !p)}
+                  className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all"
+                  title="Add to pack"
+                >
+                  <Package size={13} />
+                </button>
+                {showPackPopover && (
+                  <>
+                    <div className="fixed inset-0 z-20" onClick={() => setShowPackPopover(false)} />
+                    <AddToPackPopover memoryId={memory.id} onClose={() => setShowPackPopover(false)} />
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
