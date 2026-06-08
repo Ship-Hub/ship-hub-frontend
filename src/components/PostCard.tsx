@@ -39,23 +39,38 @@ const TYPE_ICON_META: Record<string, {
   collab_request: { icon: Users,        color: '#FFA62B', bg: 'rgba(255,162,43,0.1)',  glowClass: 'icon-block-collab',   label: 'COLLABORATION',   badgeClass: 'badge-collab'   },
   poll:           { icon: BarChart3,    color: '#4F9EFF', bg: 'rgba(79,158,255,0.1)',  glowClass: 'icon-block-poll',     label: 'POLL',            badgeClass: 'badge-poll'     },
   question:       { icon: HelpCircle,  color: '#FFD60A', bg: 'rgba(255,214,10,0.1)',   glowClass: 'icon-block-question', label: 'QUESTION',        badgeClass: 'badge-question' },
-  general:        { icon: MessageCircle, color: '#64748B', bg: 'rgba(100,116,139,0.08)', glowClass: 'icon-block-general', label: '',               badgeClass: ''               },
+  general:        { icon: MessageCircle, color: '#94A3B8', bg: 'rgba(148,163,184,0.1)', glowClass: 'icon-block-general', label: '',               badgeClass: ''               },
 };
 
 // ── Type icon column (left column) ────────────────────────────────────────────
 
-function TypeIconColumn({ type }: { type: string }) {
+function TypeIconColumn({ type, author }: { type: string; author: AuthorSnippet | null }) {
   const meta = TYPE_ICON_META[type] ?? TYPE_ICON_META['general'];
   const Icon = meta.icon;
+  const isGeneral = type === 'general' || !TYPE_ICON_META[type];
+
   return (
     <div className="flex-shrink-0 flex flex-col items-center pt-4 pb-3 px-3 w-[76px]">
-      <div
-        className={`w-12 h-12 rounded-2xl flex items-center justify-center ${meta.glowClass}`}
-        style={{ backgroundColor: meta.bg }}
-      >
-        <Icon size={24} style={{ color: meta.color }} />
-      </div>
-      {/* Connector line (visual) */}
+      {isGeneral ? (
+        /* General posts: show author avatar as the "icon block" */
+        <Link to={`/u/${author?.username ?? ''}`} className="flex-shrink-0">
+          <div className="w-12 h-12 rounded-2xl overflow-hidden flex items-center justify-center text-base font-bold"
+            style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}>
+            {author?.avatar
+              ? <img src={author.avatar} alt={author.username} className="w-full h-full object-cover" />
+              : <span>{author?.username?.[0]?.toUpperCase() ?? '?'}</span>}
+          </div>
+        </Link>
+      ) : (
+        /* Typed posts: show glowing type icon */
+        <div
+          className={`w-12 h-12 rounded-2xl flex items-center justify-center ${meta.glowClass}`}
+          style={{ backgroundColor: meta.bg }}
+        >
+          <Icon size={24} style={{ color: meta.color }} />
+        </div>
+      )}
+      {/* Connector line */}
       <div className="flex-1 mt-2 w-px min-h-[12px]" style={{ backgroundColor: 'var(--color-border)' }} />
     </div>
   );
@@ -74,7 +89,7 @@ const CARD_HOVER_CLASS: Record<string, string> = {
 
 // ── Card shell ────────────────────────────────────────────────────────────────
 
-function CardShell({ children, post }: { children: React.ReactNode; post: Post }) {
+function CardShell({ children, post, author }: { children: React.ReactNode; post: Post; author: AuthorSnippet | null }) {
   const type = post.type || 'general';
   const hoverClass = CARD_HOVER_CLASS[type] ?? 'card-hover-general';
   const hasMedia = !!(post.mediaUrl);
@@ -86,7 +101,7 @@ function CardShell({ children, post }: { children: React.ReactNode; post: Post }
     >
       <div className="flex">
         {/* Left: Type icon column */}
-        <TypeIconColumn type={type} />
+        <TypeIconColumn type={type} author={author} />
 
         {/* Center: All post content */}
         <div className="flex-1 min-w-0 flex">
@@ -141,17 +156,21 @@ function PostHeader({ post, author, onDelete, canDelete, canEdit, onStartEdit }:
   onDelete: () => void; canDelete: boolean; canEdit: boolean; onStartEdit: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const isTyped = !!(post.type && post.type !== 'general');
   return (
     <div className="flex items-start justify-between pr-4 pt-3 pb-2">
       <div className="flex items-center gap-2 min-w-0">
-        <Link to={`/u/${author?.username}`} className="flex-shrink-0">
-          <div className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold"
-            style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}>
-            {author?.avatar
-              ? <img src={author.avatar} alt={author.username} className="w-full h-full object-cover" />
-              : author?.username?.[0]?.toUpperCase() ?? '?'}
-          </div>
-        </Link>
+        {/* Only show inline avatar for typed posts (general posts show avatar in icon column) */}
+        {isTyped && (
+          <Link to={`/u/${author?.username}`} className="flex-shrink-0">
+            <div className="w-6 h-6 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold"
+              style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}>
+              {author?.avatar
+                ? <img src={author.avatar} alt={author?.username} className="w-full h-full object-cover" />
+                : author?.username?.[0]?.toUpperCase() ?? '?'}
+            </div>
+          </Link>
+        )}
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <Link to={`/u/${author?.username}`} className="text-sm font-semibold text-white hover:text-slate-200 transition-colors leading-none">
@@ -539,7 +558,7 @@ export function PostCard({ post, author, quotedPost, quotedMemory }: PostCardPro
   const postType = post.type ?? 'general';
 
   return (
-    <CardShell post={post}>
+    <CardShell post={post} author={author}>
       {/* Author header */}
       <PostHeader
         post={post} author={author}
