@@ -143,7 +143,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="px-5 py-4 flex-shrink-0">
           <Link to="/" className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white text-sm flex-shrink-0"
-              style={{ background: 'var(--color-accent)', boxShadow: '0 0 14px rgba(255,77,77,0.5), 0 0 28px rgba(255,77,77,0.2)' }}>
+              style={{ background: 'var(--color-accent)', boxShadow: '0 0 14px rgba(255,138,0,0.5), 0 0 28px rgba(255,138,0,0.2)' }}>
               S
             </div>
             <span className="font-bold text-white text-lg tracking-tight">ShipHub</span>
@@ -178,7 +178,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       )}
                         style={badge === 'Live'
                           ? { backgroundColor: 'rgba(52,211,153,0.15)', animation: 'liveGlow 1.8s ease-in-out infinite' }
-                          : { backgroundColor: 'rgba(255,77,77,0.85)' }}>
+                          : { backgroundColor: 'rgba(255,138,0,0.85)' }}>
                         {badge}
                       </span>
                     )}
@@ -192,7 +192,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* Profile card */}
         {user ? (
           <div className="px-3 pb-3 flex-shrink-0 mt-auto">
-            <div className="rounded-xl p-3 border" style={{ backgroundColor: 'var(--color-card)', borderColor: 'rgba(255,77,77,0.2)', boxShadow: '0 0 20px rgba(255,77,77,0.06)' }}>
+            <div className="rounded-xl p-3 border" style={{ backgroundColor: 'var(--color-card)', borderColor: 'rgba(255,138,0,0.2)', boxShadow: '0 0 20px rgba(255,138,0,0.06)' }}>
               <Link to={`/u/${user.username}`} className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-sm font-bold flex-shrink-0"
                   style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}>
@@ -300,7 +300,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     badge === 'Live' ? 'text-emerald-300' : 'text-white'
                   )} style={badge === 'Live'
                     ? { backgroundColor: 'rgba(52,211,153,0.15)' }
-                    : { backgroundColor: 'rgba(255,77,77,0.85)' }}>
+                    : { backgroundColor: 'rgba(255,138,0,0.85)' }}>
                     {badge}
                   </span>
                 )}
@@ -458,7 +458,7 @@ function RightSidebar() {
                   <span className="text-sm text-slate-300 group-hover:text-white transition-colors truncate">{post.content?.slice(0, 50)}</span>
                 </div>
                 <span className="text-xs font-semibold px-1.5 py-0.5 rounded-md ml-2 flex-shrink-0"
-                  style={{ backgroundColor: 'rgba(255,77,77,0.12)', color: 'var(--color-accent)' }}>
+                  style={{ backgroundColor: 'rgba(255,138,0,0.12)', color: 'var(--color-accent)' }}>
                   {post.commentCount}
                 </span>
               </Link>
@@ -512,7 +512,7 @@ function RightSidebar() {
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-white text-sm">Online Now</h3>
             <span className="flex items-center gap-1 text-xs text-emerald-300">
-              <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: '#34D399', boxShadow: '0 0 6px rgba(52,211,153,0.8), 0 0 14px rgba(52,211,153,0.4)', animation: 'liveGlow 1.8s ease-in-out infinite' }} />
+              <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: '#34D399', boxShadow: '0 0 6px rgba(52,211,153,0.8)', animation: 'liveGlow 1.8s ease-in-out infinite' }} />
               {onlineQ.data?.count ?? 0} online
             </span>
           </div>
@@ -548,6 +548,47 @@ function RightSidebar() {
         {!onlineQ.data && (
           <div className="h-20 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--color-card)' }} />
         )}
+      </section>
+
+      {/* Knowledge Graph Preview */}
+      <section>
+        <h3 className="font-semibold text-white text-sm mb-3">Knowledge Graph</h3>
+        <Link to="/graph"
+          className="block rounded-xl border overflow-hidden transition-all hover:border-violet-500/30 group"
+          style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+          {/* Mini node visualization */}
+          <div className="relative h-24 overflow-hidden"
+            style={{ background: 'radial-gradient(ellipse at center, rgba(168,85,247,0.12) 0%, transparent 70%)' }}>
+            {/* Decorative nodes */}
+            {[
+              { x: '20%', y: '30%', size: 10, color: 'rgba(168,85,247,0.8)' },
+              { x: '50%', y: '55%', size: 14, color: 'rgba(168,85,247,1)', glow: true },
+              { x: '75%', y: '25%', size: 8,  color: 'rgba(0,229,255,0.7)' },
+              { x: '35%', y: '72%', size: 7,  color: 'rgba(255,138,0,0.7)' },
+              { x: '80%', y: '65%', size: 9,  color: 'rgba(52,211,153,0.7)' },
+            ].map((n, i) => (
+              <div key={i} className="absolute rounded-full"
+                style={{
+                  left: n.x, top: n.y,
+                  width: n.size, height: n.size,
+                  backgroundColor: n.color,
+                  boxShadow: n.glow ? `0 0 12px rgba(168,85,247,0.8), 0 0 24px rgba(168,85,247,0.4)` : undefined,
+                  transform: 'translate(-50%, -50%)',
+                }} />
+            ))}
+            {/* Connector lines (SVG) */}
+            <svg className="absolute inset-0 w-full h-full" style={{ opacity: 0.3 }}>
+              <line x1="20%" y1="30%" x2="50%" y2="55%" stroke="rgba(168,85,247,0.6)" strokeWidth="1" />
+              <line x1="75%" y1="25%" x2="50%" y2="55%" stroke="rgba(0,229,255,0.5)" strokeWidth="1" />
+              <line x1="35%" y1="72%" x2="50%" y2="55%" stroke="rgba(255,138,0,0.5)" strokeWidth="1" />
+              <line x1="80%" y1="65%" x2="50%" y2="55%" stroke="rgba(52,211,153,0.5)" strokeWidth="1" />
+            </svg>
+          </div>
+          <div className="px-3 py-2.5 border-t flex items-center justify-between" style={{ borderColor: 'var(--color-border)' }}>
+            <span className="text-xs font-medium text-slate-400 group-hover:text-white transition-colors">Explore Knowledge Graph</span>
+            <Network size={13} className="text-slate-600 group-hover:text-violet-400 transition-colors" />
+          </div>
+        </Link>
       </section>
 
     </div>
@@ -586,7 +627,7 @@ function VerifyBanner() {
   return (
     <div className="fixed bottom-20 md:bottom-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4 md:px-0">
       <div className="flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl"
-        style={{ backgroundColor: 'var(--color-card)', borderColor: 'rgba(255,77,77,0.3)' }}>
+        style={{ backgroundColor: 'var(--color-card)', borderColor: 'rgba(255,138,0,0.3)' }}>
         <Mail size={15} style={{ color: 'var(--color-accent)' }} className="flex-shrink-0" />
         <p className="text-sm text-slate-300 flex-1">
           Verify your email to unlock full access.{' '}

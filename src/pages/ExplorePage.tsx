@@ -121,7 +121,7 @@ export function ExplorePage() {
                 <Link key={b.id} to={`/u/${b.username}`}
                   className="flex-shrink-0 flex flex-col items-center gap-2 p-3 rounded-2xl border w-24 transition-all hover:scale-105"
                   style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 14px rgba(255,77,77,0.15)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,77,77,0.3)'; }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 14px rgba(255,138,0,0.15)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,138,0,0.3)'; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = ''; (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)'; }}>
                   <div className="relative">
                     <div className="w-11 h-11 rounded-full overflow-hidden flex items-center justify-center text-sm font-bold"
@@ -130,7 +130,7 @@ export function ExplorePage() {
                     </div>
                     {i < 3 && (
                       <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
-                        style={{ backgroundColor: 'var(--color-accent)', boxShadow: '0 0 6px rgba(255,77,77,0.6)' }}>
+                        style={{ backgroundColor: 'var(--color-accent)', boxShadow: '0 0 6px rgba(255,138,0,0.6)' }}>
                         {i + 1}
                       </span>
                     )}

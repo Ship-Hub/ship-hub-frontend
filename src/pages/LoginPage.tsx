@@ -10,7 +10,7 @@ function ShipHubLogo() {
   return (
     <Link to="/" className="inline-flex items-center gap-2.5 group">
       <div className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white text-base flex-shrink-0 transition-all group-hover:scale-105"
-        style={{ background: 'var(--color-accent)', boxShadow: '0 0 16px rgba(255,77,77,0.5), 0 0 32px rgba(255,77,77,0.2)' }}>
+        style={{ background: 'var(--color-accent)', boxShadow: '0 0 16px rgba(255,138,0,0.5), 0 0 32px rgba(255,138,0,0.2)' }}>
         S
       </div>
       <span className="text-xl font-bold text-white tracking-tight">ShipHub</span>
@@ -49,7 +49,7 @@ export function LoginPage() {
 
         {/* Card with gradient border */}
         <div className="rounded-2xl p-px"
-          style={{ background: 'linear-gradient(135deg, rgba(255,77,77,0.5) 0%, rgba(255,77,77,0.1) 40%, rgba(0,229,255,0.1) 70%, rgba(0,229,255,0.4) 100%)' }}>
+          style={{ background: 'linear-gradient(135deg, rgba(255,138,0,0.5) 0%, rgba(255,138,0,0.1) 40%, rgba(0,229,255,0.1) 70%, rgba(0,229,255,0.4) 100%)' }}>
           <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--color-card)' }}>
 
             <h2 className="text-lg font-bold text-white mb-5">Welcome back</h2>
@@ -63,7 +63,7 @@ export function LoginPage() {
             </div>
 
             {error && (
-              <div className="mb-4 px-3 py-2.5 rounded-lg text-sm" style={{ backgroundColor: 'rgba(255,77,77,0.1)', color: 'var(--color-accent)', border: '1px solid rgba(255,77,77,0.2)' }}>
+              <div className="mb-4 px-3 py-2.5 rounded-lg text-sm" style={{ backgroundColor: 'rgba(255,138,0,0.1)', color: 'var(--color-accent)', border: '1px solid rgba(255,138,0,0.2)' }}>
                 {error}
               </div>
             )}

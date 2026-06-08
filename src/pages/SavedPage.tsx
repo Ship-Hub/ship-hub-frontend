@@ -64,7 +64,7 @@ export function SavedPage() {
               <Icon size={12} />
               {label}
               <span className={`mono text-xs px-1.5 py-0.5 rounded-full ${tab === key ? 'text-white' : 'text-slate-600'}`}
-                style={{ backgroundColor: tab === key ? 'rgba(255,77,77,0.12)' : 'transparent', color: tab === key ? 'var(--color-accent)' : undefined }}>
+                style={{ backgroundColor: tab === key ? 'rgba(255,138,0,0.12)' : 'transparent', color: tab === key ? 'var(--color-accent)' : undefined }}>
                 {count}
               </span>
             </button>

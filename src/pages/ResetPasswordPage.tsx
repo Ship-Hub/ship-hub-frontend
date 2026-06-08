@@ -34,13 +34,13 @@ export function ResetPasswordPage() {
         <div className="flex justify-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white text-base"
-              style={{ background: 'var(--color-accent)', boxShadow: '0 0 16px rgba(255,77,77,0.5)' }}>S</div>
+              style={{ background: 'var(--color-accent)', boxShadow: '0 0 16px rgba(255,138,0,0.5)' }}>S</div>
             <span className="text-xl font-bold text-white tracking-tight">ShipHub</span>
           </Link>
         </div>
 
         <div className="rounded-2xl p-px"
-          style={{ background: 'linear-gradient(135deg, rgba(255,77,77,0.5) 0%, rgba(255,77,77,0.1) 40%, rgba(0,229,255,0.1) 70%, rgba(0,229,255,0.4) 100%)' }}>
+          style={{ background: 'linear-gradient(135deg, rgba(255,138,0,0.5) 0%, rgba(255,138,0,0.1) 40%, rgba(0,229,255,0.1) 70%, rgba(0,229,255,0.4) 100%)' }}>
           <div className="rounded-2xl p-6" style={{ backgroundColor: 'var(--color-card)' }}>
             {done ? (
               <div className="text-center py-4">
@@ -54,7 +54,7 @@ export function ResetPasswordPage() {
                 <p className="text-sm mb-5" style={{ color: 'var(--color-muted)' }}>Choose a strong password for your account.</p>
 
                 {error && (
-                  <div className="mb-4 px-3 py-2.5 rounded-lg text-sm" style={{ backgroundColor: 'rgba(255,77,77,0.1)', color: 'var(--color-accent)', border: '1px solid rgba(255,77,77,0.2)' }}>
+                  <div className="mb-4 px-3 py-2.5 rounded-lg text-sm" style={{ backgroundColor: 'rgba(255,138,0,0.1)', color: 'var(--color-accent)', border: '1px solid rgba(255,138,0,0.2)' }}>
                     {error}
                   </div>
                 )}
@@ -85,7 +85,7 @@ export function ResetPasswordPage() {
                       value={confirm} onChange={e => setConfirm(e.target.value)}
                       placeholder="same password again"
                       className="w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition-colors"
-                      style={{ borderColor: confirm && confirm !== password ? 'rgba(255,77,77,0.5)' : 'var(--color-border)', backgroundColor: 'var(--color-elevated)', color: 'var(--color-text)' }} />
+                      style={{ borderColor: confirm && confirm !== password ? 'rgba(255,138,0,0.5)' : 'var(--color-border)', backgroundColor: 'var(--color-elevated)', color: 'var(--color-text)' }} />
                     {confirm && confirm !== password && <p className="text-xs mt-1" style={{ color: 'var(--color-accent)' }}>Passwords don't match</p>}
                   </div>
                   <button type="submit" disabled={loading || password !== confirm || password.length < 8}

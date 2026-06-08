@@ -8,7 +8,7 @@ export function MarketplacePage() {
       <Helmet><title>Marketplace — ShipHub</title></Helmet>
       <div className="max-w-[680px] mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(255,77,77,0.1)', color: 'var(--color-accent)' }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(255,138,0,0.1)', color: 'var(--color-accent)' }}>
             <ShoppingBag size={20} />
           </div>
           <div>
@@ -20,7 +20,7 @@ export function MarketplacePage() {
         <div className="rounded-2xl border p-12 text-center"
           style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-            style={{ backgroundColor: 'rgba(255,77,77,0.08)', color: 'var(--color-accent)' }}>
+            style={{ backgroundColor: 'rgba(255,138,0,0.08)', color: 'var(--color-accent)' }}>
             <ShoppingBag size={28} />
           </div>
           <h2 className="text-lg font-bold text-white mb-2">Coming Soon</h2>

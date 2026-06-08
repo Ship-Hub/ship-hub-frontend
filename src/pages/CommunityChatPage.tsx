@@ -106,7 +106,7 @@ export function CommunityChatPage() {
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
                   activeSlug === ch.slug ? 'text-white' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
                 }`}
-                style={activeSlug === ch.slug ? { backgroundColor: 'rgba(255,77,77,0.12)', color: 'var(--color-accent)' } : {}}>
+                style={activeSlug === ch.slug ? { backgroundColor: 'rgba(255,138,0,0.12)', color: 'var(--color-accent)' } : {}}>
                 <Hash size={14} />
                 <span className="truncate">{ch.name}</span>
               </button>
@@ -132,7 +132,7 @@ export function CommunityChatPage() {
               <div className="flex justify-center py-8"><Loader2 size={18} className="animate-spin text-slate-600" /></div>
             )}
             {pinnedMessages.length > 0 && (
-              <div className="mb-4 rounded-xl border p-3 space-y-2" style={{ borderColor: 'rgba(255,77,77,0.25)', backgroundColor: 'rgba(255,77,77,0.06)' }}>
+              <div className="mb-4 rounded-xl border p-3 space-y-2" style={{ borderColor: 'rgba(255,138,0,0.25)', backgroundColor: 'rgba(255,138,0,0.06)' }}>
                 <div className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: 'var(--color-accent)' }}>
                   <Pin size={12} /> PINNED_CHAT
                 </div>

@@ -23,7 +23,7 @@ export function BuildersPage() {
       <Helmet><title>Builders — ShipHub</title></Helmet>
       <div className="max-w-[680px] mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(255,77,77,0.1)', color: 'var(--color-accent)' }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(255,138,0,0.1)', color: 'var(--color-accent)' }}>
             <Trophy size={20} />
           </div>
           <div>

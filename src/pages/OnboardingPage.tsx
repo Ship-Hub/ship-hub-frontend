@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { usersApi, leaderboardApi, authApi, type LeaderboardEntry } from '../lib/api';
@@ -25,7 +25,7 @@ export function OnboardingPage() {
     githubUsername: '',
   });
 
-  // Leaderboard for "follow builders" step â€” exclude self
+  // Leaderboard for "follow builders" step — exclude self
   const { data: lbData } = useQuery({
     queryKey: ['leaderboard'],
     queryFn: () => leaderboardApi.get(10).then(r => r.data),
@@ -85,7 +85,7 @@ export function OnboardingPage() {
                       background: done
                         ? 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))'
                         : active
-                        ? 'rgba(255,77,77,0.12)'
+                        ? 'rgba(255,138,0,0.12)'
                         : 'var(--color-elevated)',
                       border: active ? '2px solid var(--color-accent)' : '2px solid transparent',
                     }}
@@ -113,7 +113,7 @@ export function OnboardingPage() {
         {/* Step panels */}
         <div className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
 
-          {/* Step 0 â€” Profile */}
+          {/* Step 0 — Profile */}
           {step === 0 && (
             <div>
               <h2 className="mono text-sm font-bold text-white mb-1">COMPLETE_YOUR_PROFILE</h2>
@@ -167,7 +167,7 @@ export function OnboardingPage() {
             </div>
           )}
 
-          {/* Step 1 â€” Publish memory */}
+          {/* Step 1 — Publish memory */}
           {step === 1 && (
             <div>
               <h2 className="mono text-sm font-bold text-white mb-1">PUBLISH_YOUR_FIRST_MEMORY</h2>
@@ -207,13 +207,13 @@ export function OnboardingPage() {
                   onClick={() => setStep(2)}
                   className="text-xs mono text-slate-500 hover:text-slate-300 transition-colors"
                 >
-                  skip for now â†’
+                  skip for now →
                 </button>
               </div>
             </div>
           )}
 
-          {/* Step 2 â€” Follow builders */}
+          {/* Step 2 — Follow builders */}
           {step === 2 && (
             <div>
               <h2 className="mono text-sm font-bold text-white mb-1">FOLLOW_SOME_BUILDERS</h2>
@@ -227,7 +227,7 @@ export function OnboardingPage() {
 
               <div className="space-y-2 mb-6">
                 {suggestions.length === 0 && (
-                  <p className="text-xs mono text-slate-600 text-center py-4">No builders yet â€” you'll be the first!</p>
+                  <p className="text-xs mono text-slate-600 text-center py-4">No builders yet — you'll be the first!</p>
                 )}
                 {suggestions.map((b: LeaderboardEntry) => {
                   const isFollowed = followed.has(b.username);
@@ -247,7 +247,7 @@ export function OnboardingPage() {
                         <div className="mono text-xs font-semibold text-white truncate">
                           {b.displayName ?? b.username}
                         </div>
-                        <div className="text-xs mono text-slate-500">@{b.username} Â· {b.memoryCount} memories</div>
+                        <div className="text-xs mono text-slate-500">@{b.username} · {b.memoryCount} memories</div>
                       </div>
                       <button
                         onClick={() => {
@@ -261,7 +261,7 @@ export function OnboardingPage() {
                         }`}
                         style={!isFollowed ? { background: 'var(--color-accent)' } : {}}
                       >
-                        {isFollowed ? 'âœ“ FOLLOWING' : 'FOLLOW'}
+                        {isFollowed ? '✓ FOLLOWING' : 'FOLLOW'}
                       </button>
                     </div>
                   );

@@ -24,7 +24,7 @@ export function PostsPage() {
 
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ backgroundColor: 'rgba(255,77,77,0.1)', color: 'var(--color-accent)' }}>
+            style={{ backgroundColor: 'rgba(255,138,0,0.1)', color: 'var(--color-accent)' }}>
             <FileText size={20} />
           </div>
           <div>

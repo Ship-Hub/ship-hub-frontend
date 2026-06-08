@@ -32,13 +32,13 @@ const PAGE_SIZE = 30;
 type ComposerType = PostType | 'memory_import';
 
 const POST_TYPES: { key: ComposerType; icon: React.ElementType; label: string; color: string; shortLabel: string }[] = [
-  { key: 'build_update',   icon: Zap,          label: 'Build Update',             shortLabel: 'Build Update',  color: '#FF4D4D' },
+  { key: 'build_update',   icon: Zap,          label: 'Build Update',             shortLabel: 'Build Update',  color: '#FF8A00' },
   { key: 'code_snippet',   icon: Code2,         label: 'Code Snippet',             shortLabel: 'Code Snippet',  color: '#00E5FF' },
   { key: 'memory_import',  icon: Brain,         label: 'Memory',                   shortLabel: 'Memory',        color: '#A855F7' },
   { key: 'general',        icon: FolderKanban,  label: 'Project',                  shortLabel: 'Project',       color: '#00D97E' },
   { key: 'collab_request', icon: Users,         label: 'Looking for Collaborator', shortLabel: 'Collab',        color: '#FFA62B' },
-  { key: 'poll',           icon: BarChart3,     label: 'Poll',                     shortLabel: 'Poll',          color: '#00E5FF' },
-  { key: 'question',       icon: HelpCircle,    label: 'Question',                 shortLabel: 'Question',      color: '#00D97E' },
+  { key: 'poll',           icon: BarChart3,     label: 'Poll',                     shortLabel: 'Poll',          color: '#4F9EFF' },
+  { key: 'question',       icon: HelpCircle,    label: 'Question',                 shortLabel: 'Question',      color: '#FFD60A' },
 ];
 
 // ── Feed Composer ─────────────────────────────────────────────────────────
@@ -140,7 +140,7 @@ function FeedComposer({ onPosted }: { onPosted: () => void }) {
 
   const borderGrad = expanded && selectedTypeDef?.color
     ? `linear-gradient(var(--color-card), var(--color-card)) padding-box, linear-gradient(135deg, ${selectedTypeDef.color}99 0%, ${selectedTypeDef.color}22 40%, rgba(0,229,255,0.22) 70%, rgba(0,229,255,0.8) 100%) border-box`
-    : 'linear-gradient(var(--color-card), var(--color-card)) padding-box, linear-gradient(135deg, rgba(255,77,77,0.55) 0%, rgba(255,77,77,0.12) 35%, rgba(0,229,255,0.12) 65%, rgba(0,229,255,0.5) 100%) border-box';
+    : 'linear-gradient(var(--color-card), var(--color-card)) padding-box, linear-gradient(135deg, rgba(255,138,0,0.55) 0%, rgba(255,138,0,0.12) 35%, rgba(0,229,255,0.12) 65%, rgba(0,229,255,0.5) 100%) border-box';
 
   return (
     <div className="rounded-2xl mb-4 overflow-hidden transition-all relative"
@@ -151,16 +151,16 @@ function FeedComposer({ onPosted }: { onPosted: () => void }) {
 
       {/* Composer header */}
       <div className="relative flex items-center gap-3 p-4" onClick={() => !expanded && setExpanded(true)}>
-        <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-sm font-bold flex-shrink-0"
+        <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-sm font-bold flex-shrink-0"
           style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-cyan))', color: 'white' }}>
           {user.avatar
             ? <img src={user.avatar} alt="" className="w-full h-full object-cover" />
             : user.username[0].toUpperCase()}
         </div>
         {!expanded ? (
-          <div className="flex-1 px-4 py-2.5 rounded-xl text-sm text-slate-400 cursor-text border transition-colors hover:border-slate-500 font-medium"
+          <div className="flex-1 px-4 py-3 rounded-xl text-sm text-slate-400 cursor-text border transition-colors hover:border-slate-500 font-medium"
             style={{ backgroundColor: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)' }}>
-            What are you building today?
+            What are you shipping today?
           </div>
         ) : (
           <div className="flex-1 flex items-center gap-2">
@@ -411,7 +411,7 @@ export function FeedPage() {
                 style={tab === key ? {
                   borderColor: 'var(--color-accent)',
                   color: 'var(--color-text)',
-                  textShadow: '0 0 12px rgba(255,77,77,0.5)',
+                  textShadow: '0 0 12px rgba(255,138,0,0.5)',
                 } : {}}>
                 {label}
               </button>
